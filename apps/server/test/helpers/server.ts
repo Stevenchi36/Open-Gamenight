@@ -8,9 +8,11 @@ import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { AnyGameModule } from '@wsfg/core/contract'
-import { createApp } from '../../src/app.ts'
+import { createApp, createServices } from '../../src/app.ts'
 import { boot, type Booted } from '../../src/boot.ts'
 import { parseConfig, type Env } from '../../src/config.ts'
+import { RoomManager } from '../../src/rooms.ts'
+import { attachWebSocket, type WsOptions } from '../../src/ws.ts'
 
 export const ORIGIN = 'http://localhost:5173'
 
@@ -18,6 +20,10 @@ export interface TestServer {
   url: string
   booted: Booted
   server: Server
+  rooms: RoomManager
+  ws: ReturnType<typeof attachWebSocket>
+  /** ws://.../ws */
+  wsUrl: string
   /** Create an account directly (server-side admin API). */
   createUser(email: string, role: 'user' | 'admin', name?: string): Promise<{ id: string; email: string }>
   /** Sign in over HTTP; returns the Cookie header value. */
@@ -29,7 +35,12 @@ export interface TestServer {
 export const PASSWORD = 'test-password-123'
 
 export async function startTestServer(
-  options: { env?: Partial<Record<keyof Env, string>>; games?: readonly AnyGameModule[]; authRateLimit?: boolean } = {},
+  options: {
+    env?: Partial<Record<keyof Env, string>>
+    games?: readonly AnyGameModule[]
+    authRateLimit?: boolean
+    ws?: Partial<Pick<WsOptions, 'heartbeatMs' | 'maxConnectionsPerIp' | 'messagesPerSecond'>>
+  } = {},
 ): Promise<TestServer> {
   const dir = mkdtempSync(join(tmpdir(), 'wsfg-test-'))
   const config = parseConfig({
@@ -47,6 +58,13 @@ export async function startTestServer(
     ...(options.games ? { games: options.games } : {}),
   })
   const server = createServer(createApp(booted))
+  const rooms = new RoomManager({
+    games: booted.games,
+    config: booted.config,
+    logger: booted.logger,
+    servicesFor: (game) => createServices(booted, game),
+  })
+  const ws = attachWebSocket(server, { config: booted.config, auth: booted.auth, rooms, logger: booted.logger, ...options.ws })
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
   const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
 
@@ -60,8 +78,11 @@ export async function startTestServer(
 
   return {
     url,
+    wsUrl: url.replace('http', 'ws') + '/ws',
     booted,
     server,
+    rooms,
+    ws,
     fetch: doFetch,
     async createUser(email, role, name = email.split('@')[0]!) {
       const { user } = await booted.auth.api.createUser({ body: { email, password: PASSWORD, name, role } })
@@ -80,6 +101,7 @@ export async function startTestServer(
         .join('; ')
     },
     async close() {
+      ws.close()
       server.closeAllConnections()
       await new Promise<void>((resolve) => server.close(() => resolve()))
       booted.close()

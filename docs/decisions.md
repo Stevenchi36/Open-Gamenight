@@ -17,6 +17,13 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Host migration is core: ~2 min grace, then next player in join order (guests allowed), plus manual transfer.** Login gates creating rooms, not running one you're already in.
 - **Display names: 1-16 chars, unique per room (case-insensitive), overridable per room, no profanity filter.** Simple and enough for a semi-public audience.
 - **Rooms in memory; SIGTERM sends a restart notice.** Persisting rooms isn't worth the work at this scale; the reducer design keeps it possible later.
+- **Each room has a promise queue; every change (messages, timers, disconnects) runs on it, then broadcasts.** `prepareRound` is async, so without a queue two actions could interleave around it.
+- **A signed-in player who joins a room they're already in takes their seat back** (new token; the old tab gets a `removed` notice). That is how "the creator can reconnect from another device and still be host" works.
+- **One connection per player; a second tab/device replaces the first.** Simpler than multiplexing, and it matches one-phone-per-person play.
+- **Rooms with nobody connected close after 10 minutes** (plus the 1h idle rule), so a creator isn't locked out of `MAX_ROOMS_PER_USER` by abandoned rooms.
+- **Joining mid-game is allowed; the game decides what a late joiner sees.** Imposter shows a waiting view until the next round.
+- **Over-size frames close the socket with 1009 instead of returning `error { validation }`.** `ws` enforces `maxPayload` by closing; there is no frame to answer. Invalid JSON and schema failures still get the error message.
+- **Defaults: 30 websocket connections per IP, 10 messages/sec per socket, 20 join/reconnect attempts per minute per IP.** A family behind one NAT stays well under; code guessing doesn't.
 
 ## Stack
 - **TypeScript everywhere, pnpm workspaces.** Shared protocol and view types can't drift between server and client.

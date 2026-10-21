@@ -82,7 +82,8 @@ export const errorCodeSchema = z.enum([
 ])
 export type ErrorCode = z.infer<typeof errorCodeSchema>
 
-export const noticeKindSchema = z.enum(['info', 'warning', 'server_restarting'])
+/** 'removed': you are no longer in the room (kicked, or the room closed); go back home. */
+export const noticeKindSchema = z.enum(['info', 'warning', 'server_restarting', 'removed'])
 export type NoticeKind = z.infer<typeof noticeKindSchema>
 
 export const sessionUserSchema = z.object({
