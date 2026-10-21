@@ -38,6 +38,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 
 ## Data and AI
 - **Two SQLite files: `auth.db` and one shared `games.db` with per-game prefixed tables and migrations.** MCP never touches accounts; one game DB avoids multiplying files, backups and WAL handling.
+- **No ORM: plain SQL migrations and prepared statements behind typed service functions (`library.ts`, `ai.ts`).** A handful of tables and queries, per-game migrations owned by each game, and live game state in memory leave an ORM little to do. If later games need relational data, add Kysely (already installed via Better Auth) as a query builder.
 - **Shared AI service caps daily output tokens (plus per-admin rate limit) and logs to `ai_usage`.** Tokens are game-neutral and close to real spend; per-call limits in game units stay in each game.
 - **AI is optional.** Self-hosters without an API key still get a working platform.
 - **Generated words are reviewed by an admin before saving (UI path).** Keeps junk and spoiler hints out of the library.
