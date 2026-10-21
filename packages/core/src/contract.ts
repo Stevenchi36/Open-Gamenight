@@ -168,6 +168,8 @@ export interface GameModule<S, A, V, Settings, P = undefined> {
   migrations?: Migration[]
   /** Mounted at /api/admin/<id>, already behind requireAdmin and the Origin check. */
   adminRouter?(services: ServerServices): Router
+  /** Read-only data for players (e.g. lobby pickers). Mounted at /api/games/<id>; the core only lets GET through. */
+  publicRouter?(services: ServerServices): Router
   mcpTools?(services: ServerServices): McpToolDef[]
   /**
    * Async I/O step the runner awaits before init and before every action

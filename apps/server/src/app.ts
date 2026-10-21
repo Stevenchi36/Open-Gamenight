@@ -11,7 +11,7 @@ import express, { type ErrorRequestHandler, type Express } from 'express'
 import type { Auth } from './auth.ts'
 import type { Config } from './config.ts'
 import type { AppLogger } from './logger.ts'
-import { originCheck, realIp } from './middleware.ts'
+import { originCheck, rateLimit, RateLimiter, realIp } from './middleware.ts'
 import { createAdminRouter } from './routes/admin.ts'
 
 export interface AppDeps {
@@ -24,6 +24,20 @@ export interface AppDeps {
 
 export function createServices(deps: Pick<AppDeps, 'gamesDb' | 'logger'>, game: AnyGameModule): ServerServices {
   return { gameId: game.id, db: deps.gamesDb, ai: null, logger: deps.logger.child(game.id) }
+}
+
+/** /api/games/<gameId>/*: read-only game data for players (GET only, rate-limited per IP). */
+function createPublicGameRouter(deps: AppDeps) {
+  const router = express.Router()
+  router.use((req, res, next) => {
+    if (req.method === 'GET' || req.method === 'HEAD') return next()
+    res.status(405).json({ error: 'validation', message: 'Read-only' })
+  })
+  router.use(rateLimit(new RateLimiter({ windowMs: 60_000, max: 120 }), (_req, res) => String(res.locals.ip)))
+  for (const game of deps.games) {
+    if (game.publicRouter) router.use(`/${game.id}`, game.publicRouter(createServices(deps, game)))
+  }
+  return router
 }
 
 export function createApp(deps: AppDeps): Express {
@@ -50,6 +64,8 @@ export function createApp(deps: AppDeps): Express {
     '/api/admin',
     createAdminRouter({ config, auth, games, servicesFor: (game) => createServices(deps, game) }),
   )
+
+  app.use('/api/games', createPublicGameRouter(deps))
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'not_found', message: 'No such route' })

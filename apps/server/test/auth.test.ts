@@ -156,3 +156,13 @@ describe('auth rate limit', () => {
     }
   })
 })
+
+describe('public game routes', () => {
+  it('serves read-only game data to anyone, and refuses writes', async () => {
+    const res = await t.fetch('/api/games/imposter/categories')
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ library: [], builtin: expect.arrayContaining(['Animals', 'Toys']) })
+    const post = await t.fetch('/api/games/imposter/categories', { method: 'POST' })
+    expect(post.status).toBe(405)
+  })
+})

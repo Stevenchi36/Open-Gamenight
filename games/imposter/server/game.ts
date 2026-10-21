@@ -45,11 +45,8 @@ export interface SecretWord {
   hint: string
 }
 
-/** What prepareRound hands to init / next_round. */
-export interface PreparedWord extends SecretWord {
-  /** Sent to the host, e.g. "Library was empty, used built-in words". */
-  notice?: string
-}
+/** What prepareRound hands to init / next_round: a library word, or "use built-in words" with a notice for the host. */
+export type PreparedWord = (SecretWord & { notice?: string }) | { builtin: true; notice: string }
 
 interface Outcome {
   votes: Record<PlayerId, number>
@@ -131,7 +128,7 @@ function chooseWord(
   usedBuiltin: string[],
   usedWordIds: number[],
 ): { secret: SecretWord; usedBuiltin: string[]; usedWordIds: number[]; notice?: string } {
-  if (prepared) {
+  if (prepared && !('builtin' in prepared)) {
     const { notice, ...secret } = prepared
     return {
       secret,
@@ -140,12 +137,18 @@ function chooseWord(
       ...(notice ? { notice } : {}),
     }
   }
+  const notice = prepared?.notice
   const wanted = ctx.settings.category?.toLowerCase()
   const inCategory = BUILTIN_WORDS.filter((w) => !wanted || w.category.toLowerCase() === wanted)
   const pool = inCategory.length > 0 ? inCategory : BUILTIN_WORDS
   const fresh = pool.filter((w) => !usedBuiltin.includes(builtinKey(w)))
   const word = ctx.rng.pick(fresh.length > 0 ? fresh : pool)
-  return { secret: { id: null, ...word }, usedBuiltin: [...usedBuiltin, builtinKey(word)], usedWordIds }
+  return {
+    secret: { id: null, ...word },
+    usedBuiltin: [...usedBuiltin, builtinKey(word)],
+    usedWordIds,
+    ...(notice ? { notice } : {}),
+  }
 }
 
 function pickJudge(state: ImposterState, ctx: Ctx): PlayerId | null {

@@ -125,6 +125,7 @@ interface GameModule<S, A, V, Settings> {
   // Optional integrations, given core services:
   migrations?: Migration[]                          // tables in games.db, prefixed with `<id>_`
   adminRouter?(services: ServerServices): Router    // mounted at /api/admin/<id>, already behind requireAdmin + Origin check
+  publicRouter?(services: ServerServices): Router   // read-only player data (e.g. lobby category list) at /api/games/<id>; core allows GET only
   mcpTools?(services: ServerServices): McpToolDef[] // registered as `<id>_<tool>`
   prepareRound?(...)                                // async I/O step (e.g. picking a word from the DB) the runner calls
                                                     // before init/next-round, so reduce() itself stays pure
@@ -265,12 +266,12 @@ One process that registers every game's `mcpTools`, namespaced `<gameId>_<tool>`
 ```bash
 claude mcp add ws-family-games \
   --env GAMES_DB_PATH=/absolute/path/to/data/games.db \
-  -- node /absolute/path/to/apps/mcp/dist/server.js
+  -- node /absolute/path/to/apps/mcp/src/server.ts
 ```
 **Gotchas:**
 - With stdio, stdout *is* the protocol. Never `console.log` in the MCP process or anything it imports; use `console.error` (games use the injected logger, which writes to stderr).
 - Resolve the DB path from `GAMES_DB_PATH` (absolute); the client spawns the process from an unknown working directory.
-- It edits a local file, so it reaches the production library only where the file is: run it over SSH for prod (`claude mcp add ws-family-games -- ssh your-host node /path/apps/mcp/dist/server.js`, env set remotely), or use the admin panel in prod.
+- It edits a local file, so it reaches the production library only where the file is: run it over SSH for prod (`claude mcp add ws-family-games -- ssh your-host node /path/apps/mcp/src/server.ts`, env set remotely), or use the admin panel in prod.
 - Use the v2 server package `@modelcontextprotocol/server` (2.3.1 at time of writing), not the v1 `@modelcontextprotocol/sdk`. Check its docs for the v2 stdio transport and tool registration API before writing `server.ts`; v2's API differs from the v1 examples you'll find online.
 - **Stretch (not v1):** remote HTTP MCP via Better Auth's `mcp()` plugin (needs `jwt()` and `cimd()` plugins, an HTTPS `resource` URL, targets the MCP 2026-07-28 spec).
 

@@ -5,6 +5,7 @@ import { clientMessageSchema } from '@wsfg/core/protocol'
 import { games as registry } from '@wsfg/games/server'
 import type { SessionUser } from '../../src/auth.ts'
 import type { Clock, TimerHandle } from '../../src/clock.ts'
+import { migrateGamesDb, openDatabase } from '../../src/db.ts'
 import { createLogger } from '../../src/logger.ts'
 import { RateLimiter } from '../../src/middleware.ts'
 import { RoomManager, type Conn, type Room } from '../../src/rooms.ts'
@@ -83,11 +84,14 @@ export function createManager(
   options: { games?: readonly AnyGameModule[]; maxRooms?: number; maxRoomsPerUser?: number; joinLimit?: number } = {},
 ) {
   const clock = new ManualClock()
+  const games = options.games ?? registry
+  const db = openDatabase(':memory:')
+  migrateGamesDb(db, games)
   const rooms = new RoomManager({
-    games: options.games ?? registry,
+    games,
     config: { MAX_ROOMS: options.maxRooms ?? 50, MAX_ROOMS_PER_USER: options.maxRoomsPerUser ?? 2 },
     logger: createLogger('test', 'silent'),
-    servicesFor: (game) => ({ gameId: game.id, db: null as never, ai: null, logger: createLogger(game.id, 'silent') }),
+    servicesFor: (game) => ({ gameId: game.id, db, ai: null, logger: createLogger(game.id, 'silent') }),
     clock,
     joinLimiter: new RateLimiter({ windowMs: 60_000, max: options.joinLimit ?? 1000 }),
   })

@@ -58,6 +58,9 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **AI is optional.** Self-hosters without an API key still get a working platform.
 - **Generated words are reviewed by an admin before saving (UI path).** Keeps junk and spoiler hints out of the library.
 - **One stdio MCP server with namespaced tools from every game.** One registration covers all games; driving it from Claude Code needs no API key.
+- **The MCP process runs migrations on games.db at start and defaults GAMES_DB_PATH to <repo>/data/games.db.** It works before the web server has ever run, from any working directory.
+- **Games may expose a read-only `publicRouter` at /api/games/<id> (GET only, rate-limited).** The lobby's category picker needs library categories, and admin routes are the wrong place for player-facing data.
+- **prepareRound signals a library fallback as `{ builtin: true, notice }`; the pure reducer picks the built-in word with ctx.rng.** Repeat-avoidance for built-in words stays in game state, and the notice still comes from the game.
 - **Full v1 scope: game, auth, library, admin panel, AI generation, MCP.** Explicit choice to build it all in v1.
 
 ## Word Imposter rules
