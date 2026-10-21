@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+  - games/*
+
+# pnpm blocks dependency build scripts by default (strictDepBuilds: true).
+# better-sqlite3 is native and must download/compile its binding on install;
+# esbuild (via tsx) verifies its platform binary.
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true

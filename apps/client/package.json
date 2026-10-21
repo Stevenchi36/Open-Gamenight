@@ -1,0 +1,17 @@
+{
+  "name": "@wsfg/client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "better-auth": "^1.7.12",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0",
+    "vuetify": "^4.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.10",
+    "vite": "^8.3.4",
+    "vite-plugin-vuetify": "^2.1.3"
+  }
+}
