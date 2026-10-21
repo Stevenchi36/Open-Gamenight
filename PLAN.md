@@ -31,7 +31,9 @@ ws-family-games/
   apps/
     server/
       src/
-        index.ts               # Express app, Better Auth mount, static client, ws upgrade, SIGTERM handling
+        index.ts               # entry point: startServer() + SIGTERM/SIGINT wiring
+        server.ts              # startServer(): boot, HTTP app, rooms, ws, listen, shutdown (shared with tests)
+        app.ts                 # Express app: Better Auth mount, /api routes, static client
         auth.ts                # betterAuth({...}) (sessions, admin plugin, closed signup)
         middleware.ts          # requireSession, requireAdmin, originCheck, rate limits, real-IP
         db.ts                  # auth.db + games.db setup (WAL, busy_timeout), runs game migrations

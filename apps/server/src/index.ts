@@ -1,38 +1,13 @@
-/** Server entry point: boot, listen, shut down cleanly on SIGTERM/SIGINT. */
-import { createServer } from 'node:http'
-import { createApp, createServices } from './app.ts'
-import { boot } from './boot.ts'
+/** Server entry point: start, and shut down cleanly on SIGTERM/SIGINT. */
 import { loadConfig } from './config.ts'
-import { RoomManager } from './rooms.ts'
-import { attachWebSocket } from './ws.ts'
+import { startServer } from './server.ts'
 
-const booted = await boot(loadConfig())
-const { config, logger, auth, games } = booted
-const server = createServer(createApp(booted))
-const rooms = new RoomManager({
-  games,
-  config,
-  logger: logger.child('rooms'),
-  servicesFor: (game) => createServices(booted, game),
-})
-const ws = attachWebSocket(server, { config, auth, rooms, logger: logger.child('ws') })
+const running = await startServer(loadConfig())
 
-server.listen(config.PORT, () => {
-  logger.info(`listening on http://localhost:${config.PORT}`, { env: config.NODE_ENV })
-})
-
-let shuttingDown = false
-async function shutdown(signal: string) {
-  if (shuttingDown) return
-  shuttingDown = true
-  logger.info(`${signal} received, shutting down`)
+function onSignal(signal: string) {
+  running.booted.logger.info(`${signal} received`)
   setTimeout(() => process.exit(0), 5_000).unref()
-  await ws.shutdown()
-  server.close(() => {
-    booted.close()
-    process.exit(0)
-  })
-  server.closeAllConnections()
+  void running.shutdown().then(() => process.exit(0))
 }
-process.on('SIGTERM', () => void shutdown('SIGTERM'))
-process.on('SIGINT', () => void shutdown('SIGINT'))
+process.on('SIGTERM', () => onSignal('SIGTERM'))
+process.on('SIGINT', () => onSignal('SIGINT'))

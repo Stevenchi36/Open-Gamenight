@@ -32,6 +32,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **TypeScript everywhere, pnpm workspaces.** Shared protocol and view types can't drift between server and client.
 - **Vue 3 + Vite SPA with Vuetify 4, served by Express (one origin).** Vuetify covers almost every component needed; one origin means no CORS and simple cookies. Nuxt skipped since Express + `ws` already is the backend.
 - **Vitest for unit, core, auth and integration tests; no browser E2E in v1.** Covers the risky logic without the cost of Playwright.
+- **Startup and shutdown live in `startServer()` (server.ts); index.ts only wires signals to it.** Tests run the exact shutdown path in-process. Sending a real SIGTERM to a child process isn't testable on Windows, where it kills the process before handlers run.
 - **Relative imports use `.ts` extensions (`rewriteRelativeImportExtensions`, `erasableSyntaxOnly`); workspace packages export their TS source.** Works unchanged in Vite, Vitest, tsx and Node's native type stripping. The server build (milestone 4/5) must compile or bundle workspace packages for `dist/`.
 - **Latest stable packages, installed with `@latest`, lockfile committed.** Greenfield project; no reason to start behind. Exceptions are recorded here.
 - **Keep pnpm's default release-age policy, so "latest" can lag by about a day.** Holding back brand-new releases is a cheap supply-chain guard (on 2026-10-21 it resolved `vite` 8.3.4 and `@anthropic-ai/sdk` 0.135.0 because 8.3.5 and 0.137.0 were under 24h old).

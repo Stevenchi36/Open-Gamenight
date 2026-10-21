@@ -3,16 +3,15 @@
  * Used by auth route tests now and by the runner/integration tests later.
  */
 import { mkdtempSync, rmSync } from 'node:fs'
-import { createServer, type Server } from 'node:http'
-import type { AddressInfo } from 'node:net'
+import type { Server } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { AnyGameModule } from '@wsfg/core/contract'
-import { createApp, createServices } from '../../src/app.ts'
-import { boot, type Booted } from '../../src/boot.ts'
+import type { Booted } from '../../src/boot.ts'
 import { parseConfig, type Env } from '../../src/config.ts'
-import { RoomManager } from '../../src/rooms.ts'
-import { attachWebSocket, type WsOptions } from '../../src/ws.ts'
+import type { RoomManager } from '../../src/rooms.ts'
+import { startServer, type RunningServer } from '../../src/server.ts'
+import type { attachWebSocket, WsOptions } from '../../src/ws.ts'
 
 export const ORIGIN = 'http://localhost:5173'
 
@@ -24,6 +23,8 @@ export interface TestServer {
   ws: ReturnType<typeof attachWebSocket>
   /** ws://.../ws */
   wsUrl: string
+  /** The real SIGTERM path (restart notice, close sockets, stop HTTP, close DBs). */
+  shutdown: RunningServer['shutdown']
   /** Create an account directly (server-side admin API). */
   createUser(email: string, role: 'user' | 'admin', name?: string): Promise<{ id: string; email: string }>
   /** Sign in over HTTP; returns the Cookie header value. */
@@ -53,20 +54,14 @@ export async function startTestServer(
     GAMES_DB_PATH: join(dir, 'games.db'),
     ...options.env,
   })
-  const booted = await boot(config, {
+  const running = await startServer(config, {
     auth: { rateLimit: options.authRateLimit ?? false },
     ...(options.games ? { games: options.games } : {}),
+    ...(options.ws ? { ws: options.ws } : {}),
+    port: 0,
+    host: '127.0.0.1',
   })
-  const server = createServer(createApp(booted))
-  const rooms = new RoomManager({
-    games: booted.games,
-    config: booted.config,
-    logger: booted.logger,
-    servicesFor: (game) => createServices(booted, game),
-  })
-  const ws = attachWebSocket(server, { config: booted.config, auth: booted.auth, rooms, logger: booted.logger, ...options.ws })
-  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
-  const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+  const { booted, server, rooms, ws, url } = running
 
   const doFetch: TestServer['fetch'] = (path, init = {}) => {
     const { cookie, headers, ...rest } = init
@@ -83,6 +78,7 @@ export async function startTestServer(
     server,
     rooms,
     ws,
+    shutdown: running.shutdown,
     fetch: doFetch,
     async createUser(email, role, name = email.split('@')[0]!) {
       const { user } = await booted.auth.api.createUser({ body: { email, password: PASSWORD, name, role } })
@@ -102,9 +98,7 @@ export async function startTestServer(
     },
     async close() {
       ws.close()
-      server.closeAllConnections()
-      await new Promise<void>((resolve) => server.close(() => resolve()))
-      booted.close()
+      await running.shutdown()
       rmSync(dir, { recursive: true, force: true })
     },
   }
