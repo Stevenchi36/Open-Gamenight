@@ -7,6 +7,8 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Game contract is a pure reducer (`init` / `reduce` / `view`) with effects for timers.** Testable with seeded `rng`/`now`, and the core can guarantee secrecy by only ever sending `view()` output.
 - **Core sends only `view()` output, never raw state.** Secret-hiding is enforced in one place for every game, not remembered per game.
 - **Generic leak test in core.** Makes "games can't leak secrets" a platform guarantee checked in CI.
+- **Secrets are checked two ways: forbidden values and indistinguishable variants.** A string search catches a leaked word but not a leaked association like "this player id is the imposter"; comparing a viewer's view across states that differ only in the secret catches both.
+- **Client manifest (`client.ts`) is separate from the server contract (`contract.ts`).** The browser bundle and `vue-tsc` never pull in Express or `node:sqlite` types.
 - **Games import only from `packages/core` and their own folder.** Keeps Imposter usable as the reference example for future contributors.
 - **Static game registry (`games/index.ts`), no runtime discovery.** Type-safe, tree-shakeable, and adding a game is one line.
 - **Core protocol messages for room membership; one `action` envelope for game moves.** Core owns who is in the room; games own what happens in play, including game-level permission checks.
@@ -20,6 +22,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **TypeScript everywhere, pnpm workspaces.** Shared protocol and view types can't drift between server and client.
 - **Vue 3 + Vite SPA with Vuetify 4, served by Express (one origin).** Vuetify covers almost every component needed; one origin means no CORS and simple cookies. Nuxt skipped since Express + `ws` already is the backend.
 - **Vitest for unit, core, auth and integration tests; no browser E2E in v1.** Covers the risky logic without the cost of Playwright.
+- **Relative imports use `.ts` extensions (`rewriteRelativeImportExtensions`, `erasableSyntaxOnly`); workspace packages export their TS source.** Works unchanged in Vite, Vitest, tsx and Node's native type stripping. The server build (milestone 4/5) must compile or bundle workspace packages for `dist/`.
 - **Latest stable packages, installed with `@latest`, lockfile committed.** Greenfield project; no reason to start behind. Exceptions are recorded here.
 - **Keep pnpm's default release-age policy, so "latest" can lag by about a day.** Holding back brand-new releases is a cheap supply-chain guard (on 2026-10-21 it resolved `vite` 8.3.4 and `@anthropic-ai/sdk` 0.135.0 because 8.3.5 and 0.137.0 were under 24h old).
 - **Dependency build scripts allow-listed in `pnpm-workspace.yaml` (`allowBuilds`): `esbuild`.** pnpm blocks unreviewed build scripts; add a package here only after checking what its script does.

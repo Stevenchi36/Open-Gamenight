@@ -46,8 +46,11 @@ ws-family-games/
   packages/
     core/
       src/
-        contract.ts            # GameModule types (server + client manifests)
+        contract.ts            # server GameModule types, effects, secrets spec, registry checks
+        client.ts              # GameClientModule (client manifest), kept apart so the browser never sees server types
         protocol.ts            # wire message types + zod schemas (core messages, action envelope, state)
+        rng.ts                 # seeded Rng handed to games via ctx
+        testing/sim.ts         # synchronous in-memory runner for game tests (virtual clock, hooks, effects)
         testing/leak.ts        # generic secret-leak test harness for any game
   games/
     index.ts                   # static registry: export const games = [imposter]
@@ -460,7 +463,7 @@ Nothing about the domain, branding or deployment is hard-coded; everything self-
 ## 10. Testing (Vitest)
 - **Reducer unit tests** per game with seeded `rng` and fixed `now`. For Imposter: role assignment, both clue modes, clue validation (secret word, duplicates), turn skipping, voting and ties, judge selection (including host-is-imposter and judge disconnect), all three guess modes plus configurable points, a disconnected imposter during voting and guess check, timers in typed vs spoken mode.
 - **Core tests:** room lifecycle, reconnect, host transfer and automatic migration, game switching resets settings/scores, caps, rate limits, heartbeat termination of unresponsive sockets (marks the player disconnected), `maxPayload` rejection, and upgrade rejection for a bad Origin or path.
-- **Generic leak test** (`packages/core/testing/leak.ts`): for any game, play scripted/random action sequences and assert that each player's `view()` output never contains values the game's `secrets` spec forbids for that player in that phase. Run for every registered game.
+- **Generic leak test** (`packages/core/testing/leak.ts`): for any game, play random action sequences (moves supplied by the game's test, plus random disconnects and timer firings) and, after every step, check each viewer who may not see a secret: (a) **value check**, no string or object key in their `view()` equals a forbidden value (e.g. the secret word); (b) **variant check**, their `view()` is identical across states that differ only in the secret (e.g. who the imposter is, which a string search can't catch). Run for every registered game.
 - **Auth route tests:** guest 401, user 403, admin 200 on core and game admin routes; game routers can't escape the guard.
 - **Integration simulation:** boot the real server on a random port with temp SQLite files, drive real `ws` clients (1 logged-in host + 3 guests) through a full typed round and a full spoken round. Assert guests cannot `create_room`, only the judge can `judge_guess`, `submit_clue` is rejected in spoken mode, the imposter's messages **never** contain the secret word before RESULTS, and the SIGTERM notice is sent.
 - No browser E2E (Playwright) in v1.

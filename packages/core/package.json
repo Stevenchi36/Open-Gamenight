@@ -5,5 +5,19 @@
   "type": "module",
   "dependencies": {
     "zod": "^4.6.7"
+  },
+  "exports": {
+    "./contract": "./src/contract.ts",
+    "./client": "./src/client.ts",
+    "./protocol": "./src/protocol.ts",
+    "./rng": "./src/rng.ts",
+    "./testing": "./src/testing/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "vue": "^3.5.44"
   }
 }
