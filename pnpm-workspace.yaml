@@ -5,6 +5,9 @@ packages:
   - games/*
 
 # pnpm blocks dependency build scripts by default (strictDepBuilds: true).
-# esbuild (via tsx) verifies its platform binary.
+# Every entry here was reviewed: true = allowed, false = deliberately denied.
 allowBuilds:
+  # esbuild (via tsx) verifies its platform binary.
   esbuild: true
+  # Pulled in by sass-embedded; only used by Sass's CLI watch mode, which Vite doesn't use.
+  '@parcel/watcher': false

@@ -404,7 +404,7 @@ CREATE TABLE IF NOT EXISTS imposter_words (
 ## 8. Vue client (`apps/client`)
 
 ### Setup
-- Scaffold with `npm create vuetify@latest` (plain Vue/Vite, TypeScript, Vue Router), then move it into the workspace. Check the current Vuetify 4 install docs and generator prompts when running it.
+- Scaffolded with `create-vuetify` 3.2.1 (`--platform=vue --router=router --css=none --typescript`) and moved into the workspace: Vite + `vite-plugin-vuetify` (auto-import), Roboto via `unplugin-fonts`, MDI icons, CSS layers. Its own ESLint/`npm-run-all` setup was dropped in favour of the repo's.
 - Theming: Vuetify theme with a light/dark toggle (`useTheme`); primary color from `APP_PRIMARY_COLOR` (exposed via a small `/api/config` endpoint or injected at build). App bar title and `<title>` from `APP_NAME`.
 - `src/lib/auth-client.ts`:
   ```ts

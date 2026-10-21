@@ -73,6 +73,7 @@ describe('parseServerMessage', () => {
         you: { id: 'p1' },
       },
       game: null,
+      now: 1_700_000_000_000,
     }
     expect(parseServerMessage(JSON.stringify(state))).toEqual({ ok: true, message: state })
   })

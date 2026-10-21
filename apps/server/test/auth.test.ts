@@ -126,8 +126,10 @@ describe('core and game admin routes', () => {
   })
 
   it('serves /api/config publicly without secrets', async () => {
-    const body = await (await t.fetch('/api/config')).json()
-    expect(body).toEqual({ appName: 'Family Games', primaryColor: '#6750A4', aiEnabled: false })
+    const body = (await (await t.fetch('/api/config')).json()) as { games: { id: string }[] }
+    expect(body).toMatchObject({ appName: 'Family Games', primaryColor: '#6750A4', aiEnabled: false })
+    expect(body.games.map((g) => g.id)).toEqual(['imposter', 'probe'])
+    expect(JSON.stringify(body)).not.toContain(t.booted.config.BETTER_AUTH_SECRET)
   })
 
   it('returns JSON 404 for unknown API routes', async () => {

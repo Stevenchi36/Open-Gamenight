@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./server": "./index.ts"
+    "./server": "./index.ts",
+    "./client": "./client.ts"
   },
   "dependencies": {
     "@wsfg/core": "workspace:*",

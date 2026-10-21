@@ -5,7 +5,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import type { DatabaseSync } from 'node:sqlite'
-import type { AnyGameModule, ServerServices } from '@wsfg/core/contract'
+import { MAX_PLAYERS_CAP, type AnyGameModule, type ServerServices } from '@wsfg/core/contract'
 import { toNodeHandler } from 'better-auth/node'
 import express, { type ErrorRequestHandler, type Express } from 'express'
 import type { Auth } from './auth.ts'
@@ -57,6 +57,13 @@ export function createApp(deps: AppDeps): Express {
       appName: config.APP_NAME,
       primaryColor: config.APP_PRIMARY_COLOR,
       aiEnabled: !!config.ANTHROPIC_API_KEY,
+      games: games.map((g) => ({
+        id: g.id,
+        name: g.name,
+        description: g.description,
+        minPlayers: g.minPlayers,
+        maxPlayers: Math.min(g.maxPlayers, MAX_PLAYERS_CAP),
+      })),
     })
   })
 

@@ -12,6 +12,8 @@ export interface PlayViewProps<V = unknown, A = unknown> {
   send: (action: A) => void
   me: PlayerId
   room: RoomView
+  /** Server clock in ms (corrected for this device's clock skew), for countdowns against server deadlines. */
+  serverNow: () => number
 }
 
 /** Props the lobby passes to a game's SettingsView. */

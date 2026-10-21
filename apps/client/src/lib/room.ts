@@ -1,0 +1,226 @@
+/**
+ * The room store: owns the one websocket, reconnects with the stored token,
+ * and exposes the latest room + game views. A reactive object is enough here.
+ *
+ * Flow: connect() opens the socket; on open we resend `reconnect` if we have a
+ * saved { code, token }. Drops retry with backoff; close code 1012 means the
+ * server is restarting (shown as a calm message instead of a spinner).
+ */
+import type { ClientMessage, RoomView, ServerMessage, SessionUser } from '@wsfg/core/protocol'
+import { parseServerMessage } from '@wsfg/core/protocol'
+import { reactive } from 'vue'
+import { load, remove, save } from './storage.ts'
+
+const SAVED_KEY = 'wsfg.room'
+const NAME_KEY = 'wsfg.name'
+
+export type ConnectionStatus = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'restarting'
+
+interface SavedRoom {
+  code: string
+  token: string
+}
+
+export interface Toast {
+  text: string
+  color: 'error' | 'info' | 'warning' | 'success'
+  timeout?: number
+}
+
+const state = reactive({
+  status: 'idle' as ConnectionStatus,
+  user: null as SessionUser | null,
+  room: null as RoomView | null,
+  game: null as unknown,
+  playerId: null as string | null,
+  /** server clock minus local clock, ms */
+  clockOffset: 0,
+  /** Set when the server told us we're out (kicked, room closed, other tab). */
+  removedReason: null as string | null,
+  toasts: [] as Toast[],
+})
+
+/** Treat as read-only outside this file; change it through the functions below. */
+export const roomState = state
+/** VSnackbarQueue needs a writable array. */
+export const toasts = state.toasts
+
+let socket: WebSocket | null = null
+let retries = 0
+let retryTimer: ReturnType<typeof setTimeout> | null = null
+let wanted = false
+let reconnecting: SavedRoom | null = null
+/** The server announced a restart; the next failed reconnect means the room ended. */
+let restarted = false
+const queue: ClientMessage[] = []
+type Waiter = { resolve: (code: string) => void; reject: (error: Error) => void }
+let joinWaiter: Waiter | null = null
+
+export function toast(text: string, color: Toast['color'] = 'info'): void {
+  state.toasts.push({ text, color, timeout: color === 'error' ? 6000 : 4000 })
+}
+
+export function serverNow(): number {
+  return Date.now() + state.clockOffset
+}
+
+export function savedRoom(): SavedRoom | null {
+  return load<SavedRoom>(SAVED_KEY)
+}
+
+export function lastName(): string {
+  return load<string>(NAME_KEY) ?? ''
+}
+
+/** Open the socket (idempotent). */
+export function connect(): void {
+  wanted = true
+  if (socket && socket.readyState <= WebSocket.OPEN) return
+  open()
+}
+
+/** Reopen the socket so the server re-reads the session cookie (after sign-in/out). */
+export function refreshSession(): void {
+  if (!socket) return connect()
+  const old = socket
+  socket = null
+  old.close(1000, 'session changed')
+  open()
+}
+
+export function send(message: ClientMessage): void {
+  if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message))
+  else {
+    queue.push(message)
+    connect()
+  }
+}
+
+export function sendAction(action: unknown): void {
+  send({ type: 'action', action })
+}
+
+export function createRoom(gameId: string, name: string): Promise<string> {
+  save(NAME_KEY, name)
+  return request({ type: 'create_room', gameId, name })
+}
+
+export function joinRoom(code: string, name: string): Promise<string> {
+  save(NAME_KEY, name)
+  return request({ type: 'join_room', code, name })
+}
+
+export function leaveRoom(): void {
+  send({ type: 'leave' })
+  clearRoom(null)
+}
+
+/** Forget a remembered room without telling the server (e.g. it no longer exists). */
+export function forgetRoom(): void {
+  remove(SAVED_KEY)
+}
+
+// ---------------------------------------------------------------- internals
+
+function request(message: ClientMessage): Promise<string> {
+  joinWaiter?.reject(new Error('Superseded'))
+  return new Promise((resolve, reject) => {
+    joinWaiter = { resolve, reject }
+    state.removedReason = null
+    send(message)
+  })
+}
+
+function open(): void {
+  if (retryTimer) clearTimeout(retryTimer)
+  retryTimer = null
+  if (state.status !== 'restarting') state.status = retries === 0 ? 'connecting' : 'reconnecting'
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+  const ws = new WebSocket(`${proto}://${location.host}/ws`)
+  socket = ws
+
+  ws.onopen = () => {
+    if (socket !== ws) return
+    retries = 0
+    state.status = 'open'
+    const saved = savedRoom()
+    if (saved) {
+      reconnecting = saved
+      ws.send(JSON.stringify({ type: 'reconnect', code: saved.code, token: saved.token } satisfies ClientMessage))
+    }
+    for (const message of queue.splice(0)) ws.send(JSON.stringify(message))
+  }
+  ws.onmessage = (event) => {
+    const parsed = parseServerMessage(String(event.data))
+    if (parsed.ok) handle(parsed.message)
+  }
+  ws.onclose = (event) => {
+    if (socket !== ws) return
+    socket = null
+    if (event.code === 1012) restarted = true
+    state.status = restarted ? 'restarting' : 'reconnecting'
+    if (!wanted) return
+    const delay = Math.min(10_000, 500 * 2 ** retries) + Math.random() * 300
+    retries++
+    retryTimer = setTimeout(open, delay)
+  }
+}
+
+function handle(message: ServerMessage): void {
+  switch (message.type) {
+    case 'session':
+      state.user = message.user
+      return
+    case 'joined':
+      save(SAVED_KEY, { code: message.code, token: message.token })
+      reconnecting = null
+      restarted = false
+      state.playerId = message.playerId
+      state.removedReason = null
+      joinWaiter?.resolve(message.code)
+      joinWaiter = null
+      return
+    case 'state':
+      state.room = message.room
+      state.game = message.game
+      state.playerId = message.room.you.id
+      state.clockOffset = message.now - Date.now()
+      return
+    case 'error':
+      if (reconnecting && message.code === 'not_found') {
+        // our saved room is gone; forget it (and say why if the server restarted)
+        reconnecting = null
+        const reason = restarted ? 'The server restarted, so that room has ended. Start a new one.' : null
+        restarted = false
+        clearRoom(reason)
+        if (reason) toast(reason, 'warning')
+        if (!joinWaiter) return
+      }
+      if (joinWaiter) {
+        joinWaiter.reject(new Error(message.message))
+        joinWaiter = null
+        return
+      }
+      toast(message.message, message.code === 'game' || message.code === 'validation' ? 'warning' : 'error')
+      return
+    case 'notice':
+      if (message.kind === 'removed') {
+        clearRoom(message.message)
+        toast(message.message, 'warning')
+      } else if (message.kind === 'server_restarting') {
+        state.status = 'restarting'
+        restarted = true
+      } else {
+        toast(message.message, message.kind === 'warning' ? 'warning' : 'info')
+      }
+      return
+  }
+}
+
+function clearRoom(reason: string | null): void {
+  remove(SAVED_KEY)
+  state.room = null
+  state.game = null
+  state.playerId = null
+  state.removedReason = reason
+}

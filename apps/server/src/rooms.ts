@@ -471,7 +471,12 @@ export class RoomManager {
     if (room.closed) return
     for (const player of room.players) {
       if (!player.conn) continue
-      player.conn.send({ type: 'state', room: this.roomView(room, player.id), game: this.runner.view(room, player.id) })
+      player.conn.send({
+        type: 'state',
+        room: this.roomView(room, player.id),
+        game: this.runner.view(room, player.id),
+        now: this.clock.now(),
+      })
     }
   }
 

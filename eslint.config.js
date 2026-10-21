@@ -6,7 +6,8 @@ import globals from 'globals'
 export default defineConfigWithVueTs(
   { ignores: ['**/dist/**', '**/node_modules/**', 'data/**', 'coverage/**'] },
   js.configs.recommended,
-  pluginVue.configs['flat/recommended'],
+  // correctness rules only; template formatting is left to the author
+  pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
   {
     languageOptions: { globals: { ...globals.node } },
