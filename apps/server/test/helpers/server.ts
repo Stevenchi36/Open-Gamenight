@@ -7,6 +7,7 @@ import type { Server } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { AnyGameModule } from '@wsfg/core/contract'
+import type { MessagesClient } from '../../src/ai.ts'
 import type { Booted } from '../../src/boot.ts'
 import { parseConfig, type Env } from '../../src/config.ts'
 import type { RoomManager } from '../../src/rooms.ts'
@@ -41,6 +42,8 @@ export async function startTestServer(
     games?: readonly AnyGameModule[]
     authRateLimit?: boolean
     ws?: Partial<Pick<WsOptions, 'heartbeatMs' | 'maxConnectionsPerIp' | 'messagesPerSecond'>>
+    /** Fake Anthropic client: turns AI features on without a key. */
+    aiClient?: MessagesClient
   } = {},
 ): Promise<TestServer> {
   const dir = mkdtempSync(join(tmpdir(), 'wsfg-test-'))
@@ -58,6 +61,7 @@ export async function startTestServer(
     auth: { rateLimit: options.authRateLimit ?? false },
     ...(options.games ? { games: options.games } : {}),
     ...(options.ws ? { ws: options.ws } : {}),
+    ...(options.aiClient ? { aiClient: options.aiClient } : {}),
     port: 0,
     host: '127.0.0.1',
   })

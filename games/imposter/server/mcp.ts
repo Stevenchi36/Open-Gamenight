@@ -1,11 +1,12 @@
 /**
  * MCP tools for the word library, registered as imposter_<name> by apps/mcp.
  * Driven from Claude Code/Desktop, Claude writes the words itself, so adding
- * words needs no API key. Generation (needs the key) arrives with the AI service.
+ * words needs no API key. imposter_generate_words exists only when the AI
+ * service does (ANTHROPIC_API_KEY set) and saves directly, within the daily cap.
  */
 import type { McpToolDef, ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
-import { addWords, listCategories, listWords, LOW_STOCK_THRESHOLD, removeWords } from './library.ts'
+import { addWords, generateWords, listCategories, listWords, LOW_STOCK_THRESHOLD, MAX_GENERATE, removeWords } from './library.ts'
 
 const wordInput = z.object({
   category: z.string().describe('Category, e.g. "Animals". Reuse existing category names where they fit.'),
@@ -23,10 +24,15 @@ const searchSchema = z.object({
   limit: z.number().int().min(1).max(200).optional(),
 })
 const removeSchema = z.object({ ids: z.array(z.number().int()).min(1).max(500) })
+const generateSchema = z.object({
+  count: z.number().int().min(1).max(MAX_GENERATE),
+  category: z.string().optional(),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+})
 
 export function mcpTools(services: ServerServices): McpToolDef[] {
-  const { db } = services
-  return [
+  const { db, ai } = services
+  const tools: McpToolDef[] = [
     {
       name: 'add_words',
       description:
@@ -58,4 +64,25 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
       handler: async (args) => ({ removed: removeWords(db, removeSchema.parse(args).ids) }),
     },
   ]
+  if (ai) {
+    tools.push({
+      name: 'generate_words',
+      description:
+        'Generate words with the server-side Claude API and save them directly (counts against the daily AI token cap). ' +
+        'Usually unnecessary from Claude Code/Desktop: you can write words yourself and call add_words.',
+      inputSchema: generateSchema,
+      handler: async (args) => {
+        const { count, category, difficulty } = generateSchema.parse(args)
+        const { candidates, skipped } = await generateWords(ai, db, {
+          count,
+          category: category ?? null,
+          difficulty: difficulty ?? null,
+          userId: null,
+        })
+        const saved = addWords(db, candidates, 'claude')
+        return { inserted: saved.inserted, skipped: [...skipped, ...saved.skipped] }
+      },
+    })
+  }
+  return tools
 }

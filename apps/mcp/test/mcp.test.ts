@@ -27,7 +27,8 @@ beforeAll(async () => {
     new StdioClientTransport({
       command: process.execPath,
       args: [join(import.meta.dirname, '..', 'src', 'server.ts')],
-      env: { GAMES_DB_PATH: dbPath, PATH: process.env.PATH ?? '' },
+      // empty key: the repo .env never overrides it, so generate_words stays unregistered here
+      env: { GAMES_DB_PATH: dbPath, ANTHROPIC_API_KEY: '', PATH: process.env.PATH ?? '' },
       stderr: 'pipe',
     }),
   )

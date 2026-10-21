@@ -103,6 +103,14 @@ export interface Migration {
   sql: string
 }
 
+/** The signed-in admin, as `res.locals.user` inside a game's adminRouter. */
+export interface AdminUser {
+  id: string
+  name: string
+  email: string
+  role: 'admin'
+}
+
 export interface Logger {
   info(message: string, extra?: Record<string, unknown>): void
   warn(message: string, extra?: Record<string, unknown>): void
@@ -113,6 +121,22 @@ export interface AiToolSpec<T> {
   name: string
   description: string
   inputSchema: ZodType<T>
+}
+
+export type AiErrorCode = 'cap' | 'rate_limited' | 'invalid' | 'refused' | 'api'
+
+/**
+ * Thrown by AiService.generate. 'cap': the daily output-token cap is used up.
+ * 'rate_limited': this admin's hourly limit (or Anthropic's). 'invalid': the
+ * model didn't return a valid tool call. 'refused': the model declined.
+ * 'api': any other API/network failure.
+ */
+export class AiError extends Error {
+  readonly code: AiErrorCode
+  constructor(code: AiErrorCode, message: string) {
+    super(message)
+    this.code = code
+  }
 }
 
 /** Shared AI service, already bound to the calling game's id. */
@@ -166,7 +190,10 @@ export interface GameModule<S, A, V, Settings, P = undefined> {
   secrets?: SecretSpec<S>
 
   migrations?: Migration[]
-  /** Mounted at /api/admin/<id>, already behind requireAdmin and the Origin check. */
+  /**
+   * Mounted at /api/admin/<id>, already behind requireAdmin and the Origin check.
+   * JSON bodies are parsed. `res.locals.user` is the signed-in admin (AdminUser).
+   */
   adminRouter?(services: ServerServices): Router
   /** Read-only data for players (e.g. lobby pickers). Mounted at /api/games/<id>; the core only lets GET through. */
   publicRouter?(services: ServerServices): Router

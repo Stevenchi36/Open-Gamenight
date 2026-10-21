@@ -5,6 +5,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import type { DatabaseSync } from 'node:sqlite'
+import type { AiCore } from './ai.ts'
 import { MAX_PLAYERS_CAP, type AnyGameModule, type ServerServices } from '@wsfg/core/contract'
 import { toNodeHandler } from 'better-auth/node'
 import express, { type ErrorRequestHandler, type Express } from 'express'
@@ -20,10 +21,11 @@ export interface AppDeps {
   gamesDb: DatabaseSync
   games: readonly AnyGameModule[]
   logger: AppLogger
+  ai: AiCore | null
 }
 
-export function createServices(deps: Pick<AppDeps, 'gamesDb' | 'logger'>, game: AnyGameModule): ServerServices {
-  return { gameId: game.id, db: deps.gamesDb, ai: null, logger: deps.logger.child(game.id) }
+export function createServices(deps: Pick<AppDeps, 'gamesDb' | 'logger' | 'ai'>, game: AnyGameModule): ServerServices {
+  return { gameId: game.id, db: deps.gamesDb, ai: deps.ai?.forGame(game.id) ?? null, logger: deps.logger.child(game.id) }
 }
 
 /** /api/games/<gameId>/*: read-only game data for players (GET only, rate-limited per IP). */
@@ -56,7 +58,7 @@ export function createApp(deps: AppDeps): Express {
     res.json({
       appName: config.APP_NAME,
       primaryColor: config.APP_PRIMARY_COLOR,
-      aiEnabled: !!config.ANTHROPIC_API_KEY,
+      aiEnabled: !!deps.ai,
       games: games.map((g) => ({
         id: g.id,
         name: g.name,
@@ -69,7 +71,7 @@ export function createApp(deps: AppDeps): Express {
 
   app.use(
     '/api/admin',
-    createAdminRouter({ config, auth, games, servicesFor: (game) => createServices(deps, game) }),
+    createAdminRouter({ config, auth, games, ai: deps.ai, servicesFor: (game) => createServices(deps, game) }),
   )
 
   app.use('/api/games', createPublicGameRouter(deps))

@@ -25,6 +25,7 @@
   "exports": {
     "./db": "./src/db.ts",
     "./logger": "./src/logger.ts",
-    "./config": "./src/config.ts"
+    "./config": "./src/config.ts",
+    "./ai": "./src/ai.ts"
   }
 }

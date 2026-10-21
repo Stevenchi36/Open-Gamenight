@@ -256,7 +256,7 @@ Optional: if `ANTHROPIC_API_KEY` is unset, generation features are hidden in the
 ```ts
 ai.generate({ gameId, userId, system, prompt, tool }) -> Promise<ToolInput>
 ```
-- `messages.create` with one **forced tool**; returns the tool's input.
+- `messages.create` with **one tool**, `strict: true`, `tool_choice: auto` and the prompt telling Claude to call it; the service verifies the call and validates the input with the tool's zod schema before returning it. (Forced `tool_choice` `any`/`tool` returns a 400 on several current models, e.g. Opus 5.5 / Sonnet 5.5, and `ANTHROPIC_MODEL` is configurable.)
 - Model from `ANTHROPIC_MODEL` (default `claude-haiku-5-5`).
 - **Daily cap in output tokens** across all games and admins (`AI_DAILY_OUTPUT_TOKEN_CAP`), computed from `usage.output_tokens` in `ai_usage`. Requests are refused once the cap is hit. Plus a per-admin rate limit (`AI_PER_ADMIN_CALLS_PER_HOUR`).
 - Logs every call to `ai_usage { id, game_id, user_id, model, input_tokens, output_tokens, created_at }`.

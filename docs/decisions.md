@@ -60,6 +60,11 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **No ORM: plain SQL migrations and prepared statements behind typed service functions (`library.ts`, `ai.ts`).** A handful of tables and queries, per-game migrations owned by each game, and live game state in memory leave an ORM little to do. If later games need relational data, add Kysely (already installed via Better Auth) as a query builder.
 - **Shared AI service caps daily output tokens (plus per-admin rate limit) and logs to `ai_usage`.** Tokens are game-neutral and close to real spend; per-call limits in game units stay in each game.
 - **AI is optional.** Self-hosters without an API key still get a working platform.
+- **AI calls use one strict tool with `tool_choice: auto`, not a forced tool, and validate the result.** Forced tool choice is rejected by several current models and the model is configurable. A missing or malformed call becomes `AiError('invalid')`, and generation retries once.
+- **`AiError` (codes `cap`, `rate_limited`, `invalid`, `refused`, `api`) lives in packages/core.** Games map AI failures to HTTP statuses without importing server code.
+- **Usage is logged even when the response is unusable, and the per-admin limit is counted from `ai_usage`.** Tokens were spent either way, and the limits survive restarts.
+- **Game admin routers read the signed-in admin from `res.locals.user` (`AdminUser` in the contract).** The core already resolved it in requireAdmin; games don't re-check sessions.
+- **The MCP process reads the repo `.env` (without overriding its own env), so `imposter_generate_words` appears when the server has a key.** One place to configure the key, model and caps.
 - **Generated words are reviewed by an admin before saving (UI path).** Keeps junk and spoiler hints out of the library.
 - **One stdio MCP server with namespaced tools from every game.** One registration covers all games; driving it from Claude Code needs no API key.
 - **The MCP process runs migrations on games.db at start and defaults GAMES_DB_PATH to <repo>/data/games.db.** It works before the web server has ever run, from any working directory.

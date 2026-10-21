@@ -10,6 +10,7 @@
           :aria-label="isDark ? 'Light theme' : 'Dark theme'"
           @click="toggleTheme"
         />
+        <v-btn v-if="isAdmin" icon="mdi-shield-crown-outline" to="/admin" aria-label="Admin" />
         <v-btn v-if="!user && route.name !== 'login'" variant="text" to="/login">Sign in</v-btn>
         <v-menu v-else-if="user">
           <template #activator="{ props }">
@@ -59,6 +60,7 @@ const theme = useTheme()
 const session = authClient.useSession()
 
 const user = computed(() => session.value.data?.user ?? null)
+const isAdmin = computed(() => (user.value as { role?: string } | null)?.role === 'admin')
 const isDark = computed(() => theme.global.current.value.dark)
 
 function toggleTheme() {

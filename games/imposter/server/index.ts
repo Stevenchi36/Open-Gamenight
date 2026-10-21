@@ -1,13 +1,14 @@
 /**
  * The full Imposter module: the pure game (game.ts) plus its I/O integrations,
  * which the core wires up: migrations, prepareRound (word from the library),
- * a public categories route for the lobby, and MCP tools.
+ * a public categories route for the lobby, admin routes, and MCP tools.
  */
 import { defineGame } from '@wsfg/core/contract'
 import express from 'express'
 import { BUILTIN_CATEGORIES } from './builtin-words.ts'
 import { imposter as game, type ImposterAction, type ImposterState, type PreparedWord } from './game.ts'
 import { countWords, listCategories, pickWord } from './library.ts'
+import { adminRouter } from './admin.ts'
 import { mcpTools } from './mcp.ts'
 import { migrations } from './migrations.ts'
 import type { ImposterSettings, ImposterView } from '../shared/index.ts'
@@ -16,6 +17,7 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
   ...game,
   migrations,
   mcpTools,
+  adminRouter,
 
   async prepareRound(request, { settings, services }) {
     const newRound = request.trigger === 'init' || request.action.type === 'next_round'

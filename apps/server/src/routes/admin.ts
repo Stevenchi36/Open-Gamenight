@@ -7,6 +7,7 @@
  */
 import type { AnyGameModule, ServerServices } from '@wsfg/core/contract'
 import express, { type Router } from 'express'
+import type { AiCore } from '../ai.ts'
 import type { Auth } from '../auth.ts'
 import type { Config } from '../config.ts'
 import { originCheck, rateLimit, RateLimiter, requireAdmin, sessionUser } from '../middleware.ts'
@@ -15,10 +16,11 @@ export interface AdminRouterDeps {
   config: Config
   auth: Auth
   games: readonly AnyGameModule[]
+  ai: AiCore | null
   servicesFor: (game: AnyGameModule) => ServerServices
 }
 
-export function createAdminRouter({ config, auth, games, servicesFor }: AdminRouterDeps): Router {
+export function createAdminRouter({ config, auth, games, ai, servicesFor }: AdminRouterDeps): Router {
   const router = express.Router()
   router.use(originCheck(config))
   router.use(requireAdmin(auth))
@@ -28,8 +30,13 @@ export function createAdminRouter({ config, auth, games, servicesFor }: AdminRou
   router.get('/status', (_req, res) => {
     res.json({
       games: games.map((g) => ({ id: g.id, name: g.name, hasAdmin: !!g.adminRouter })),
-      aiEnabled: !!config.ANTHROPIC_API_KEY,
+      aiEnabled: !!ai,
     })
+  })
+
+  /** Today's AI spend against the daily output-token cap. */
+  router.get('/ai/usage', (_req, res) => {
+    res.json(ai ? { enabled: true, ...ai.usageToday() } : { enabled: false })
   })
 
   for (const game of games) {

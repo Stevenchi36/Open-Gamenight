@@ -1,9 +1,11 @@
 /**
  * Word library service over imposter_words. Shared by prepareRound, the MCP
- * tools and (later) the admin routes, so every path validates the same way.
+ * tools and the admin routes, so every path validates the same way.
  * Synchronous: node:sqlite is synchronous and the queries are tiny.
  */
 import type { DatabaseSync } from 'node:sqlite'
+import { AiError, type AiService } from '@wsfg/core/contract'
+import { z } from 'zod'
 import { validateWord, type WordInput } from './validate.ts'
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
@@ -140,4 +142,123 @@ export function pickWord(db: DatabaseSync, options: { category?: string | null; 
 
 export function countWords(db: DatabaseSync): number {
   return (db.prepare('SELECT COUNT(*) AS n FROM imposter_words').get() as { n: number }).n
+}
+
+// ---------------------------------------------------------------- generation
+
+export const MAX_GENERATE = 50
+
+export interface GenerateRequest {
+  count: number
+  category?: string | null
+  difficulty?: Difficulty | null
+  userId: string | null
+}
+
+export interface Candidate {
+  category: string
+  word: string
+  hint: string
+  difficulty: Difficulty
+}
+
+const generatedSchema = z.object({
+  words: z.array(
+    z.object({
+      category: z.string(),
+      word: z.string(),
+      hint: z.string(),
+      difficulty: z.enum(['easy', 'medium', 'hard']),
+    }),
+  ),
+})
+
+const SYSTEM = `You write word lists for Word Imposter, a party game for families and friends.
+Everyone except the imposter sees a secret word; the imposter only sees the category and a vague hint, and has to bluff.
+
+Rules for each entry:
+- word: a concrete, widely known thing (nouns preferred), 1-3 words, under 30 characters. Family friendly.
+- category: short, under 40 characters. Stay inside the requested category when one is given.
+- hint: vague enough not to give the word away, but enough for the imposter to bluff a clue. Under 120 characters. Never contains the word itself or an obvious form of it.
+- difficulty: easy (everyone knows it, many easy clues), medium, or hard (still well known, but trickier to clue).
+- No duplicates, and nothing from the avoid list.`
+
+/**
+ * Ask the AI service for candidates. They are NOT saved: the admin reviews and
+ * saves them (POST /words). Output is validated and de-duplicated against the
+ * library; one retry if nothing usable comes back, then an error.
+ */
+export async function generateWords(
+  ai: AiService,
+  db: DatabaseSync,
+  request: GenerateRequest,
+): Promise<{ candidates: Candidate[]; skipped: AddResult['skipped'] }> {
+  const count = Math.min(Math.max(1, Math.floor(request.count)), MAX_GENERATE)
+  const category = request.category?.trim() || null
+  const avoid = category
+    ? listWords(db, { category, limit: MAX_PAGE_SIZE }).words.map((w) => w.word)
+    : []
+  const known = listCategories(db).map((c) => c.category)
+
+  const prompt = [
+    `Write ${count} new entries${category ? ` in the category "${category}"` : ' across a few fun, varied categories'}.`,
+    request.difficulty ? `Difficulty: ${request.difficulty} for all of them.` : 'Mix the difficulties.',
+    !category && known.length ? `Existing categories (reuse these names where they fit): ${known.join(', ')}.` : '',
+    avoid.length ? `Avoid these words, already in the library: ${avoid.join(', ')}.` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  let lastError: Error | null = null
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let output: z.infer<typeof generatedSchema>
+    try {
+      output = await ai.generate({
+        userId: request.userId,
+        system: SYSTEM,
+        prompt,
+        tool: { name: 'submit_words', description: 'Submit the generated word entries.', inputSchema: generatedSchema },
+      })
+    } catch (error) {
+      if (error instanceof AiError && error.code === 'invalid') {
+        lastError = error
+        continue // retry once on a malformed response; cap/rate/refusal errors are final
+      }
+      throw error
+    }
+    const result = screenCandidates(db, output.words, category)
+    if (result.candidates.length > 0) {
+      return { candidates: result.candidates.slice(0, count), skipped: result.skipped }
+    }
+    lastError = new AiError('invalid', 'The generated words were all invalid or already in the library.')
+  }
+  throw lastError ?? new AiError('invalid', 'Generation failed.')
+}
+
+/** Validate generated entries, drop ones already in the library or repeated in the batch. */
+export function screenCandidates(
+  db: DatabaseSync,
+  entries: WordInput[],
+  category: string | null,
+): { candidates: Candidate[]; skipped: AddResult['skipped'] } {
+  const exists = db.prepare('SELECT 1 FROM imposter_words WHERE category = ? COLLATE NOCASE AND word = ? COLLATE NOCASE')
+  const seen = new Set<string>()
+  const candidates: Candidate[] = []
+  const skipped: AddResult['skipped'] = []
+  for (const entry of entries) {
+    const checked = validateWord(category ? { ...entry, category } : entry)
+    if (!checked.ok) {
+      skipped.push({ word: String(entry.word ?? ''), category: String(entry.category ?? ''), reason: checked.error })
+      continue
+    }
+    const { word, category: cat } = checked.value
+    const key = `${cat}|${word}`.toLowerCase()
+    if (seen.has(key) || exists.get(cat, word)) {
+      skipped.push({ word, category: cat, reason: 'Already in the library' })
+      continue
+    }
+    seen.add(key)
+    candidates.push(checked.value)
+  }
+  return { candidates, skipped }
 }

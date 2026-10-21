@@ -4,6 +4,7 @@
  */
 import { assertValidRegistry, type AnyGameModule } from '@wsfg/core/contract'
 import { games as registry } from '@wsfg/games/server'
+import { createAiCore, type MessagesClient } from './ai.ts'
 import { createAuth, type AuthOptions } from './auth.ts'
 import type { Config } from './config.ts'
 import { migrateGamesDb, openDatabase } from './db.ts'
@@ -13,6 +14,8 @@ export interface BootOptions {
   auth?: AuthOptions
   /** Defaults to the static registry; tests pass extra games. */
   games?: readonly AnyGameModule[]
+  /** Fake Anthropic client for tests (enables AI without a key). */
+  aiClient?: MessagesClient
 }
 
 export async function boot(config: Config, options: BootOptions = {}) {
@@ -24,12 +27,18 @@ export async function boot(config: Config, options: BootOptions = {}) {
   const gamesDb = openDatabase(config.gamesDbPath)
   const auth = await createAuth(config, authDb, options.auth)
   migrateGamesDb(gamesDb, games, logger.child('db'))
+  const ai = createAiCore({
+    config,
+    db: gamesDb,
+    logger: logger.child('ai'),
+    ...(options.aiClient ? { client: options.aiClient } : {}),
+  })
 
   const close = () => {
     authDb.close()
     gamesDb.close()
   }
-  return { config, logger, auth, authDb, gamesDb, games, close }
+  return { config, logger, auth, authDb, gamesDb, games, ai, close }
 }
 
 export type Booted = Awaited<ReturnType<typeof boot>>

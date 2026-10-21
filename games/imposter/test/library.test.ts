@@ -3,7 +3,8 @@ import { createSim } from '@wsfg/core/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { imposter as pureGame } from '../server/game.ts'
 import { imposter } from '../server/index.ts'
-import { addWords, listCategories, listWords, pickWord, removeWords } from '../server/library.ts'
+import { AiError } from '@wsfg/core/contract'
+import { addWords, generateWords, listCategories, listWords, pickWord, removeWords } from '../server/library.ts'
 import { migrations } from '../server/migrations.ts'
 import { defaultSettings, type ImposterSettings } from '../shared/index.ts'
 
@@ -129,5 +130,49 @@ describe('prepareRound', () => {
     expect(sim.state.secret).toMatchObject({ id: null, category: 'Toys' })
     expect(sim.noticesFor('p1')).toEqual(['Library empty'])
     expect(sim.noticesFor('p2')).toEqual([])
+  })
+})
+
+describe('generateWords', () => {
+  const entry = (word: string, hint = 'Something vague', category = 'Space') => ({ category, word, hint, difficulty: 'easy' as const })
+  const fakeAi = (...replies: (unknown | Error)[]) => {
+    const calls: unknown[] = []
+    return {
+      calls,
+      ai: {
+        async generate(request: unknown) {
+          calls.push(request)
+          const next = replies.shift()
+          if (next instanceof Error) throw next
+          return next as never
+        },
+      },
+    }
+  }
+
+  it('returns screened candidates, capped to the requested count', async () => {
+    addWords(db, [{ category: 'Space', word: 'Comet', hint: 'Has a long tail' }])
+    const { ai, calls } = fakeAi({ words: [entry('Comet'), entry('Nebula'), entry('nebula'), entry('Pulsar'), entry('Quasar')] })
+    const result = await generateWords(ai, db, { count: 2, category: 'Space', userId: 'a1' })
+    expect(result.candidates.map((c) => c.word)).toEqual(['Nebula', 'Pulsar'])
+    expect(result.skipped.map((s) => s.word)).toEqual(['Comet', 'nebula'])
+    expect(JSON.stringify(calls[0])).toContain('Comet') // avoid-list in the prompt
+    expect(listWords(db).total).toBe(1) // nothing saved
+  })
+
+  it('retries once on an invalid response, then errors', async () => {
+    const ok = fakeAi(new AiError('invalid', 'bad'), { words: [entry('Nebula')] })
+    expect((await generateWords(ok.ai, db, { count: 1, userId: null })).candidates).toHaveLength(1)
+    expect(ok.calls).toHaveLength(2)
+
+    const bad = fakeAi({ words: [entry('Moon', 'The moon')] }, { words: [] })
+    await expect(generateWords(bad.ai, db, { count: 1, userId: null })).rejects.toMatchObject({ code: 'invalid' })
+    expect(bad.calls).toHaveLength(2)
+  })
+
+  it('does not retry cap or rate-limit errors', async () => {
+    const capped = fakeAi(new AiError('cap', 'budget'))
+    await expect(generateWords(capped.ai, db, { count: 5, userId: null })).rejects.toMatchObject({ code: 'cap' })
+    expect(capped.calls).toHaveLength(1)
   })
 })

@@ -12,6 +12,20 @@ const router = createRouter({
       component: () => import('./pages/RoomPage.vue'),
       props: (route) => ({ code: String(route.params.code).toUpperCase() }),
     },
+    {
+      path: '/admin',
+      component: () => import('./pages/admin/AdminLayout.vue'),
+      children: [
+        { path: '', name: 'admin', component: () => import('./pages/admin/AdminHome.vue') },
+        { path: 'users', name: 'admin-users', component: () => import('./pages/admin/UsersPage.vue') },
+        {
+          path: ':gameId/:page',
+          name: 'admin-game',
+          component: () => import('./pages/admin/GameAdminPage.vue'),
+          props: true,
+        },
+      ],
+    },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 })
