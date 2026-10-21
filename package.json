@@ -12,7 +12,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "create-admin": "pnpm --filter @wsfg/server create-admin",
+    "start": "pnpm --filter @wsfg/server start"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

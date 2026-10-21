@@ -31,6 +31,11 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Auth checked in a `noServer` upgrade handler.** Origin, session and per-IP caps are checked before the websocket handshake completes.
 - **MCP via `@modelcontextprotocol/server` (v2), not `@modelcontextprotocol/sdk` (v1).** v2 is the current SDK line.
 - **SQLite via built-in `node:sqlite`, not `better-sqlite3`.** No native build, no build-script allow-list, no binding tied to a Node version. Costs: release candidate (not yet stable), no `.transaction()`/`.pragma()` helpers (we write a small wrapper). Better Auth supports it; if its CLI doesn't, use `better-sqlite3` for the CLI only.
+- **The server runs its TypeScript directly on Node (type stripping); no server build step.** Node 26 strips types natively, workspace packages export TS source, and `erasableSyntaxOnly` keeps the code strippable. Only the client is built (Vite). `tsx` stays available but isn't needed.
+- **Better Auth's schema is migrated at boot from code; the first admin comes from our `pnpm create-admin` script.** No CLI steps to forget on deploy, temp test databases just work, and the script uses the same config/env as the server.
+- **Our Origin check runs in front of Better Auth too.** Better Auth skips its own check for requests without cookies, which would let another site sign people in (login CSRF).
+- **The real client IP is computed once and handed to Better Auth in an internal header.** Better Auth's rate limits then use the same IP as ours, and a spoofed `X-Forwarded-For` can't dodge them.
+- **`.env` is read with Node's `process.loadEnvFile` from the repo root.** No dotenv dependency. Values starting with `#` (like the primary color) must be quoted.
 - **Same Node major version (26) in dev and prod; `pnpm install` runs on the VPS.** `node:sqlite` ships with Node, so its API follows the Node version.
 
 ## Auth and access

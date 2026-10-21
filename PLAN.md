@@ -210,11 +210,11 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 **Goal: strangers can't spend your resources.** Creating rooms needs a login, accounts are invite-only, and the paid thing (Claude generation) is admin-only and capped. Current audience is semi-public (links shared among friend groups); the design should also hold up for self-hosters later.
 
 ### Better Auth setup (`apps/server/src/auth.ts`)
-- `database: new DatabaseSync(process.env.AUTH_DB_PATH)` from `node:sqlite` (supported by Better Auth's SQLite adapter). Verify the CLI (`migrate`, `create-admin`) works with it; if not, fall back to `better-sqlite3` for the CLI only.
+- `database: new DatabaseSync(process.env.AUTH_DB_PATH)` from `node:sqlite` (supported by Better Auth's SQLite adapter).
 - `emailAndPassword: { enabled: true, disableSignUp: true }` so **public sign-up is closed**. (Confirm the exact option name in the current docs; the OAuth `disableSignUp` is a separate setting.)
 - `plugins: [admin()]` from `better-auth/plugins`: adds `role` (default `user`), `banned`, `banReason`, `banExpires` to users and `impersonatedBy` to sessions.
 - Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `trustedOrigins` from `ALLOWED_ORIGINS`, secure cookies in production, and confirm Better Auth's built-in rate limiting is on for auth endpoints.
-- Run the schema step after config/plugin changes: `npx auth@latest migrate` (or `generate`).
+- The server migrates `auth.db` itself on boot with `getMigrations(options).runMigrations()` from `better-auth/db/migration` (what `npx auth migrate` runs), before creating the instance. No CLI step.
 - **Mount order matters:** `app.all('/api/auth/*splat', toNodeHandler(auth))` (Express 5 pattern) **before** `express.json()`.
 - **No email in v1.** Forgotten passwords are reset by an admin from `/admin/users` (admin plugin set-password); the login page says "Forgot your password? Ask an admin to reset it."
 
@@ -226,7 +226,7 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 | `admin` | Everything a user can, plus the **admin panel**: users, and every game's admin pages |
 
 ### Getting accounts
-- **First admin:** `npx auth@latest create-admin --email you@example.com --name "You" --role admin`.
+- **First admin:** `pnpm create-admin --email you@example.com --name "You" --password "..."` (`apps/server/scripts/create-admin.ts`, same config and `auth.db` as the server). Not `npx auth create-admin`: that CLI needs a config file exporting a ready `auth` instance, which our factory + env setup doesn't have.
 - **Everyone else:** an admin creates them in `/admin/users` via the admin plugin client (`createUser`, `setRole`, `banUser`, `listUsers`, set password). Better Auth enforces the admin check on those endpoints itself.
 
 ### Where auth is enforced (server side, always)
@@ -472,7 +472,7 @@ Nothing about the domain, branding or deployment is hard-coded; everything self-
 ## 11. Deployment (existing VPS)
 The VPS already runs Laravel apps. **Assumed setup, to verify at deploy time:** nginx in front, Node (same major version as dev, see Packages in section 1), Supervisor (already used for Laravel queues), Cloudflare DNS **proxied** with SSL mode **Full (strict)**.
 - Run `pnpm install --frozen-lockfile` on the VPS (never copy `node_modules` from another machine). The VPS must run the same Node major as dev, since `node:sqlite` ships with Node.
-- Build (`pnpm build`), run `node apps/server/dist/index.js` under Supervisor on a localhost port, with `.env` alongside and `data/` on persistent disk.
+- Build the client (`pnpm build`), run the server with `pnpm start` (`node apps/server/src/index.ts`; Node runs the TypeScript directly) under Supervisor on a localhost port, with `.env` alongside and `data/` on persistent disk.
 - nginx server block for the new hostname: proxy `/` to the Node port, and a `location /ws` with `proxy_http_version 1.1`, `Upgrade` / `Connection "upgrade"` headers and a long `proxy_read_timeout`. TLS with a Cloudflare origin certificate (or Let's Encrypt).
 - Cloudflare: add the DNS record (proxied); websockets work through the proxy.
 - `TRUSTED_PROXY_HOPS` / `REAL_IP_HEADER` as in section 9.
