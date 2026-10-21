@@ -22,12 +22,13 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Vitest for unit, core, auth and integration tests; no browser E2E in v1.** Covers the risky logic without the cost of Playwright.
 - **Latest stable packages, installed with `@latest`, lockfile committed.** Greenfield project; no reason to start behind. Exceptions are recorded here.
 - **Keep pnpm's default release-age policy, so "latest" can lag by about a day.** Holding back brand-new releases is a cheap supply-chain guard (on 2026-10-21 it resolved `vite` 8.3.4 and `@anthropic-ai/sdk` 0.135.0 because 8.3.5 and 0.137.0 were under 24h old).
-- **Dependency build scripts allow-listed in `pnpm-workspace.yaml` (`allowBuilds`): `better-sqlite3`, `esbuild`.** pnpm blocks unreviewed build scripts; add a package here only after checking what its script does.
+- **Dependency build scripts allow-listed in `pnpm-workspace.yaml` (`allowBuilds`): `esbuild`.** pnpm blocks unreviewed build scripts; add a package here only after checking what its script does.
 - **TypeScript pinned to 6.0.x, not 7.** `typescript-eslint` doesn't support TypeScript 7 yet (peer range < 6.1); revisit when it does.
 - **`ws`, not Socket.IO.** The core already owns rooms, per-player broadcast (`view()` per recipient), token reconnect and a zod-checked protocol, so Socket.IO would duplicate them. `ws` keeps the browser on native `WebSocket` and lets tests drive plain clients. We add the two things Socket.IO would have given us: a 30s ping/pong heartbeat and a small `maxPayload`.
 - **Auth checked in a `noServer` upgrade handler.** Origin, session and per-IP caps are checked before the websocket handshake completes.
 - **MCP via `@modelcontextprotocol/server` (v2), not `@modelcontextprotocol/sdk` (v1).** v2 is the current SDK line.
-- **Same Node major version in dev and prod; `pnpm install` runs on the VPS.** `better-sqlite3` is native and tied to the Node version it was built for.
+- **SQLite via built-in `node:sqlite`, not `better-sqlite3`.** No native build, no build-script allow-list, no binding tied to a Node version. Costs: release candidate (not yet stable), no `.transaction()`/`.pragma()` helpers (we write a small wrapper). Better Auth supports it; if its CLI doesn't, use `better-sqlite3` for the CLI only.
+- **Same Node major version (26) in dev and prod; `pnpm install` runs on the VPS.** `node:sqlite` ships with Node, so its API follows the Node version.
 
 ## Auth and access
 - **Keep Better Auth with closed sign-up and the admin plugin.** Audience is semi-public now and the project may be self-hosted by others; it's mostly config.

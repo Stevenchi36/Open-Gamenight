@@ -2,7 +2,7 @@
 
 A self-hostable multiplayer party-game platform for groups playing together on their phones. The first game is **Word Imposter** (3-12 players). The platform core owns rooms, connections, auth, reconnect, timers and admin; each game is a plug-in module that implements a small, pure contract.
 
-**Stack:** TypeScript everywhere. **Express 5 + `ws`** backend, **Vue 3 (Vite) + Vuetify 4** frontend, **Better Auth** for accounts, **SQLite** (`better-sqlite3`) for data, **pnpm workspaces**, **Vitest**. Room creators must be logged in; guests join with just a name. Admins get a panel (users, plus pages contributed by games, e.g. Imposter's word library with Claude-powered generation). A stdio **MCP server** exposes game tools (e.g. adding words) to Claude Code/Desktop.
+**Stack:** TypeScript everywhere. **Express 5 + `ws`** backend, **Vue 3 (Vite) + Vuetify 4** frontend, **Better Auth** for accounts, **SQLite** (Node's built-in `node:sqlite`) for data, **pnpm workspaces**, **Vitest**. Room creators must be logged in; guests join with just a name. Admins get a panel (users, plus pages contributed by games, e.g. Imposter's word library with Claude-powered generation). A stdio **MCP server** exposes game tools (e.g. adding words) to Claude Code/Desktop.
 
 The repo starts **empty** (greenfield): nothing is installed yet. Decisions and their reasons are listed in [`docs/decisions.md`](docs/decisions.md).
 
@@ -79,19 +79,20 @@ Games are registered by a **static import list** in `games/index.ts`, not discov
 |---|---|---|
 | Server | `express`, `ws` | 5.3.0, 8.22.0 |
 | Auth | `better-auth` (CLI: `npx auth@latest`; `@better-auth/cli` is deprecated) | 1.7.12 |
-| DB | `better-sqlite3` (native, Node >= 22) | 13.0.3 |
+| DB | built-in `node:sqlite` (`DatabaseSync`; release candidate since Node 25.7, no package) | n/a |
 | Validation | `zod` | 4.6.7 |
 | Client | `vue`, `vue-router`, `vuetify` | 3.5.44, 5.4.0, 4.3.0 |
 | Build | `vite`, `@vitejs/plugin-vue`, `vite-plugin-vuetify`, `create-vuetify` (scaffold only) | 8.3.5, 6.0.10, 2.1.3, 3.2.1 |
 | MCP | `@modelcontextprotocol/server` (v2 split package; needs `zod` >= 4.2). Not the v1 `@modelcontextprotocol/sdk` | 2.3.1 |
 | AI | `@anthropic-ai/sdk` | 0.137.0 |
 | Tooling | `typescript`, `vue-tsc`, `tsx` (server dev runner), `vitest`, `eslint`, `typescript-eslint`, `eslint-plugin-vue`, `@vue/eslint-config-typescript` | **6.0.3**, 3.3.13, 4.23.15, 5.0.5, 10.13.0, 8.72.0, 10.11.1, 14.9.0 |
-| Types | `@types/node`, `@types/express`, `@types/ws`, `@types/better-sqlite3` | latest, 5.0.6, 8.18.2, 9.6.0 |
+| Types | `@types/node`, `@types/express`, `@types/ws` | latest, 5.0.6, 8.18.2 |
 | Package manager | `pnpm` (pinned via `packageManager` in the root `package.json`) | 12.14.0 |
 | Optional | `pinia` (only if the reactive-object store isn't enough) | 4.1.0 |
 
 - **TypeScript is pinned to 6.0.x.** TypeScript 7 (7.0.2) is out, but `typescript-eslint` 8.72 only supports TypeScript below 6.1, and `vue-tsc` support for 7.x is unverified. Move to 7 once both support it.
-- **Node:** use the same major version in dev and on the VPS (24 LTS, or 26 once it's LTS), and set `engines.node` in the root `package.json` to match. `vitest` needs >= 22.12 and `better-sqlite3` >= 22.
+- **Node:** use the same major version in dev and on the VPS (26; dev runs 26.3), and set `engines.node` in the root `package.json` to match. `node:sqlite` is a release candidate from 25.7; `vitest` needs >= 22.12.
+- **`node:sqlite` has no `.transaction()` or `.pragma()` helpers.** Run pragmas with `db.exec('PRAGMA ...')` and use a small `transaction(db, fn)` wrapper (BEGIN/COMMIT/ROLLBACK) in `db.ts`.
 - **Socket.IO was considered and rejected; see `docs/decisions.md`.** The browser uses the built-in `WebSocket`, so there is no client websocket library.
 
 ## 2. The game contract (`packages/core`)
@@ -206,7 +207,7 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 **Goal: strangers can't spend your resources.** Creating rooms needs a login, accounts are invite-only, and the paid thing (Claude generation) is admin-only and capped. Current audience is semi-public (links shared among friend groups); the design should also hold up for self-hosters later.
 
 ### Better Auth setup (`apps/server/src/auth.ts`)
-- `database: new Database(process.env.AUTH_DB_PATH)` (better-sqlite3 is Better Auth's recommended SQLite driver).
+- `database: new DatabaseSync(process.env.AUTH_DB_PATH)` from `node:sqlite` (supported by Better Auth's SQLite adapter). Verify the CLI (`migrate`, `create-admin`) works with it; if not, fall back to `better-sqlite3` for the CLI only.
 - `emailAndPassword: { enabled: true, disableSignUp: true }` so **public sign-up is closed**. (Confirm the exact option name in the current docs; the OAuth `disableSignUp` is a separate setting.)
 - `plugins: [admin()]` from `better-auth/plugins`: adds `role` (default `user`), `banned`, `banReason`, `banExpires` to users and `impersonatedBy` to sessions.
 - Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `trustedOrigins` from `ALLOWED_ORIGINS`, secure cookies in production, and confirm Better Auth's built-in rate limiting is on for auth endpoints.
@@ -466,7 +467,7 @@ Nothing about the domain, branding or deployment is hard-coded; everything self-
 
 ## 11. Deployment (existing VPS)
 The VPS already runs Laravel apps. **Assumed setup, to verify at deploy time:** nginx in front, Node (same major version as dev, see Packages in section 1), Supervisor (already used for Laravel queues), Cloudflare DNS **proxied** with SSL mode **Full (strict)**.
-- Run `pnpm install --frozen-lockfile` **on the VPS** (never copy `node_modules` from another machine): `better-sqlite3` is a native module and only works with the Node version it was built for.
+- Run `pnpm install --frozen-lockfile` on the VPS (never copy `node_modules` from another machine). The VPS must run the same Node major as dev, since `node:sqlite` ships with Node.
 - Build (`pnpm build`), run `node apps/server/dist/index.js` under Supervisor on a localhost port, with `.env` alongside and `data/` on persistent disk.
 - nginx server block for the new hostname: proxy `/` to the Node port, and a `location /ws` with `proxy_http_version 1.1`, `Upgrade` / `Connection "upgrade"` headers and a long `proxy_read_timeout`. TLS with a Cloudflare origin certificate (or Let's Encrypt).
 - Cloudflare: add the DNS record (proxied); websockets work through the proxy.
@@ -475,7 +476,7 @@ The VPS already runs Laravel apps. **Assumed setup, to verify at deploy time:** 
 - Deploy when nobody is playing (restarts end rooms; clients get the restart notice).
 
 ## 12. Build order (commit after each milestone)
-1. **Repo setup:** `git init`, pnpm workspaces (`packageManager` and `engines.node` in the root `package.json`), `tsconfig.base.json`, Vitest, ESLint (flat config), `.env.example`, `.gitignore`. Install the latest stable packages from section 1 (TypeScript 6.0.x). pnpm blocks dependency build scripts by default, so allow-list `better-sqlite3` in `pnpm-workspace.yaml` (check the pnpm 12 docs for the current setting name). Otherwise it fails at runtime with "could not locate the bindings file". Confirm `better-sqlite3` loads before moving on.
+1. **Repo setup:** `git init`, pnpm workspaces (`packageManager` and `engines.node` in the root `package.json`), `tsconfig.base.json`, Vitest, ESLint (flat config), `.env.example`, `.gitignore`. Install the latest stable packages from section 1 (TypeScript 6.0.x). pnpm blocks dependency build scripts by default; allow-list only reviewed ones via `allowBuilds` in `pnpm-workspace.yaml`. Confirm `node:sqlite` loads before moving on.
 2. **`packages/core`:** game contract, protocol types + zod schemas, generic leak-test harness.
 3. **Imposter reducer:** `games/imposter/server/game.ts` (`init`/`reduce`/`view`/`secrets`) with full unit tests and the leak test.
 4. **Server foundation:** `db.ts` (both DBs, migrations), Better Auth, create the first admin via CLI, `requireSession`/`requireAdmin`/Origin/real-IP middleware, auth route tests.
