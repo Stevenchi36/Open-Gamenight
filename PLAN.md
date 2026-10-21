@@ -330,6 +330,7 @@ CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | 
 | `submit_clue` | `{ word }` (typed mode only; rejected in spoken) | current player |
 | `end_turn` | `{}` (spoken mode) | current player, or host for anyone |
 | `start_voting` | `{}` | host |
+| `end_voting` | `{}` (force the reveal before everyone has voted) | host |
 | `cast_vote` | `{ targetId }` | player |
 | `judge_guess` | `{ correct: boolean }` | **judge only** |
 | `skip_guess` | `{}` | host |

@@ -57,6 +57,11 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Typed clues reject the secret word and exact repeats (case-insensitive).** Prevents giving the word away and lazy copying.
 - **Clue timer auto-skips in typed mode but is visual only in spoken mode.** A hard cut-off while someone is talking is annoying.
 - **A disconnected imposter stays in the round; their guess counts as missed after a 15s grace.** The game never stalls and their role still matters.
+- **The imposter's clue is never checked against the secret word.** Rejecting it would let the imposter retry guesses until one bounces, revealing the word. Crew clues equal to the word are still rejected.
+- **REVEAL auto-advances after 5s; the host can force the end of voting (`end_voting`).** Neither had an action in the original table; a timed reveal keeps the table's attention without an extra tap.
+- **Late joiners see a `waiting` role (no word) and play from the next round.** Joining mid-round must not hand anyone the secret word.
+- **If the imposter leaves before the reveal, the round is voided (no points).** Nothing meaningful is left to score; the host starts the next round.
+- **The built-in word list shipped with the reducer (milestone 3), not the library (milestone 6).** `wordSource: builtin` needs no DB and the game is playable before the library exists.
 
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)

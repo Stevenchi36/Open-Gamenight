@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - games
   - games/*
 
 # pnpm blocks dependency build scripts by default (strictDepBuilds: true).

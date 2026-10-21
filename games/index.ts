@@ -1,0 +1,8 @@
+/**
+ * Static game registry (server side). Adding a game is one import and one entry.
+ * The first entry is the default game for new rooms.
+ */
+import type { AnyGameModule } from '@wsfg/core/contract'
+import { imposter } from '@wsfg/game-imposter/server'
+
+export const games: readonly AnyGameModule[] = [imposter]

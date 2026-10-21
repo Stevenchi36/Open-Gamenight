@@ -1,0 +1,13 @@
+{
+  "name": "@wsfg/games",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./index.ts"
+  },
+  "dependencies": {
+    "@wsfg/core": "workspace:*",
+    "@wsfg/game-imposter": "workspace:*"
+  }
+}

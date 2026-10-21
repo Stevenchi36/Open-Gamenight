@@ -104,6 +104,15 @@ export class GameSim<S, A, V, Settings, P = undefined> {
     return next.key
   }
 
+  /** A player joins mid-game (appended in join order). The game sees them in ctx.players from now on. */
+  join(player: SimPlayer): void {
+    if (this.players.some((p) => p.id === player.id)) throw new Error(`GameSim: ${player.id} already joined`)
+    this.players = [
+      ...this.players,
+      { id: player.id, name: player.name ?? player.id, isLoggedIn: player.isLoggedIn ?? false, connected: player.connected ?? true },
+    ]
+  }
+
   disconnect(playerId: PlayerId): void {
     this.setConnected(playerId, false)
     this.runHook(this.game.onPlayerDisconnected, playerId)

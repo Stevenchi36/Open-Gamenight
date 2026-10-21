@@ -84,13 +84,14 @@ export function isGameError(value: unknown): value is GameError {
  *   compared trimmed and case-insensitively. Use for text like a secret word.
  * - `variants`: the viewer's view is identical across states that differ only in
  *   this secret. Use for associations that a plain string search can't catch,
- *   like which player id is the imposter.
+ *   like which player id is the imposter. Variants are built per viewer, so they can
+ *   keep that viewer's own data (e.g. their own vote) fixed.
  */
 export interface SecretDef<S> {
   name: string
   visibleTo(state: S, viewerId: PlayerId): boolean
   values?(state: S): string[]
-  variants?(state: S): S[]
+  variants?(state: S, viewerId: PlayerId): S[]
 }
 
 export type SecretSpec<S> = SecretDef<S>[]

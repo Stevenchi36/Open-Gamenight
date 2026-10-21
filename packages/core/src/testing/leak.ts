@@ -7,7 +7,7 @@
  */
 import type { GameModule, PlayerId } from '../contract.ts'
 import { createRng } from '../rng.ts'
-import { createSim, type GameSim, type SimOptions } from './sim.ts'
+import { createSim, type GameSim, type SimOptions, type SimPlayer } from './sim.ts'
 
 export interface Leak {
   secret: string
@@ -26,7 +26,6 @@ export function findLeaks<S, A, V, Settings, P>(
   const leaks: Leak[] = []
   for (const secret of game.secrets ?? []) {
     const forbidden = (secret.values?.(state) ?? []).map(normalize).filter((v) => v !== '')
-    const variants = secret.variants?.(state) ?? []
 
     for (const viewerId of viewerIds) {
       if (secret.visibleTo(state, viewerId)) continue
@@ -41,6 +40,7 @@ export function findLeaks<S, A, V, Settings, P>(
         }
       }
 
+      const variants = secret.variants?.(state, viewerId) ?? []
       if (variants.length > 0) {
         const base = stableStringify(view)
         variants.forEach((variant, i) => {
@@ -81,6 +81,10 @@ export interface LeakTestOptions<S, A, V, Settings, P> extends Omit<SimOptions<S
   disconnectChance?: number
   /** Per-step chance of firing the next pending timer instead of a move. Defaults to 0.2. */
   timerChance?: number
+  /** Players who join mid-game, one at a time, in order. */
+  latePlayers?: SimPlayer[]
+  /** Per-step chance of the next late player joining. Defaults to 0.05. */
+  joinChance?: number
   /** Stop collecting after this many leaks. Defaults to 20. */
   maxLeaks?: number
 }
@@ -103,6 +107,8 @@ export function runLeakTest<S, A, V, Settings, P>(
     disconnectChance = 0.1,
     timerChance = 0.2,
     maxLeaks = 20,
+    latePlayers = [],
+    joinChance = 0.05,
     ...simOptions
   } = options
   if (!game.secrets?.length) throw new Error(`runLeakTest: game "${game.id}" declares no secrets`)
@@ -113,6 +119,7 @@ export function runLeakTest<S, A, V, Settings, P>(
   for (const seed of seeds) {
     const sim = createSim(game, { ...simOptions, seed })
     const pick = createRng(seed ^ 0x9e3779b9)
+    const waiting = [...latePlayers]
 
     const check = (step: number) => {
       result.statesChecked++
@@ -126,7 +133,9 @@ export function runLeakTest<S, A, V, Settings, P>(
     check(0)
     for (let step = 1; step <= maxSteps && !sim.over && result.leaks.length < maxLeaks; step++) {
       const roll = pick.next()
-      if (roll < disconnectChance) {
+      if (waiting.length > 0 && pick.next() < joinChance) {
+        sim.join(waiting.shift()!)
+      } else if (roll < disconnectChance) {
         const player = pick.pick(sim.players)
         if (player.connected) sim.disconnect(player.id)
         else sim.reconnect(player.id)
