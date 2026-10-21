@@ -264,7 +264,7 @@ ai.generate({ gameId, userId, system, prompt, tool }) -> Promise<ToolInput>
 - The API key lives only in the server environment; never sent to the browser.
 
 ### MCP server (`apps/mcp`, stdio)
-One process that registers every game's `mcpTools`, namespaced `<gameId>_<tool>`, over the same service code the admin routes use.
+One process that registers every game's `mcpTools`, namespaced `<gameId>_<tool>`, over the same service code the admin routes use. Setup, tools, prompts and the SSH route to production: [`docs/mcp.md`](docs/mcp.md).
 ```bash
 claude mcp add ws-family-games \
   --env GAMES_DB_PATH=/absolute/path/to/data/games.db \
