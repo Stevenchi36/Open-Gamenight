@@ -6,7 +6,8 @@
     "src/**/*.vue",
     "../../games/*/client/**/*",
     "../../games/*/shared/**/*",
-    "../../games/client.ts"
+    "../../games/client.ts",
+    "../../packages/core/src/ui/**/*"
   ],
   "compilerOptions": {
     "noEmit": true,

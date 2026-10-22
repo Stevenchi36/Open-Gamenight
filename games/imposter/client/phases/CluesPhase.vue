@@ -27,7 +27,7 @@
 
     <ClueList :view="view" :room="room" />
 
-    <v-btn v-if="isHost" block variant="tonal" prepend-icon="mdi-vote" @click="send({ type: 'start_voting' })">
+    <v-btn v-if="amHost" block variant="tonal" prepend-icon="mdi-vote" @click="send({ type: 'start_voting' })">
       Skip to voting
     </v-btn>
   </div>
@@ -37,12 +37,13 @@
 import { computed, ref } from 'vue'
 import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'
-import { nameOf, type PhaseProps } from '../util.ts'
+import { isHost, nameOf } from '@wsfg/core/ui'
+import type { PhaseProps } from '../props.ts'
 import TurnHeader from './TurnHeader.vue'
 
 const props = defineProps<PhaseProps>()
 const myTurn = computed(() => props.view.turn.currentPlayerId === props.me)
-const isHost = computed(() => props.room.hostId === props.me)
+const amHost = computed(() => isHost(props.room, props.me))
 const clue = ref('')
 const localError = ref('')
 

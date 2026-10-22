@@ -17,7 +17,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { nameOf, type PhaseProps } from '../util.ts'
+import { nameOf } from '@wsfg/core/ui'
+import type { PhaseProps } from '../props.ts'
 import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()

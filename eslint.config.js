@@ -16,7 +16,7 @@ export default defineConfigWithVueTs(
     },
   },
   {
-    files: ['apps/client/**/*.{ts,vue}', 'games/*/client/**/*.{ts,vue}'],
+    files: ['apps/client/**/*.{ts,vue}', 'games/*/client/**/*.{ts,vue}', 'packages/core/src/ui/**/*.{ts,vue}'],
     languageOptions: { globals: { ...globals.browser } },
   },
   {

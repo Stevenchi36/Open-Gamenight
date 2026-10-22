@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import type { RoomView } from '@wsfg/core/protocol'
 import { computed } from 'vue'
-import { nameOf } from './util.ts'
+import { nameOf } from '@wsfg/core/ui'
 
 const props = defineProps<{ scores: Record<string, number>; room: RoomView; gained?: Record<string, number> }>()
 const rows = computed(() =>

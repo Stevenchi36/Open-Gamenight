@@ -24,7 +24,7 @@
 
     <VoteBreakdown v-if="!result.voided" :result="result" :view="view" :room="room" />
 
-    <template v-if="isHost">
+    <template v-if="amHost">
       <v-checkbox v-if="rotating" v-model="shuffle" label="Randomize player order" density="compact" hide-details />
       <v-btn block size="x-large" color="primary" prepend-icon="mdi-replay" @click="send({ type: 'next_round', shuffle })">
         Play again
@@ -40,12 +40,13 @@
 import { computed, ref } from 'vue'
 import type { ImposterSettings } from '../../shared/index.ts'
 import ScoreBoard from '../ScoreBoard.vue'
-import { nameOf, type PhaseProps } from '../util.ts'
+import { isHost, nameOf } from '@wsfg/core/ui'
+import type { PhaseProps } from '../props.ts'
 import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)
-const isHost = computed(() => props.room.hostId === props.me)
+const amHost = computed(() => isHost(props.room, props.me))
 // 'random' reshuffles every round anyway
 const rotating = computed(() => (props.room.game.settings as ImposterSettings).playerOrder === 'rotate')
 const shuffle = ref(false)

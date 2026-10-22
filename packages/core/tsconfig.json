@@ -4,5 +4,7 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "test"]
+  "include": ["src", "test"],
+  // Vue components and browser code: checked by apps/client's vue-tsc.
+  "exclude": ["src/ui"]
 }

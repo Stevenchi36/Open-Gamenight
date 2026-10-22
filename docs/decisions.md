@@ -15,6 +15,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Host can switch games in the lobby (settings + scores reset).** "Let's play something else" with the same people is the common family-night case.
 - **Each game ships its own Vue settings component (with shared field components).** Conditional settings are awkward to auto-generate; revisit at 3+ games.
 - **The shared settings fields (`SettingSlider`, `SettingSelect`, `SettingToggle`) are registered as global components by the client shell.** Games use them in templates without importing anything outside `packages/core` and their own folder.
+- **Reusable play-view pieces (helpers like `nameOf`/`useCountdown`, and Vuetify components) live in `@wsfg/core/ui` and are imported explicitly.** Games keep importing only from core, and unlike global components they get types and composables. It's browser-only, so core's `tsc` excludes it and the client's `vue-tsc` checks it.
 - **Game play views get `serverNow()`; `state` messages carry the server time.** Countdowns against server deadlines stay right on phones whose clocks are off.
 - **Client lint uses `eslint-plugin-vue`'s `essential` preset (correctness only).** The `recommended` preset is mostly template line-wrapping rules, which is formatting, not bugs.
 - **Host migration is core: ~2 min grace, then next player in join order (guests allowed), plus manual transfer.** Login gates creating rooms, not running one you're already in.

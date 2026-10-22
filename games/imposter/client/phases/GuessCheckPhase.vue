@@ -75,7 +75,7 @@
       </v-card-text>
     </v-card>
 
-    <v-btn v-if="isHost && me !== result.judgeId" block variant="tonal" class="mt-4" prepend-icon="mdi-skip-next" @click="send({ type: 'skip_guess' })">
+    <v-btn v-if="amHost && me !== result.judgeId" block variant="tonal" class="mt-4" prepend-icon="mdi-skip-next" @click="send({ type: 'skip_guess' })">
       Skip the guess (counts as missed)
     </v-btn>
 
@@ -87,12 +87,13 @@
 import { computed, ref } from 'vue'
 import { GUESS_MAX_LENGTH, type ImposterSettings } from '../../shared/index.ts'
 import HoldToReveal from '../HoldToReveal.vue'
-import { nameOf, type PhaseProps } from '../util.ts'
+import { isHost, nameOf } from '@wsfg/core/ui'
+import type { PhaseProps } from '../props.ts'
 import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)
-const isHost = computed(() => props.room.hostId === props.me)
+const amHost = computed(() => isHost(props.room, props.me))
 const typed = computed(() => (props.room.game.settings as ImposterSettings).clueMode === 'typed')
 const waitingForGuess = computed(() => typed.value && result.value?.guess === null)
 const judgeLine = computed(() =>

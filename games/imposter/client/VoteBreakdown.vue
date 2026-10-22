@@ -37,7 +37,7 @@
 import type { RoomView } from '@wsfg/core/protocol'
 import { computed } from 'vue'
 import type { ImposterView, ResultView } from '../shared/index.ts'
-import { nameOf } from './util.ts'
+import { nameOf } from '@wsfg/core/ui'
 
 const props = defineProps<{ result: ResultView; view: ImposterView; room: RoomView }>()
 

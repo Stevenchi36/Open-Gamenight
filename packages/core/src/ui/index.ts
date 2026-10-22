@@ -1,23 +1,22 @@
-import type { RoomView } from '@wsfg/core/protocol'
+/**
+ * Shared client-side building blocks for games' play views: helpers, composables
+ * and Vuetify components. Browser-only; checked by the client's vue-tsc, not core's tsc.
+ */
 import { onUnmounted, ref, watch, type Ref } from 'vue'
-import type { ClientAction, ImposterView } from '../shared/index.ts'
+import type { PlayerId } from '../contract.ts'
+import type { RoomView } from '../protocol.ts'
 
-/** Props every phase component gets from PlayView. */
-export interface PhaseProps {
-  view: ImposterView
-  room: RoomView
-  me: string
-  send: (action: ClientAction) => void
-  serverNow: () => number
-}
-
-export function nameOf(room: RoomView, id: string | null | undefined): string {
+export function nameOf(room: RoomView, id: PlayerId | null | undefined): string {
   if (!id) return 'Nobody'
   return room.players.find((p) => p.id === id)?.name ?? 'Someone who left'
 }
 
-export function isConnected(room: RoomView, id: string): boolean {
+export function isConnected(room: RoomView, id: PlayerId): boolean {
   return room.players.find((p) => p.id === id)?.connected ?? false
+}
+
+export function isHost(room: RoomView, id: PlayerId): boolean {
+  return room.hostId === id
 }
 
 /** Seconds left until a server deadline, ticking. null when there is no deadline. */

@@ -32,7 +32,7 @@
     <!-- Empty in spoken mode. -->
     <ClueList v-if="view.clues.length > 0" :view="view" :room="room" />
 
-    <v-btn v-if="isHost" block variant="tonal" prepend-icon="mdi-eye" @click="send({ type: 'end_voting' })">
+    <v-btn v-if="amHost" block variant="tonal" prepend-icon="mdi-eye" @click="send({ type: 'end_voting' })">
       Reveal now
     </v-btn>
   </div>
@@ -42,10 +42,11 @@
 import { computed } from 'vue'
 import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'
-import { nameOf, type PhaseProps } from '../util.ts'
+import { isHost, nameOf } from '@wsfg/core/ui'
+import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
-const isHost = computed(() => props.room.hostId === props.me)
+const amHost = computed(() => isHost(props.room, props.me))
 const canVote = computed(() => props.view.roundPlayers.includes(props.me))
 const candidates = computed(() => props.view.roundPlayers.filter((id) => id !== props.me))
 </script>

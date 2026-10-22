@@ -25,7 +25,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { isConnected, nameOf, useCountdown, type PhaseProps } from '../util.ts'
+import { isConnected, nameOf, useCountdown } from '@wsfg/core/ui'
+import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
 const secondsLeft = useCountdown(() => props.view.turn.deadline, props.serverNow)

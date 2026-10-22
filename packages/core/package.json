@@ -12,13 +12,17 @@
     "./protocol": "./src/protocol.ts",
     "./rng": "./src/rng.ts",
     "./testing": "./src/testing/index.ts",
-    "./categories": "./src/categories.ts"
+    "./categories": "./src/categories.ts",
+    "./ui": "./src/ui/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "vue": "^3.5.44"
+  },
+  "peerDependencies": {
     "vue": "^3.5.44"
   }
 }

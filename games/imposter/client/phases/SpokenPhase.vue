@@ -18,7 +18,7 @@
       </v-card-text>
     </v-card>
 
-    <div v-if="isHost" class="d-flex ga-2">
+    <div v-if="amHost" class="d-flex ga-2">
       <v-btn v-if="!myTurn" class="flex-grow-1" variant="tonal" prepend-icon="mdi-skip-next" @click="send({ type: 'end_turn' })">
         Skip {{ nameOf(room, view.turn.currentPlayerId) }}
       </v-btn>
@@ -32,11 +32,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import RoleCard from '../RoleCard.vue'
-import { isConnected, nameOf, type PhaseProps } from '../util.ts'
+import { isConnected, isHost, nameOf } from '@wsfg/core/ui'
+import type { PhaseProps } from '../props.ts'
 import TurnHeader from './TurnHeader.vue'
 
 const props = defineProps<PhaseProps>()
 const myTurn = computed(() => props.view.turn.currentPlayerId === props.me)
-const isHost = computed(() => props.room.hostId === props.me)
+const amHost = computed(() => isHost(props.room, props.me))
 const currentConnected = computed(() => !!props.view.turn.currentPlayerId && isConnected(props.room, props.view.turn.currentPlayerId))
 </script>
