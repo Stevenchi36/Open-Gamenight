@@ -1,10 +1,10 @@
 /**
- * Pure building blocks for game reducers: player presence, turn order, scores.
+ * Pure building blocks for game reducers: player presence, turn order, scores, votes.
  * Everything takes what it needs from ctx explicitly and returns new values,
  * so it is safe inside init / reduce / view / lifecycle hooks.
  */
 import { z } from 'zod'
-import type { BaseCtx, PlayerId } from './contract.ts'
+import type { BaseCtx, PlayerId, SecretDef } from './contract.ts'
 import type { Rng } from './rng.ts'
 
 type PlayersCtx = Pick<BaseCtx<unknown>, 'players'>
@@ -74,4 +74,66 @@ export function withoutPlayer<T>(record: Record<PlayerId, T>, id: PlayerId): Rec
   const next = { ...record }
   delete next[id]
   return next
+}
+
+// ---------------------------------------------------------------- votes
+
+/** Voter -> target. */
+export type Ballots = Record<PlayerId, PlayerId>
+
+export interface Tally {
+  /** Votes received per target. */
+  votes: Record<PlayerId, number>
+  /** The ballots that counted. */
+  ballots: Ballots
+  /** The single most-voted target; null on a tie or with no votes. */
+  leaderId: PlayerId | null
+}
+
+/** Counts the ballots whose voter and target are both in `eligible` (e.g. this round's players). */
+export function tallyVotes(ballots: Ballots, eligible: readonly PlayerId[]): Tally {
+  const votes: Record<PlayerId, number> = {}
+  const counted: Ballots = {}
+  for (const [voter, target] of Object.entries(ballots)) {
+    if (!eligible.includes(voter) || !eligible.includes(target)) continue
+    votes[target] = (votes[target] ?? 0) + 1
+    counted[voter] = target
+  }
+  const top = Math.max(0, ...Object.values(votes))
+  const leaders = Object.keys(votes).filter((id) => votes[id] === top)
+  return { votes, ballots: counted, leaderId: top > 0 && leaders.length === 1 ? leaders[0]! : null }
+}
+
+/** Ballots without any cast by or for `id` (a player who left). */
+export function dropBallots(ballots: Ballots, id: PlayerId): Ballots {
+  const next: Ballots = {}
+  for (const [voter, target] of Object.entries(ballots)) if (voter !== id && target !== id) next[voter] = target
+  return next
+}
+
+/**
+ * Leak-test spec for secret ballots: while hidden, a viewer's view must not change when someone
+ * else moves their vote. The viewer's own ballot stays fixed, since they may see it.
+ */
+export function secretBallots<S>(spec: {
+  name?: string
+  visibleTo(state: S, viewerId: PlayerId): boolean
+  ballots(state: S): Ballots
+  /** Who can be voted for; used to pick another target. */
+  candidates(state: S): readonly PlayerId[]
+  withBallots(state: S, ballots: Ballots): S
+}): SecretDef<S> {
+  return {
+    name: spec.name ?? 'ballots',
+    visibleTo: spec.visibleTo,
+    variants(state, viewerId) {
+      const ballots = spec.ballots(state)
+      return Object.keys(ballots)
+        .filter((voter) => voter !== viewerId)
+        .flatMap((voter) => {
+          const alt = spec.candidates(state).find((id) => id !== voter && id !== ballots[voter])
+          return alt ? [spec.withBallots(state, { ...ballots, [voter]: alt })] : []
+        })
+    },
+  }
 }

@@ -3,10 +3,13 @@ import type { PlayerInfo } from '../src/contract.ts'
 import {
   addPoints,
   carryScores,
+  dropBallots,
   isConnected,
   isPresent,
   nextTurnOrder,
   pickConnected,
+  secretBallots,
+  tallyVotes,
   withoutPlayer,
 } from '../src/kit.ts'
 import { createRng } from '../src/rng.ts'
@@ -78,5 +81,54 @@ describe('scores', () => {
 
   it('removes one player from a record', () => {
     expect(withoutPlayer({ a: 1, b: 2 }, 'a')).toEqual({ b: 2 })
+  })
+})
+
+describe('tallyVotes', () => {
+  it('counts ballots and names the sole leader', () => {
+    expect(tallyVotes({ a: 'c', b: 'c', c: 'a' }, ['a', 'b', 'c'])).toEqual({
+      votes: { c: 2, a: 1 },
+      ballots: { a: 'c', b: 'c', c: 'a' },
+      leaderId: 'c',
+    })
+  })
+
+  it('has no leader on a tie or with no votes', () => {
+    expect(tallyVotes({ a: 'b', b: 'a' }, ['a', 'b']).leaderId).toBeNull()
+    expect(tallyVotes({}, ['a', 'b']).leaderId).toBeNull()
+  })
+
+  it('ignores ballots by or for players outside the eligible list', () => {
+    const tally = tallyVotes({ a: 'b', gone: 'b', c: 'gone' }, ['a', 'b', 'c'])
+    expect(tally.votes).toEqual({ b: 1 })
+    expect(tally.ballots).toEqual({ a: 'b' })
+  })
+})
+
+describe('dropBallots', () => {
+  it('drops ballots cast by or for the player', () => {
+    expect(dropBallots({ a: 'b', b: 'c', c: 'a' }, 'a')).toEqual({ b: 'c' })
+  })
+})
+
+describe('secretBallots', () => {
+  interface S {
+    open: boolean
+    players: string[]
+    ballots: Record<string, string>
+  }
+  const secret = secretBallots<S>({
+    visibleTo: (s) => !s.open,
+    ballots: (s) => s.ballots,
+    candidates: (s) => s.players,
+    withBallots: (s, ballots) => ({ ...s, ballots }),
+  })
+  const state: S = { open: true, players: ['a', 'b', 'c'], ballots: { a: 'b', b: 'c' } }
+
+  it("moves every other voter's ballot, keeping the viewer's own", () => {
+    expect(secret.name).toBe('ballots')
+    expect(secret.visibleTo(state, 'a')).toBe(false)
+    const variants = secret.variants!(state, 'a')
+    expect(variants.map((v) => v.ballots)).toEqual([{ a: 'b', b: 'a' }])
   })
 })

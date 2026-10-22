@@ -19,10 +19,13 @@ import {
   addPoints,
   carryScores,
   DISCONNECT_GRACE_MS,
+  dropBallots,
   isConnected,
   isPresent,
   nextTurnOrder,
   pickConnected,
+  secretBallots,
+  tallyVotes,
   withoutPlayer,
 } from '@wsfg/core/kit'
 import type { ZodType } from 'zod'
@@ -245,16 +248,7 @@ function maybeFinishVoting(state: ImposterState, ctx: Ctx, effects: Fx = []): St
 }
 
 function enterReveal(state: ImposterState, ctx: Ctx, effects: Fx = []): Step {
-  const votes: Record<PlayerId, number> = {}
-  const ballots: Record<PlayerId, PlayerId> = {}
-  for (const [voter, target] of Object.entries(state.ballots)) {
-    if (!state.roundPlayers.includes(voter) || !state.roundPlayers.includes(target)) continue
-    votes[target] = (votes[target] ?? 0) + 1
-    ballots[voter] = target
-  }
-  const top = Math.max(0, ...Object.values(votes))
-  const leaders = Object.keys(votes).filter((id) => votes[id] === top)
-  const accusedId = top > 0 && leaders.length === 1 ? leaders[0]! : null
+  const { votes, ballots, leaderId: accusedId } = tallyVotes(state.ballots, state.roundPlayers)
   const caught = accusedId === state.imposterId
   const { guessMode } = state.settings
   const outcome: Outcome = {
@@ -469,7 +463,6 @@ function view(state: ImposterState, viewerId: PlayerId): ImposterView {
     const o = state.outcome
     const done = state.phase === 'RESULTS'
     result = {
-      votes: o.votes,
       votedFor: o.ballots,
       accusedId: o.accusedId,
       caught: o.caught,
@@ -553,15 +546,11 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
     const scores = withoutPlayer(state.scores, playerId)
     if (!state.roundPlayers.includes(playerId)) return { state: { ...state, scores } }
 
-    const ballots: Record<PlayerId, PlayerId> = {}
-    for (const [voter, target] of Object.entries(state.ballots)) {
-      if (voter !== playerId && target !== playerId) ballots[voter] = target
-    }
     const wasCurrent = currentPlayer(state) === playerId
     const next: ImposterState = {
       ...state,
       scores,
-      ballots,
+      ballots: dropBallots(state.ballots, playerId),
       roundPlayers: state.roundPlayers.filter((id) => id !== playerId),
     }
 
@@ -602,16 +591,11 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
       visibleTo: (s, viewerId) => viewerId === s.imposterId || REVEALED.includes(s.phase),
       variants: (s) => s.roundPlayers.filter((id) => id !== s.imposterId).map((imposterId) => ({ ...s, imposterId })),
     },
-    {
-      name: 'ballots',
+    secretBallots({
       visibleTo: (s) => s.phase !== 'VOTING',
-      variants: (s, viewerId) =>
-        Object.keys(s.ballots)
-          .filter((voter) => voter !== viewerId)
-          .flatMap((voter) => {
-            const alt = s.roundPlayers.find((id) => id !== voter && id !== s.ballots[voter])
-            return alt ? [{ ...s, ballots: { ...s.ballots, [voter]: alt } }] : []
-          }),
-    },
+      ballots: (s) => s.ballots,
+      candidates: (s) => s.roundPlayers,
+      withBallots: (s, ballots) => ({ ...s, ballots }),
+    }),
   ],
 })
