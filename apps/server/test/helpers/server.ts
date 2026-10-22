@@ -6,6 +6,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import type { Server } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import type { DatabaseSync } from 'node:sqlite'
 import type { AnyGameModule } from '@wsfg/core/contract'
 import type { MessagesClient } from '../../src/ai.ts'
 import type { Booted } from '../../src/boot.ts'
@@ -36,6 +37,11 @@ export interface TestServer {
 
 export const PASSWORD = 'test-password-123'
 
+/** Drop the words and categories that migration imposter:003_default_words seeds. */
+export function emptyWordLibrary(db: DatabaseSync): void {
+  db.exec("DELETE FROM imposter_words; DELETE FROM categories WHERE game_id = 'imposter'")
+}
+
 export async function startTestServer(
   options: {
     env?: Partial<Record<keyof Env, string>>
@@ -44,6 +50,8 @@ export async function startTestServer(
     ws?: Partial<Pick<WsOptions, 'heartbeatMs' | 'maxConnectionsPerIp' | 'messagesPerSecond'>>
     /** Fake Anthropic client: turns AI features on without a key. */
     aiClient?: MessagesClient
+    /** Keep the default word library from the migrations; otherwise tests start with an empty one. */
+    seededLibrary?: boolean
   } = {},
 ): Promise<TestServer> {
   const dir = mkdtempSync(join(tmpdir(), 'wsfg-test-'))
@@ -66,6 +74,7 @@ export async function startTestServer(
     host: '127.0.0.1',
   })
   const { booted, server, rooms, ws, url } = running
+  if (!options.seededLibrary && booted.games.some((g) => g.id === 'imposter')) emptyWordLibrary(booted.gamesDb)
 
   const doFetch: TestServer['fetch'] = (path, init = {}) => {
     const { cookie, headers, ...rest } = init

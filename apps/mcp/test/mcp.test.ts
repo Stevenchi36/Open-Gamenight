@@ -8,6 +8,8 @@ import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { Client } from '@modelcontextprotocol/client'
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
+import { games } from '@wsfg/games/server'
+import { migrateGamesDb, openDatabase } from '@wsfg/server/db'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 let dir: string
@@ -22,6 +24,11 @@ const text = (result: { content: unknown }) => {
 beforeAll(async () => {
   dir = mkdtempSync(join(tmpdir(), 'wsfg-mcp-'))
   dbPath = join(dir, 'games.db')
+  // Migrate up front and drop the seeded default words, so the tests start from an empty library.
+  const db = openDatabase(dbPath)
+  migrateGamesDb(db, games)
+  db.exec("DELETE FROM imposter_words; DELETE FROM categories WHERE game_id = 'imposter'")
+  db.close()
   client = new Client({ name: 'test', version: '1.0.0' })
   await client.connect(
     new StdioClientTransport({

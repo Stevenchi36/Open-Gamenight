@@ -1,4 +1,5 @@
 import type { Migration } from '@wsfg/core/contract'
+import { DEFAULT_WORDS } from './default-words.ts'
 
 /**
  * imposter_* tables in games.db. Never edit an applied migration; add a new one.
@@ -54,4 +55,25 @@ export const migrations: Migration[] = [
       CREATE INDEX imposter_words_category ON imposter_words (category_id, times_used);
     `,
   },
+  {
+    // Starter library. OR IGNORE: an existing library keeps its own
+    // categories (matched ignoring case) and words, and only gains what's missing.
+    id: '003_default_words',
+    sql: seedSql(),
+  },
 ]
+
+function seedSql(): string {
+  const text = (s: string) => `'${s.replaceAll("'", "''")}'`
+  const categories = Object.keys(DEFAULT_WORDS).map((name) => `('imposter', ${text(name)})`)
+  const words = Object.entries(DEFAULT_WORDS).flatMap(([category, list]) =>
+    list.map(([word, hint, difficulty]) => `(${text(category)}, ${text(word)}, ${text(hint)}, ${text(difficulty)})`),
+  )
+  return `
+    INSERT OR IGNORE INTO categories (game_id, name) VALUES ${categories.join(',\n')};
+    INSERT OR IGNORE INTO imposter_words (category_id, word, hint, difficulty, source)
+      SELECT c.id, d.column2, d.column3, d.column4, 'builtin'
+      FROM (VALUES ${words.join(',\n')}) d
+      JOIN categories c ON c.game_id = 'imposter' AND c.name = d.column1 COLLATE NOCASE;
+  `
+}

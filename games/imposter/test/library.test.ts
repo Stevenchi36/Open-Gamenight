@@ -15,18 +15,22 @@ import {
   removeWords,
   updateWord,
 } from '../server/library.ts'
+import { DEFAULT_WORDS } from '../server/default-words.ts'
 import { migrations } from '../server/migrations.ts'
+import { validateWord } from '../server/validate.ts'
 import { defaultSettings, type ImposterSettings } from '../shared/index.ts'
 
 let db: DatabaseSync
 let services: ServerServices
 
-/** Same order as the server: core tables first, then the game's migrations. */
-function freshDb() {
+const SEED_ID = '003_default_words'
+
+/** Same order as the server: core tables first, then the game's migrations. Empty library unless `seed`. */
+function freshDb({ seed = false } = {}) {
   const d = new DatabaseSync(':memory:')
   d.exec('PRAGMA foreign_keys = ON')
   d.exec(CATEGORIES_MIGRATION.sql)
-  for (const m of migrations) d.exec(m.sql)
+  for (const m of migrations) if (seed || m.id !== SEED_ID) d.exec(m.sql)
   return d
 }
 
@@ -69,6 +73,36 @@ describe('migration 002: categories move to the shared table', () => {
       [8, 'Space', 'Saturn', 0],
     ])
     expect(old.prepare("SELECT name FROM sqlite_master WHERE name = 'imposter_words_new'").get()).toBeUndefined()
+  })
+})
+
+describe('migration 003: default words', () => {
+  const total = Object.values(DEFAULT_WORDS).flat().length
+
+  it('every default word passes the library rules', () => {
+    for (const [category, list] of Object.entries(DEFAULT_WORDS)) {
+      for (const [word, hint, difficulty] of list) {
+        expect(validateWord({ category, word, hint, difficulty }), `${category}/${word}`).toMatchObject({ ok: true })
+      }
+    }
+  })
+
+  it('seeds every category and word into a fresh library', () => {
+    const d = freshDb({ seed: true })
+    const byName = Object.fromEntries(listCategories(d).map((c) => [c.category, c.total]))
+    expect(byName).toEqual(Object.fromEntries(Object.entries(DEFAULT_WORDS).map(([name, list]) => [name, list.length])))
+    expect(listWords(d).total).toBe(total)
+  })
+
+  it('keeps an existing library and only adds what is missing', () => {
+    const d = freshDb()
+    const lib = { db: d, categories: createCategoryService(d, 'imposter') }
+    addWords(lib, [{ category: 'animals', word: 'PENGUIN', hint: 'My own hint' }])
+    d.exec(migrations.find((m) => m.id === SEED_ID)!.sql)
+
+    expect(d.prepare("SELECT name FROM categories WHERE name = 'Animals' COLLATE NOCASE").all()).toEqual([{ name: 'animals' }])
+    expect(listWords(d, { q: 'penguin' }).words.map((w) => w.hint)).toEqual(['My own hint'])
+    expect(listWords(d).total).toBe(total)
   })
 })
 
