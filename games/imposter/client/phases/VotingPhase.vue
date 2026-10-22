@@ -6,28 +6,16 @@
       {{ canVote ? 'Tap a player. You can change your vote until everyone has voted.' : 'You are watching this round.' }}
     </div>
 
-    <v-row dense class="mb-3">
-      <v-col v-for="id in candidates" :key="id" cols="6" sm="4">
-        <v-card
-          :color="view.you.vote === id ? 'primary' : undefined"
-          :variant="view.you.vote === id ? 'flat' : 'tonal'"
-          :disabled="!canVote"
-          class="text-center"
-          @click="send({ type: 'cast_vote', targetId: id })"
-        >
-          <v-card-text class="py-5">
-            <v-icon v-if="view.you.vote === id" class="mb-1">mdi-check-circle</v-icon>
-            <div class="text-subtitle-1 font-weight-medium">{{ nameOf(room, id) }}</div>
-            <div class="text-caption">{{ view.voted.includes(id) ? 'has voted' : 'thinking...' }}</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <div class="d-flex align-center text-body-2 mb-1">
-      <span>{{ view.voted.length }} / {{ view.roundPlayers.length }} voted</span>
-    </div>
-    <v-progress-linear :model-value="(view.voted.length / Math.max(1, view.roundPlayers.length)) * 100" color="primary" rounded height="6" class="mb-4" />
+    <PlayerPicker
+      :room="room"
+      :players="candidates"
+      :selected="view.you.vote"
+      :disabled="!canVote"
+      @pick="(id) => send({ type: 'cast_vote', targetId: id })"
+    >
+      <template #caption="{ id }">{{ view.voted.includes(id) ? 'has voted' : 'thinking...' }}</template>
+    </PlayerPicker>
+    <ProgressCount :done="view.voted.length" :total="view.roundPlayers.length" label="voted" />
 
     <!-- Empty in spoken mode. -->
     <ClueList v-if="view.clues.length > 0" :view="view" :room="room" />
@@ -39,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { isHost, nameOf } from '@wsfg/core/ui'
+import { isHost, PlayerPicker, ProgressCount } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'
