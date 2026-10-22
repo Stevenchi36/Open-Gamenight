@@ -11,7 +11,8 @@
     "./client": "./src/client.ts",
     "./protocol": "./src/protocol.ts",
     "./rng": "./src/rng.ts",
-    "./testing": "./src/testing/index.ts"
+    "./testing": "./src/testing/index.ts",
+    "./categories": "./src/categories.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

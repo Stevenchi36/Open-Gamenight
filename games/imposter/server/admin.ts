@@ -14,10 +14,12 @@ import {
   MAX_GENERATE,
   MAX_PAGE_SIZE,
   removeWords,
+  updateWord,
 } from './library.ts'
 
 const difficulty = z.enum(['easy', 'medium', 'hard'])
 const listQuery = z.object({
+  categoryId: z.coerce.number().int().positive().optional(),
   category: z.string().optional(),
   q: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(50),
@@ -32,6 +34,12 @@ const addBody = z.object({
   source: z.enum(['manual', 'claude']).default('manual'),
 })
 const removeBody = z.object({ ids: z.array(z.number().int()).min(1).max(1000) })
+const patchBody = z.object({
+  categoryId: z.number().int().positive().optional(),
+  word: z.string().optional(),
+  hint: z.string().optional(),
+  difficulty: difficulty.optional(),
+})
 const generateBody = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
   category: z.string().trim().max(39).nullish(),
@@ -65,7 +73,18 @@ export function adminRouter(services: ServerServices): Router {
   router.post('/words', (req, res) => {
     const body = addBody.safeParse(req.body)
     if (!body.success) return invalid(res, body.error)
-    res.json(addWords(db, body.data.words, body.data.source))
+    res.json(addWords(services, body.data.words, body.data.source))
+  })
+
+  router.patch('/words/:id', (req, res) => {
+    const body = patchBody.safeParse(req.body)
+    if (!body.success) return invalid(res, body.error)
+    const result = updateWord(services, Number(req.params.id), body.data)
+    if (!result.ok) {
+      res.status(result.error.startsWith('No such') ? 404 : 400).json({ error: 'validation', message: result.error })
+      return
+    }
+    res.json(result.value)
   })
 
   router.delete('/words', (req, res) => {
@@ -84,7 +103,7 @@ export function adminRouter(services: ServerServices): Router {
     const admin = res.locals.user as AdminUser
     try {
       res.json(
-        await generateWords(ai, db, {
+        await generateWords(ai, services, {
           count: body.data.count,
           category: body.data.category ?? null,
           difficulty: body.data.difficulty ?? null,

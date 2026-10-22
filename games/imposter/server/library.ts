@@ -1,18 +1,28 @@
 /**
- * Word library service over imposter_words. Shared by prepareRound, the MCP
- * tools and the admin routes, so every path validates the same way.
- * Synchronous: node:sqlite is synchronous and the queries are tiny.
+ * Word library service over imposter_words (+ the shared categories table).
+ * Shared by prepareRound, the MCP tools and the admin routes, so every path
+ * validates the same way. Synchronous: node:sqlite is synchronous and the
+ * queries are tiny.
+ *
+ * Categories are referenced by id. Callers that only have a name (MCP, AI
+ * generation) go through addWords, which creates missing categories.
  */
 import type { DatabaseSync } from 'node:sqlite'
-import { AiError, type AiService } from '@wsfg/core/contract'
+import { AiError, type AiService, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
-import { validateWord, type WordInput } from './validate.ts'
+import { GAME_ID } from '../shared/index.ts'
+import { validateWord, type Validation, type WordInput } from './validate.ts'
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type WordSource = 'claude' | 'builtin' | 'manual'
 
+/** What the library functions need from the core. */
+export type Library = Pick<ServerServices, 'db' | 'categories'>
+
 export interface WordRow {
   id: number
+  category_id: number
+  /** Category name (joined). */
   category: string
   word: string
   hint: string
@@ -24,6 +34,7 @@ export interface WordRow {
 }
 
 export interface CategoryStats {
+  id: number
   category: string
   total: number
   unused: number
@@ -33,52 +44,81 @@ export interface CategoryStats {
 export const LOW_STOCK_THRESHOLD = 5
 export const MAX_PAGE_SIZE = 200
 
+const FROM = `FROM imposter_words w JOIN categories c ON c.id = w.category_id AND c.game_id = '${GAME_ID}'`
+const SELECT_WORD = `SELECT w.id, w.category_id, c.name AS category, w.word, w.hint, w.difficulty, w.source,
+  w.times_used, w.last_used_at, w.created_at ${FROM}`
+
+function categoryFilter(where: string[], params: (string | number)[], options: { categoryId?: number | null; category?: string | null }) {
+  if (options.categoryId) {
+    where.push('w.category_id = ?')
+    params.push(options.categoryId)
+  } else if (options.category) {
+    where.push('c.name = ? COLLATE NOCASE')
+    params.push(options.category.trim())
+  }
+}
+
 export function listWords(
   db: DatabaseSync,
-  options: { category?: string | null; q?: string | null; limit?: number; offset?: number } = {},
+  options: { categoryId?: number | null; category?: string | null; q?: string | null; limit?: number; offset?: number } = {},
 ): { total: number; words: WordRow[] } {
   const where: string[] = []
   const params: (string | number)[] = []
-  if (options.category) {
-    where.push('category = ? COLLATE NOCASE')
-    params.push(options.category)
-  }
+  categoryFilter(where, params, options)
   if (options.q) {
-    where.push("(word LIKE ? ESCAPE '\\' OR hint LIKE ? ESCAPE '\\')")
+    where.push("(w.word LIKE ? ESCAPE '\\' OR w.hint LIKE ? ESCAPE '\\')")
     const like = `%${options.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
     params.push(like, like)
   }
   const clause = where.length ? `WHERE ${where.join(' AND ')}` : ''
   const limit = Math.min(Math.max(1, options.limit ?? 50), MAX_PAGE_SIZE)
   const offset = Math.max(0, options.offset ?? 0)
-  const { total } = db.prepare(`SELECT COUNT(*) AS total FROM imposter_words ${clause}`).get(...params) as { total: number }
+  const { total } = db.prepare(`SELECT COUNT(*) AS total ${FROM} ${clause}`).get(...params) as { total: number }
   const words = db
-    .prepare(`SELECT * FROM imposter_words ${clause} ORDER BY category COLLATE NOCASE, word COLLATE NOCASE LIMIT ? OFFSET ?`)
+    .prepare(`${SELECT_WORD} ${clause} ORDER BY c.name COLLATE NOCASE, w.word COLLATE NOCASE LIMIT ? OFFSET ?`)
     .all(...params, limit, offset) as unknown as WordRow[]
   return { total, words }
 }
 
+/** Every Imposter category (including empty ones) with total and unused word counts. */
 export function listCategories(db: DatabaseSync): CategoryStats[] {
   return db
     .prepare(
-      `SELECT category, COUNT(*) AS total, SUM(times_used = 0) AS unused
-       FROM imposter_words GROUP BY category COLLATE NOCASE ORDER BY category COLLATE NOCASE`,
+      `SELECT c.id, c.name AS category, COUNT(w.id) AS total, COALESCE(SUM(w.times_used = 0), 0) AS unused
+       FROM categories c LEFT JOIN imposter_words w ON w.category_id = c.id
+       WHERE c.game_id = '${GAME_ID}'
+       GROUP BY c.id ORDER BY c.name COLLATE NOCASE`,
     )
     .all() as unknown as CategoryStats[]
+}
+
+/** Words per category id (for the core Categories admin page). */
+export function categoryUsage(db: DatabaseSync): Record<number, number> {
+  const rows = db.prepare('SELECT category_id AS id, COUNT(*) AS n FROM imposter_words GROUP BY category_id').all() as {
+    id: number
+    n: number
+  }[]
+  return Object.fromEntries(rows.map((r) => [r.id, r.n]))
 }
 
 export interface AddResult {
   inserted: number
   skipped: { word: string; category: string; reason: string }[]
+  /** Category names that didn't exist and were created. */
+  createdCategories: string[]
 }
 
-/** Validate, de-dupe (same category + word, case-insensitive) and insert. Duplicates are skipped, not errors. */
-export function addWords(db: DatabaseSync, inputs: WordInput[], source: WordSource = 'manual'): AddResult {
+/**
+ * Validate, de-dupe (same category + word, case-insensitive) and insert.
+ * Duplicates are skipped, not errors. Unknown category names are created.
+ */
+export function addWords(lib: Library, inputs: WordInput[], source: WordSource = 'manual'): AddResult {
+  const { db, categories } = lib
   const insert = db.prepare(
-    `INSERT INTO imposter_words (category, word, hint, difficulty, source) VALUES (?, ?, ?, ?, ?)
+    `INSERT INTO imposter_words (category_id, word, hint, difficulty, source) VALUES (?, ?, ?, ?, ?)
      ON CONFLICT DO NOTHING`,
   )
-  const result: AddResult = { inserted: 0, skipped: [] }
+  const result: AddResult = { inserted: 0, skipped: [], createdCategories: [] }
   db.exec('BEGIN IMMEDIATE')
   try {
     for (const input of inputs) {
@@ -87,10 +127,15 @@ export function addWords(db: DatabaseSync, inputs: WordInput[], source: WordSour
         result.skipped.push({ word: String(input.word ?? ''), category: String(input.category ?? ''), reason: checked.error })
         continue
       }
-      const { category, word, hint, difficulty } = checked.value
-      const { changes } = insert.run(category, word, hint, difficulty, source)
+      const { category: name, word, hint, difficulty } = checked.value
+      let category = categories.findByName(name)
+      if (!category) {
+        category = categories.create(name)
+        result.createdCategories.push(category.name)
+      }
+      const { changes } = insert.run(category.id, word, hint, difficulty, source)
       if (changes > 0) result.inserted++
-      else result.skipped.push({ word, category, reason: 'Already in the library' })
+      else result.skipped.push({ word, category: category.name, reason: 'Already in the library' })
     }
     db.exec('COMMIT')
   } catch (error) {
@@ -98,6 +143,41 @@ export function addWords(db: DatabaseSync, inputs: WordInput[], source: WordSour
     throw error
   }
   return result
+}
+
+export interface WordPatch {
+  categoryId?: number
+  word?: string
+  hint?: string
+  difficulty?: Difficulty
+}
+
+/** Edit one word (move it to another category, fix the text or hint). Same rules as adding. */
+export function updateWord(lib: Library, id: number, patch: WordPatch): Validation<WordRow> {
+  const { db, categories } = lib
+  const current = db.prepare(`${SELECT_WORD} WHERE w.id = ?`).get(id) as WordRow | undefined
+  if (!current) return { ok: false, error: 'No such word' }
+  const category = categories.get(patch.categoryId ?? current.category_id)
+  if (!category) return { ok: false, error: 'No such category' }
+  const checked = validateWord({
+    category: category.name,
+    word: patch.word ?? current.word,
+    hint: patch.hint ?? current.hint,
+    difficulty: patch.difficulty ?? current.difficulty,
+  })
+  if (!checked.ok) return checked
+  const clash = db
+    .prepare('SELECT 1 FROM imposter_words WHERE category_id = ? AND word = ? COLLATE NOCASE AND id != ?')
+    .get(category.id, checked.value.word, id)
+  if (clash) return { ok: false, error: `${checked.value.word} is already in ${category.name}` }
+  db.prepare('UPDATE imposter_words SET category_id = ?, word = ?, hint = ?, difficulty = ? WHERE id = ?').run(
+    category.id,
+    checked.value.word,
+    checked.value.hint,
+    checked.value.difficulty,
+    id,
+  )
+  return { ok: true, value: db.prepare(`${SELECT_WORD} WHERE w.id = ?`).get(id) as unknown as WordRow }
 }
 
 export function removeWords(db: DatabaseSync, ids: number[]): number {
@@ -116,25 +196,23 @@ export function removeWords(db: DatabaseSync, ids: number[]): number {
 }
 
 /**
- * The least-used word (random among ties), optionally in one category,
- * skipping ids already used in this room. Marks it used. null if nothing matches.
+ * The least-used word (random among ties), optionally in one category (by
+ * name, as stored in room settings), skipping ids already used in this room.
+ * Marks it used. null if nothing matches.
  */
 export function pickWord(db: DatabaseSync, options: { category?: string | null; excludeIds?: number[] } = {}): WordRow | null {
   const where: string[] = []
   const params: (string | number)[] = []
-  if (options.category) {
-    where.push('category = ? COLLATE NOCASE')
-    params.push(options.category)
-  }
+  categoryFilter(where, params, { category: options.category ?? null })
   const exclude = options.excludeIds ?? []
   if (exclude.length > 0) {
-    where.push(`id NOT IN (${exclude.map(() => '?').join(',')})`)
+    where.push(`w.id NOT IN (${exclude.map(() => '?').join(',')})`)
     params.push(...exclude)
   }
   const clause = where.length ? `WHERE ${where.join(' AND ')}` : ''
-  const row = db
-    .prepare(`SELECT * FROM imposter_words ${clause} ORDER BY times_used ASC, random() LIMIT 1`)
-    .get(...params) as WordRow | undefined
+  const row = db.prepare(`${SELECT_WORD} ${clause} ORDER BY w.times_used ASC, random() LIMIT 1`).get(...params) as
+    | WordRow
+    | undefined
   if (!row) return null
   db.prepare("UPDATE imposter_words SET times_used = times_used + 1, last_used_at = datetime('now') WHERE id = ?").run(row.id)
   return { ...row, times_used: row.times_used + 1 }
@@ -150,6 +228,7 @@ export const MAX_GENERATE = 50
 
 export interface GenerateRequest {
   count: number
+  /** Category name; may be new (it's created when the candidates are saved). */
   category?: string | null
   difficulty?: Difficulty | null
   userId: string | null
@@ -190,15 +269,16 @@ Rules for each entry:
  */
 export async function generateWords(
   ai: AiService,
-  db: DatabaseSync,
+  lib: Library,
   request: GenerateRequest,
 ): Promise<{ candidates: Candidate[]; skipped: AddResult['skipped'] }> {
+  const { db, categories } = lib
   const count = Math.min(Math.max(1, Math.floor(request.count)), MAX_GENERATE)
-  const category = request.category?.trim() || null
-  const avoid = category
-    ? listWords(db, { category, limit: MAX_PAGE_SIZE }).words.map((w) => w.word)
-    : []
-  const known = listCategories(db).map((c) => c.category)
+  const requested = request.category?.trim() || null
+  // Use the stored spelling when the category already exists.
+  const category = requested ? (categories.findByName(requested)?.name ?? requested) : null
+  const avoid = category ? listWords(db, { category, limit: MAX_PAGE_SIZE }).words.map((w) => w.word) : []
+  const known = categories.list().map((c) => c.name)
 
   const prompt = [
     `Write ${count} new entries${category ? ` in the category "${category}"` : ' across a few fun, varied categories'}.`,
@@ -241,7 +321,7 @@ export function screenCandidates(
   entries: WordInput[],
   category: string | null,
 ): { candidates: Candidate[]; skipped: AddResult['skipped'] } {
-  const exists = db.prepare('SELECT 1 FROM imposter_words WHERE category = ? COLLATE NOCASE AND word = ? COLLATE NOCASE')
+  const exists = db.prepare(`SELECT 1 ${FROM} WHERE c.name = ? COLLATE NOCASE AND w.word = ? COLLATE NOCASE`)
   const seen = new Set<string>()
   const candidates: Candidate[] = []
   const skipped: AddResult['skipped'] = []

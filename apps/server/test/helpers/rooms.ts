@@ -1,4 +1,5 @@
 /** Fakes for RoomManager tests: a manual clock and in-memory connections. */
+import { createCategoryService } from '@wsfg/core/categories'
 import type { AnyGameModule } from '@wsfg/core/contract'
 import type { ClientMessage, ServerMessage } from '@wsfg/core/protocol'
 import { clientMessageSchema } from '@wsfg/core/protocol'
@@ -91,7 +92,13 @@ export function createManager(
     games,
     config: { MAX_ROOMS: options.maxRooms ?? 50, MAX_ROOMS_PER_USER: options.maxRoomsPerUser ?? 2 },
     logger: createLogger('test', 'silent'),
-    servicesFor: (game) => ({ gameId: game.id, db, ai: null, logger: createLogger(game.id, 'silent') }),
+    servicesFor: (game) => ({
+      gameId: game.id,
+      db,
+      ai: null,
+      logger: createLogger(game.id, 'silent'),
+      categories: createCategoryService(db, game.id),
+    }),
     clock,
     joinLimiter: new RateLimiter({ windowMs: 60_000, max: options.joinLimit ?? 1000 }),
   })

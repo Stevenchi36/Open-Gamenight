@@ -13,6 +13,7 @@ import { existsSync } from 'node:fs'
 import { isAbsolute, join, resolve } from 'node:path'
 import { McpServer } from '@modelcontextprotocol/server'
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio'
+import { createCategoryService } from '@wsfg/core/categories'
 import type { AnyGameModule, ServerServices } from '@wsfg/core/contract'
 import { games } from '@wsfg/games/server'
 import { createAiCore } from '@wsfg/server/ai'
@@ -53,7 +54,13 @@ export async function main(): Promise<void> {
 
   const server = new McpServer({ name: 'ws-family-games', version: '0.1.0' })
   for (const game of games) {
-    registerGameTools(server, game, { gameId: game.id, db, ai: ai?.forGame(game.id) ?? null, logger: logger.child(game.id) })
+    registerGameTools(server, game, {
+      gameId: game.id,
+      db,
+      ai: ai?.forGame(game.id) ?? null,
+      logger: logger.child(game.id),
+      categories: createCategoryService(db, game.id),
+    })
   }
 
   const transport = new StdioServerTransport()

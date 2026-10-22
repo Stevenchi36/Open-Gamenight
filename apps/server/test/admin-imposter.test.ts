@@ -48,14 +48,15 @@ describe('/api/admin/imposter', () => {
     expect(await added.json()).toMatchObject({
       inserted: 2,
       skipped: [{ reason: 'Already in the library' }, { reason: 'Hint must not contain the word' }],
+      createdCategories: ['Space'],
     })
 
     const cats = (await (await t.fetch('/api/admin/imposter/categories', { cookie: admin })).json()) as {
-      categories: { category: string; unused: number; runningLow: boolean }[]
+      categories: { id: number; category: string; unused: number; runningLow: boolean }[]
       aiEnabled: boolean
     }
     expect(cats.aiEnabled).toBe(true)
-    expect(cats.categories).toEqual([{ category: 'Space', total: 2, unused: 2, runningLow: true }])
+    expect(cats.categories).toEqual([{ id: expect.any(Number), category: 'Space', total: 2, unused: 2, runningLow: true }])
 
     const list = (await (await t.fetch('/api/admin/imposter/words?q=tail', { cookie: admin })).json()) as {
       total: number
@@ -112,5 +113,61 @@ describe('/api/admin/imposter', () => {
     const res = await noAi.fetch('/api/admin/imposter/words/generate', { method: 'POST', cookie, ...json({ count: 3 }) })
     expect(res.status).toBe(503)
     expect(await (await noAi.fetch('/api/admin/ai/usage', { cookie })).json()).toEqual({ enabled: false })
+  })
+})
+
+describe('/api/admin/categories/imposter', () => {
+  const base = '/api/admin/categories/imposter'
+  type Cat = { id: number; name: string; count: number }
+  const list = async () => ((await (await t.fetch(base, { cookie: admin })).json()) as { categories: Cat[] }).categories
+  const send = (path: string, method: string, body?: unknown) =>
+    t.fetch(path, { method, cookie: admin, ...(body === undefined ? {} : json(body)) })
+
+  it('is admin-only and 404s for games without categories', async () => {
+    expect((await t.fetch(base)).status).toBe(401)
+    expect((await t.fetch(base, { cookie: user })).status).toBe(403)
+    expect((await t.fetch('/api/admin/categories/nope', { cookie: admin })).status).toBe(404)
+  })
+
+  it('creates, renames, lists with counts, and only deletes empty categories', async () => {
+    const created = await send(base, 'POST', { name: 'Board Games' })
+    expect(created.status).toBe(200)
+    const board = (await created.json()) as Cat
+    expect((await send(base, 'POST', { name: 'board games' })).status).toBe(409)
+    expect((await send(base, 'POST', { name: '' })).status).toBe(400)
+
+    const renamed = await send(`${base}/${board.id}`, 'PATCH', { name: 'Games' })
+    expect(await renamed.json()).toMatchObject({ id: board.id, name: 'Games' })
+
+    // a word in the category: the list shows its count and delete is refused
+    const add = await send('/api/admin/imposter/words', 'POST', {
+      words: [{ category: 'Games', word: 'Chess', hint: 'Kings and queens' }],
+    })
+    expect(await add.json()).toMatchObject({ inserted: 1, createdCategories: [] })
+    expect((await list()).find((c) => c.id === board.id)).toMatchObject({ name: 'Games', count: 1 })
+    const refused = await send(`${base}/${board.id}`, 'DELETE')
+    expect(refused.status).toBe(409)
+    expect(await refused.json()).toMatchObject({ error: 'in_use' })
+
+    // move the word out, then delete works
+    const found = (await (await t.fetch('/api/admin/imposter/words?q=Chess', { cookie: admin })).json()) as {
+      words: { id: number }[]
+    }
+    const space = (await list()).find((c) => c.name === 'Space')!
+    const moved = await send(`/api/admin/imposter/words/${found.words[0]!.id}`, 'PATCH', { categoryId: space.id })
+    expect(await moved.json()).toMatchObject({ category: 'Space', word: 'Chess' })
+    expect((await send(`${base}/${board.id}`, 'DELETE')).status).toBe(200)
+    expect((await list()).some((c) => c.id === board.id)).toBe(false)
+  })
+
+  it('filters words by category id and rejects bad edits', async () => {
+    const space = (await list()).find((c) => c.name === 'Space')!
+    const words = (await (await t.fetch(`/api/admin/imposter/words?categoryId=${space.id}`, { cookie: admin })).json()) as {
+      total: number
+      words: { id: number; category: string }[]
+    }
+    expect(words.total).toBeGreaterThan(0)
+    expect(words.words.every((w) => w.category === 'Space')).toBe(true)
+    expect((await send(`/api/admin/imposter/words/${words.words[0]!.id}`, 'PATCH', { categoryId: 99999 })).status).toBe(404)
   })
 })

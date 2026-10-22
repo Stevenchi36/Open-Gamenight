@@ -7,7 +7,7 @@ import { defineGame } from '@wsfg/core/contract'
 import express from 'express'
 import { BUILTIN_CATEGORIES } from './builtin-words.ts'
 import { imposter as game, type ImposterAction, type ImposterState, type PreparedWord } from './game.ts'
-import { countWords, listCategories, pickWord } from './library.ts'
+import { categoryUsage, countWords, listCategories, pickWord } from './library.ts'
 import { adminRouter } from './admin.ts'
 import { mcpTools } from './mcp.ts'
 import { migrations } from './migrations.ts'
@@ -18,6 +18,7 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
   migrations,
   mcpTools,
   adminRouter,
+  categories: { usage: (services) => categoryUsage(services.db) },
 
   async prepareRound(request, { settings, services }) {
     const newRound = request.trigger === 'init' || request.action.type === 'next_round'
@@ -41,7 +42,10 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
     const router = express.Router()
     router.get('/categories', (_req, res) => {
       res.json({
-        library: listCategories(services.db).map((c) => ({ category: c.category, total: c.total })),
+        // only categories with words are worth picking in the lobby
+        library: listCategories(services.db)
+          .filter((c) => c.total > 0)
+          .map((c) => ({ category: c.category, total: c.total })),
         builtin: BUILTIN_CATEGORIES,
       })
     })

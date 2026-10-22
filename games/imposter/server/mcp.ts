@@ -36,14 +36,15 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
     {
       name: 'add_words',
       description:
-        'Add words to the Word Imposter library. Each needs a category, the word, and a vague hint for the imposter. ' +
+        'Add words to the Word Imposter library. Each needs a category name, the word, and a vague hint for the imposter. ' +
+        'Categories that do not exist yet are created (reported in createdCategories); prefer existing names from list_categories. ' +
         'Duplicates (same category + word) and invalid entries are skipped and reported.',
       inputSchema: addSchema,
-      handler: async (args) => addWords(db, addSchema.parse(args).words, 'claude'),
+      handler: async (args) => addWords(services, addSchema.parse(args).words, 'claude'),
     },
     {
       name: 'list_categories',
-      description: `List library categories with total and unused word counts. Categories with fewer than ${LOW_STOCK_THRESHOLD} unused words are running low.`,
+      description: `List library categories (including empty ones) with total and unused word counts. Categories with fewer than ${LOW_STOCK_THRESHOLD} unused words are running low.`,
       inputSchema: z.object({}),
       handler: async () =>
         listCategories(db).map((c) => ({ ...c, runningLow: c.unused < LOW_STOCK_THRESHOLD })),
@@ -73,14 +74,14 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
       inputSchema: generateSchema,
       handler: async (args) => {
         const { count, category, difficulty } = generateSchema.parse(args)
-        const { candidates, skipped } = await generateWords(ai, db, {
+        const { candidates, skipped } = await generateWords(ai, services, {
           count,
           category: category ?? null,
           difficulty: difficulty ?? null,
           userId: null,
         })
-        const saved = addWords(db, candidates, 'claude')
-        return { inserted: saved.inserted, skipped: [...skipped, ...saved.skipped] }
+        const saved = addWords(services, candidates, 'claude')
+        return { ...saved, skipped: [...skipped, ...saved.skipped] }
       },
     })
   }

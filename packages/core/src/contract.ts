@@ -12,6 +12,7 @@
 import type { Router } from 'express'
 import type { DatabaseSync } from 'node:sqlite'
 import type { ZodObject, ZodType } from 'zod'
+import type { CategoryService } from './categories.ts'
 import type { Rng } from './rng.ts'
 
 export type PlayerId = string
@@ -147,12 +148,19 @@ export interface AiService {
 /** Services the core hands to a game's integrations (never to init/reduce/view). */
 export interface ServerServices {
   gameId: string
-  /** games.db handle (WAL, busy_timeout set). Only touch tables prefixed with `<gameId>_`. */
+  /**
+   * games.db handle (WAL, busy_timeout, foreign keys on). Write only to tables
+   * prefixed with `<gameId>_`. The core `categories` table may be read and joined
+   * (always filtered by game_id = gameId) and referenced by foreign key; change
+   * it through `categories`.
+   */
   db: DatabaseSync
   /** null when ANTHROPIC_API_KEY is unset: hide generation features. */
   ai: AiService | null
   /** Writes to stderr, so it is safe inside the stdio MCP process. */
   logger: Logger
+  /** This game's rows in the shared categories table. */
+  categories: CategoryService
 }
 
 /** An MCP tool, independent of the MCP SDK. Registered as `<gameId>_<name>`. */
@@ -198,6 +206,12 @@ export interface GameModule<S, A, V, Settings, P = undefined> {
   /** Read-only data for players (e.g. lobby pickers). Mounted at /api/games/<id>; the core only lets GET through. */
   publicRouter?(services: ServerServices): Router
   mcpTools?(services: ServerServices): McpToolDef[]
+  /**
+   * Set if the game uses the shared categories table. The core then serves
+   * /api/admin/categories/<id> (list/create/rename/delete) and shows a
+   * Categories admin page; `usage` returns how many items use each category id.
+   */
+  categories?: { usage(services: ServerServices): Record<number, number> }
   /**
    * Async I/O step the runner awaits before init and before every action
    * (including scheduled ones). Return undefined when the action needs nothing.

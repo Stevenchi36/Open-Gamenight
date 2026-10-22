@@ -10,6 +10,12 @@
             <template v-for="game in gamesWithPages" :key="game.id">
               <v-list-subheader>{{ game.name }}</v-list-subheader>
               <v-list-item
+                v-if="withCategories.has(game.id)"
+                prepend-icon="mdi-shape-outline"
+                title="Categories"
+                :to="{ name: 'admin-categories', params: { gameId: game.id } }"
+              />
+              <v-list-item
                 v-for="page in game.adminPages"
                 :key="page.path"
                 prepend-icon="mdi-puzzle-outline"
@@ -30,6 +36,16 @@
 <script setup lang="ts">
 // UX only: the router guard and this page are conveniences; the server enforces admin on every route.
 import { clientGames } from '@wsfg/games/client'
+import { computed, onMounted, ref } from 'vue'
 
-const gamesWithPages = clientGames.filter((g) => g.adminPages?.length)
+/** Games that use the shared categories table (reported by the server). */
+const withCategories = ref(new Set<string>())
+onMounted(async () => {
+  const res = await fetch('/api/admin/status')
+  if (!res.ok) return
+  const { games } = (await res.json()) as { games: { id: string; hasCategories: boolean }[] }
+  withCategories.value = new Set(games.filter((g) => g.hasCategories).map((g) => g.id))
+})
+
+const gamesWithPages = computed(() => clientGames.filter((g) => g.adminPages?.length || withCategories.value.has(g.id)))
 </script>

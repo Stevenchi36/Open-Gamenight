@@ -3,7 +3,10 @@
     <div class="d-flex align-center flex-wrap ga-2 mb-4">
       <h1 class="text-h5">Word library</h1>
       <v-spacer />
-      <v-btn variant="tonal" prepend-icon="mdi-plus" @click="openAdd">Add word</v-btn>
+      <v-btn variant="text" prepend-icon="mdi-shape-outline" :to="{ name: 'admin-categories', params: { gameId: 'imposter' } }">
+        Categories
+      </v-btn>
+      <v-btn variant="tonal" prepend-icon="mdi-plus" :disabled="categories.length === 0" @click="openAdd">Add word</v-btn>
       <v-btn v-if="aiEnabled" color="primary" prepend-icon="mdi-creation" @click="openGenerate()">Generate</v-btn>
     </div>
 
@@ -18,14 +21,16 @@
       <v-card-text class="d-flex flex-wrap ga-2">
         <v-chip
           v-for="c in categories"
-          :key="c.category"
-          :color="filter.category === c.category ? 'primary' : c.runningLow ? 'warning' : undefined"
-          :variant="filter.category === c.category ? 'flat' : 'tonal'"
-          @click="toggleCategory(c.category)"
+          :key="c.id"
+          :color="filter.categoryId === c.id ? 'primary' : c.runningLow ? 'warning' : undefined"
+          :variant="filter.categoryId === c.id ? 'flat' : 'tonal'"
+          @click="toggleCategory(c.id)"
         >
           {{ c.category }} <span class="ml-1 text-caption">{{ c.unused }}/{{ c.total }}</span>
         </v-chip>
-        <span v-if="categories.length === 0" class="text-medium-emphasis">The library is empty; games use the built-in words until you add some.</span>
+        <span v-if="categories.length === 0" class="text-medium-emphasis">
+          No categories yet. Add some under Categories (or generate words into a new one). Until the library has words, games use the built-in list.
+        </span>
       </v-card-text>
     </v-card>
 
@@ -56,7 +61,9 @@
         item-value="id"
         show-select
         density="comfortable"
+        hover
         @update:options="load"
+        @click:row="(_e: unknown, row: { item: WordRow }) => openEdit(row.item)"
       >
         <template #[`item.difficulty`]="{ item }">
           <v-chip size="x-small" variant="tonal">{{ item.difficulty }}</v-chip>
@@ -68,7 +75,7 @@
     <v-dialog v-model="adding" max-width="460">
       <v-card title="Add a word">
         <v-card-text>
-          <v-combobox v-model="draft.category" :items="categoryNames" label="Category" />
+          <v-select v-model="draft.categoryId" :items="categories" item-title="category" item-value="id" label="Category" />
           <v-text-field v-model="draft.word" label="Word" maxlength="29" counter />
           <v-text-field v-model="draft.hint" label="Hint for the imposter" hint="Vague; must not contain the word" persistent-hint maxlength="119" />
           <v-select v-model="draft.difficulty" :items="difficulties" label="Difficulty" class="mt-2" />
@@ -76,7 +83,27 @@
         <v-card-actions>
           <v-spacer />
           <v-btn @click="adding = false">Cancel</v-btn>
-          <v-btn color="primary" :disabled="!draft.category || !draft.word || !draft.hint" @click="saveDraft">Save</v-btn>
+          <v-btn color="primary" :disabled="!draft.categoryId || !draft.word || !draft.hint" @click="saveDraft">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog :model-value="!!editing" max-width="460" @update:model-value="editing = null">
+      <v-card :title="`Edit ${editing?.word}`">
+        <v-card-text>
+          <v-select v-model="edit.categoryId" :items="categories" item-title="category" item-value="id" label="Category" />
+          <v-text-field v-model="edit.word" label="Word" maxlength="29" counter />
+          <v-text-field v-model="edit.hint" label="Hint for the imposter" maxlength="119" />
+          <v-select v-model="edit.difficulty" :items="difficulties" label="Difficulty" />
+          <div v-if="editing" class="text-caption text-medium-emphasis">
+            Source: {{ editing.source }} · used {{ editing.times_used }} time{{ editing.times_used === 1 ? '' : 's' }}
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="error" variant="text" prepend-icon="mdi-delete" @click="deleteEditing">Delete</v-btn>
+          <v-spacer />
+          <v-btn @click="editing = null">Cancel</v-btn>
+          <v-btn color="primary" :disabled="!edit.word || !edit.hint" @click="saveEdit">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -135,6 +162,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 type Difficulty = 'easy' | 'medium' | 'hard'
 interface WordRow {
   id: number
+  category_id: number
   category: string
   word: string
   hint: string
@@ -143,6 +171,7 @@ interface WordRow {
   times_used: number
 }
 interface Category {
+  id: number
   category: string
   total: number
   unused: number
@@ -183,7 +212,7 @@ async function api<T>(path: string, init: { method?: string; body?: unknown } = 
 // ---- categories
 const categories = ref<Category[]>([])
 const aiEnabled = ref(false)
-const lowStock = computed(() => categories.value.filter((c) => c.runningLow))
+const lowStock = computed(() => categories.value.filter((c) => c.runningLow && c.total > 0))
 const categoryNames = computed(() => categories.value.map((c) => c.category))
 async function loadCategories() {
   const data = await api<{ categories: Category[]; aiEnabled: boolean }>('/categories')
@@ -198,13 +227,13 @@ const loading = ref(false)
 const page = ref(1)
 const itemsPerPage = ref(25)
 const selected = ref<number[]>([])
-const filter = reactive({ category: null as string | null, q: '' as string | null })
+const filter = reactive({ categoryId: null as number | null, q: '' as string | null })
 
 async function load() {
   loading.value = true
   try {
     const params = new URLSearchParams({ limit: String(itemsPerPage.value), offset: String((page.value - 1) * itemsPerPage.value) })
-    if (filter.category) params.set('category', filter.category)
+    if (filter.categoryId) params.set('categoryId', String(filter.categoryId))
     if (filter.q) params.set('q', filter.q)
     const data = await api<{ total: number; words: WordRow[] }>(`/words?${params}`)
     words.value = data.words
@@ -218,7 +247,7 @@ async function load() {
 
 let debounce: ReturnType<typeof setTimeout> | undefined
 watch(
-  () => [filter.category, filter.q],
+  () => [filter.categoryId, filter.q],
   () => {
     clearTimeout(debounce)
     debounce = setTimeout(() => {
@@ -227,9 +256,10 @@ watch(
     }, 250)
   },
 )
-function toggleCategory(category: string) {
-  filter.category = filter.category === category ? null : category
+function toggleCategory(id: number) {
+  filter.categoryId = filter.categoryId === id ? null : id
 }
+const nameOf = (id: number | null) => categories.value.find((c) => c.id === id)?.category ?? null
 
 async function refresh() {
   await Promise.all([loadCategories(), load()])
@@ -249,16 +279,19 @@ async function removeSelected() {
 
 // ---- add one
 const adding = ref(false)
-const draft = reactive({ category: '' as string | null, word: '', hint: '', difficulty: 'medium' as Difficulty })
+const draft = reactive({ categoryId: null as number | null, word: '', hint: '', difficulty: 'medium' as Difficulty })
 function openAdd() {
-  Object.assign(draft, { category: filter.category ?? '', word: '', hint: '', difficulty: 'medium' })
+  Object.assign(draft, { categoryId: filter.categoryId ?? categories.value[0]?.id ?? null, word: '', hint: '', difficulty: 'medium' })
   adding.value = true
 }
 async function saveDraft() {
   try {
     const result = await api<{ inserted: number; skipped: { reason: string }[] }>('/words', {
       method: 'POST',
-      body: { words: [{ ...draft, category: draft.category ?? '' }], source: 'manual' },
+      body: {
+        words: [{ category: nameOf(draft.categoryId) ?? '', word: draft.word, hint: draft.hint, difficulty: draft.difficulty }],
+        source: 'manual',
+      },
     })
     if (result.inserted) {
       adding.value = false
@@ -272,6 +305,31 @@ async function saveDraft() {
   }
 }
 
+// ---- edit / move one word
+const editing = ref<WordRow | null>(null)
+const edit = reactive({ categoryId: 0, word: '', hint: '', difficulty: 'medium' as Difficulty })
+function openEdit(row: WordRow) {
+  editing.value = row
+  Object.assign(edit, { categoryId: row.category_id, word: row.word, hint: row.hint, difficulty: row.difficulty })
+}
+async function saveEdit() {
+  const row = editing.value!
+  try {
+    await api(`/words/${row.id}`, { method: 'PATCH', body: { ...edit } })
+    editing.value = null
+    notify(`Saved ${edit.word}`)
+    await refresh()
+  } catch (error) {
+    notify((error as Error).message, 'error')
+  }
+}
+async function deleteEditing() {
+  const row = editing.value!
+  editing.value = null
+  selected.value = [row.id]
+  await removeSelected()
+}
+
 // ---- generate -> review -> save
 const generating = ref(false)
 const busy = ref(false)
@@ -280,7 +338,7 @@ const candidates = ref<Candidate[] | null>(null)
 const skippedCount = ref(0)
 const keepCount = computed(() => candidates.value?.filter((c) => c.keep).length ?? 0)
 
-function openGenerate(category: string | null = filter.category) {
+function openGenerate(category: string | null = nameOf(filter.categoryId)) {
   gen.category = category
   candidates.value = null
   generating.value = true

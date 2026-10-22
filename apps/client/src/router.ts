@@ -19,6 +19,12 @@ const router = createRouter({
         { path: '', name: 'admin', component: () => import('./pages/admin/AdminHome.vue') },
         { path: 'users', name: 'admin-users', component: () => import('./pages/admin/UsersPage.vue') },
         {
+          path: ':gameId/categories',
+          name: 'admin-categories',
+          component: () => import('./pages/admin/CategoriesPage.vue'),
+          props: true,
+        },
+        {
           path: ':gameId/:page',
           name: 'admin-game',
           component: () => import('./pages/admin/GameAdminPage.vue'),

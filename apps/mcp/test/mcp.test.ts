@@ -79,8 +79,8 @@ describe('MCP server', () => {
   it('lists categories with low-stock flags, searches and removes', async () => {
     const categories = text(await client.callTool({ name: 'imposter_list_categories', arguments: {} }))
     expect(categories).toEqual([
-      { category: 'Animals', total: 10, unused: 10, runningLow: false },
-      { category: 'Food', total: 11, unused: 11, runningLow: false },
+      { id: expect.any(Number), category: 'Animals', total: 10, unused: 10, runningLow: false },
+      { id: expect.any(Number), category: 'Food', total: 11, unused: 11, runningLow: false },
     ])
     const found = text(await client.callTool({ name: 'imposter_search_words', arguments: { query: 'otter' } })) as {
       total: number

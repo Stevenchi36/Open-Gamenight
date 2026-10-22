@@ -248,7 +248,7 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 
 ### Databases
 - `data/auth.db`: Better Auth only.
-- `data/games.db`: core tables (`ai_usage`, `schema_migrations`) plus each game's tables, prefixed with the game id (`imposter_words`, ...). Each game ships its own `migrations`; `db.ts` runs them in order on boot and records them in `schema_migrations`.
+- `data/games.db`: core tables (`ai_usage`, `categories`, `schema_migrations`) plus each game's tables, prefixed with the game id (`imposter_words`, ...). Each game ships its own `migrations`; `db.ts` runs them in order on boot and records them in `schema_migrations`.
 - Both in WAL mode with `PRAGMA busy_timeout = 5000`, so the server and the MCP process can share `games.db` safely. The MCP process **never opens `auth.db`**.
 
 ### Shared AI service (`apps/server/src/ai.ts`)
@@ -371,9 +371,15 @@ Players sit together, so the imposter could glance at a neighbour's phone. **The
 ### Word library
 Tables in `games.db` (Imposter migrations):
 ```sql
+-- core table, shared by all games (scoped by game_id), managed in /admin/<gameId>/categories
+CREATE TABLE IF NOT EXISTS categories (
+  id INTEGER PRIMARY KEY, game_id TEXT NOT NULL, name TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  UNIQUE (game_id, name COLLATE NOCASE)
+);
 CREATE TABLE IF NOT EXISTS imposter_words (
   id           INTEGER PRIMARY KEY,
-  category     TEXT NOT NULL,
+  category_id  INTEGER NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
   word         TEXT NOT NULL,
   hint         TEXT NOT NULL,           -- vague clue shown to the imposter
   difficulty   TEXT DEFAULT 'medium',   -- easy | medium | hard
@@ -381,9 +387,10 @@ CREATE TABLE IF NOT EXISTS imposter_words (
   times_used   INTEGER DEFAULT 0,
   last_used_at TEXT,
   created_at   TEXT DEFAULT (datetime('now')),
-  UNIQUE (category COLLATE NOCASE, word COLLATE NOCASE)
+  UNIQUE (category_id, word COLLATE NOCASE)
 );
 ```
+(Imposter's migration `002_category_ids` moved the original text `category` column into `categories`.)
 - `library.ts`: `listWords`, `listCategories` (total + unused counts), `addWords` (validate, de-dupe, insert, return `{ inserted, skipped }`), `removeWords`, `pickWord`, `generateWords` (via the core AI service).
 - **`pickWord({ category?, excludeIds })`** (run by the runner in `prepareRound`, so the reducer stays pure): least-used word, random among ties, optionally filtered by category, skipping words already used in this room; increments `times_used`/`last_used_at`. If the library is empty or nothing matches, fall back to `builtin-words.ts` and send the host a `notice`. A game must always be able to start.
 - Categories with fewer than ~5 unused words are flagged in the admin page ("running low on Foods").

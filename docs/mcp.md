@@ -140,9 +140,9 @@ All tools are prefixed with the game id. Word Imposter's:
 
 | Tool | What it does |
 |---|---|
-| `imposter_list_categories` | Categories with total and unused counts, plus `runningLow` (fewer than 5 unused). |
+| `imposter_list_categories` | All categories (including empty ones) with ids, total and unused counts, plus `runningLow` (fewer than 5 unused). |
 | `imposter_search_words` | Search by `category` and/or `query` (substring of word or hint), up to `limit` (max 200). Returns ids. |
-| `imposter_add_words` | Add `{ words: [{ category, word, hint, difficulty? }] }`, up to 200 per call. Duplicates and invalid entries are skipped and listed with a reason. Saved with source `claude`. |
+| `imposter_add_words` | Add `{ words: [{ category, word, hint, difficulty? }] }`, up to 200 per call. `category` is a name: matched to an existing category ignoring case, or created (listed in `createdCategories`). Duplicates and invalid entries are skipped and listed with a reason. Saved with source `claude`. |
 | `imposter_remove_words` | Remove by `{ ids: [...] }` (ids from `search_words`). |
 | `imposter_generate_words` | **Only registered when `ANTHROPIC_API_KEY` is set where the MCP server runs.** Generates with the server-side API and saves directly, within the daily token cap. Costs API credits; you usually don't need it from Claude Code. |
 
@@ -152,6 +152,7 @@ All tools are prefixed with the game id. Word Imposter's:
 - `hint`: under 120 characters, and must not contain the word.
 - `difficulty`: `easy` | `medium` | `hard` (default `medium`).
 - A word that's already in the same category (ignoring case) is skipped.
+- Categories are shared rows (`categories` table): rename or delete them in the admin panel (Admin → Word Imposter → Categories). A category that still has words can't be deleted; move or delete its words first.
 
 ## Example prompts
 

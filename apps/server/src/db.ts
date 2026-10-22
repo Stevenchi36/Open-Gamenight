@@ -6,6 +6,7 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
+import { CATEGORIES_MIGRATION } from '@wsfg/core/categories'
 import type { AnyGameModule, Logger, Migration } from '@wsfg/core/contract'
 
 export function openDatabase(path: string): DatabaseSync {
@@ -35,7 +36,7 @@ export function transaction<T>(db: DatabaseSync, fn: () => T): T {
   }
 }
 
-/** Core tables in games.db. Recorded as `core:<id>`. */
+/** Core tables in games.db, applied before any game's. Recorded as `core:<id>`. */
 export const CORE_MIGRATIONS: Migration[] = [
   {
     id: '001_ai_usage',
@@ -52,6 +53,7 @@ export const CORE_MIGRATIONS: Migration[] = [
       CREATE INDEX IF NOT EXISTS ai_usage_created_at ON ai_usage (created_at);
     `,
   },
+  CATEGORIES_MIGRATION,
 ]
 
 const CREATE_TABLE = /create\s+(?:virtual\s+)?table\s+(?:if\s+not\s+exists\s+)?["`[]?(\w+)/gi

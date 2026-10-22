@@ -73,7 +73,8 @@ beforeAll(async () => {
 
   // A small library category so the typed round goes through prepareRound + pickWord.
   const { addWords } = await import('../../../games/imposter/server/library.ts')
-  addWords(t.booted.gamesDb, [
+  const { createCategoryService } = await import('@wsfg/core/categories')
+  addWords({ db: t.booted.gamesDb, categories: createCategoryService(t.booted.gamesDb, 'imposter') }, [
     { category: 'Space', word: 'Comet', hint: 'Has a long tail' },
     { category: 'Space', word: 'Saturn', hint: 'Wears rings' },
     { category: 'Space', word: 'Telescope', hint: 'Brings the far close' },

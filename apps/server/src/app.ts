@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import type { DatabaseSync } from 'node:sqlite'
 import type { AiCore } from './ai.ts'
+import { createCategoryService } from '@wsfg/core/categories'
 import { MAX_PLAYERS_CAP, type AnyGameModule, type ServerServices } from '@wsfg/core/contract'
 import { toNodeHandler } from 'better-auth/node'
 import express, { type ErrorRequestHandler, type Express } from 'express'
@@ -25,7 +26,13 @@ export interface AppDeps {
 }
 
 export function createServices(deps: Pick<AppDeps, 'gamesDb' | 'logger' | 'ai'>, game: AnyGameModule): ServerServices {
-  return { gameId: game.id, db: deps.gamesDb, ai: deps.ai?.forGame(game.id) ?? null, logger: deps.logger.child(game.id) }
+  return {
+    gameId: game.id,
+    db: deps.gamesDb,
+    ai: deps.ai?.forGame(game.id) ?? null,
+    logger: deps.logger.child(game.id),
+    categories: createCategoryService(deps.gamesDb, game.id),
+  }
 }
 
 /** /api/games/<gameId>/*: read-only game data for players (GET only, rate-limited per IP). */

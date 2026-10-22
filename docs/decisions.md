@@ -57,6 +57,9 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 
 ## Data and AI
 - **Two SQLite files: `auth.db` and one shared `games.db` with per-game prefixed tables and migrations.** MCP never touches accounts; one game DB avoids multiplying files, backups and WAL handling.
+- **Categories live in one core `categories` table scoped by `game_id`, not in each game's rows.** Admins manage them directly (core Categories page per game), pickers and filters read the list instead of `SELECT DISTINCT`, and future games reuse it. Games reference categories by id with `ON DELETE RESTRICT`, may read/join the table filtered by their own `game_id`, and write through `services.categories`. This is the one exception to "games only touch their own prefixed tables".
+- **Adding words by category *name* (MCP, AI generation) creates missing categories; the admin "Add word" form picks from existing ones.** Claude can still say "add 20 words in a new Sports category"; the UI keeps the list tidy.
+- **A category with words can't be deleted (the database refuses); words can be edited and moved instead.** No silent cascades that delete a library by accident.
 - **No ORM: plain SQL migrations and prepared statements behind typed service functions (`library.ts`, `ai.ts`).** A handful of tables and queries, per-game migrations owned by each game, and live game state in memory leave an ORM little to do. If later games need relational data, add Kysely (already installed via Better Auth) as a query builder.
 - **Shared AI service caps daily output tokens (plus per-admin rate limit) and logs to `ai_usage`.** Tokens are game-neutral and close to real spend; per-call limits in game units stay in each game.
 - **AI is optional.** Self-hosters without an API key still get a working platform.
