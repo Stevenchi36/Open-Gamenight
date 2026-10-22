@@ -23,6 +23,10 @@ Multiplayer party-game platform (pnpm workspace, TypeScript, Node 26). Word Impo
 - AI calls go through `services.ai` (one strict tool, `tool_choice: auto`, validated output); the model and caps come from env.
 - Comments explain *why*; keep them brief and match the surrounding density.
 
+## Agent skills
+
+- `.claude/skills/` holds Better Auth's official skills (see `docs/decisions.md`). They're generic, so where they disagree with this repo, follow the repo. The schema migrates at boot (`createAuth`); there is no `npx auth migrate` step. The client IP reaches Better Auth through `INTERNAL_IP_HEADER`, never `x-forwarded-for`. Public sign-up stays closed.
+
 ## Workflow
 
 - Done means `pnpm test`, `pnpm typecheck` and `pnpm lint` all pass, plus `pnpm --filter @wsfg/client build` when client or `games/*/client` code changed.

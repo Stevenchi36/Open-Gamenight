@@ -46,6 +46,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Better Auth's schema is migrated at boot from code; the first admin comes from our `pnpm create-admin` script.** No CLI steps to forget on deploy, temp test databases just work, and the script uses the same config/env as the server.
 - **Our Origin check runs in front of Better Auth too.** Better Auth skips its own check for requests without cookies, which would let another site sign people in (login CSRF).
 - **The real client IP is computed once and handed to Better Auth in an internal header.** Better Auth's rate limits then use the same IP as ours, and a spoofed `X-Forwarded-For` can't dodge them.
+- **Agent skills: only ones published by a package's own maintainers, copied into `.claude/skills/` and pinned in `skills-lock.json`.** So far that is Better Auth's (best practices, security, email/password); org and 2FA skipped since we don't use them. Vue's `vuejs-ai/skills` is community-run and Vuetify's only skill targets `@vuetify/v0`, so neither is in. Skills run with full agent permissions, so read the diff after `npx skills update`.
 - **`.env` is read with Node's `process.loadEnvFile` from the repo root.** No dotenv dependency. Values starting with `#` (like the primary color) must be quoted.
 - **Same Node major version (26) in dev and prod; `pnpm install` runs on the VPS.** `node:sqlite` ships with Node, so its API follows the Node version.
 
