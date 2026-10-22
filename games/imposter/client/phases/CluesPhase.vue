@@ -25,16 +25,7 @@
       {{ nameOf(room, view.turn.currentPlayerId) }} is thinking of a clue...
     </div>
 
-    <v-card class="mb-4">
-      <v-card-title class="text-subtitle-1">Clues</v-card-title>
-      <v-card-text v-if="view.clues.length === 0" class="text-medium-emphasis">No clues yet.</v-card-text>
-      <v-list v-else density="compact">
-        <template v-for="(group, r) in grouped" :key="r">
-          <v-list-subheader v-if="view.turn.totalRotations > 1">Rotation {{ r + 1 }}</v-list-subheader>
-          <v-list-item v-for="c in group" :key="c.playerId + c.word" :title="c.word" :subtitle="nameOf(room, c.playerId)" />
-        </template>
-      </v-list>
-    </v-card>
+    <ClueList :view="view" :room="room" />
 
     <v-btn v-if="isHost" block variant="tonal" prepend-icon="mdi-vote" @click="send({ type: 'start_voting' })">
       Skip to voting
@@ -44,6 +35,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'
 import { nameOf, type PhaseProps } from '../util.ts'
 import TurnHeader from './TurnHeader.vue'
@@ -53,12 +45,6 @@ const myTurn = computed(() => props.view.turn.currentPlayerId === props.me)
 const isHost = computed(() => props.room.hostId === props.me)
 const clue = ref('')
 const localError = ref('')
-
-const grouped = computed(() => {
-  const groups: (typeof props.view.clues)[] = []
-  for (const c of props.view.clues) (groups[c.rotation - 1] ??= []).push(c)
-  return groups.filter(Boolean)
-})
 
 function submit() {
   const word = clue.value.trim()

@@ -29,6 +29,9 @@
     </div>
     <v-progress-linear :model-value="(view.voted.length / Math.max(1, view.roundPlayers.length)) * 100" color="primary" rounded height="6" class="mb-4" />
 
+    <!-- Empty in spoken mode. -->
+    <ClueList v-if="view.clues.length > 0" :view="view" :room="room" />
+
     <v-btn v-if="isHost" block variant="tonal" prepend-icon="mdi-eye" @click="send({ type: 'end_voting' })">
       Reveal now
     </v-btn>
@@ -37,6 +40,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'
 import { nameOf, type PhaseProps } from '../util.ts'
 
