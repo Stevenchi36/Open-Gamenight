@@ -136,6 +136,7 @@ interface GameModule<S, A, V, Settings> {
 - `InitCtx` / `ReduceCtx` carry `players`, `settings`, `actorId`, `now`, `rng` (seeded), and data prepared by `prepareRound`. Games never call `Math.random`, `Date.now`, `setTimeout`, or the DB from `reduce`/`view`.
 - **Effects** are plain data the runner executes: `{ type: 'schedule', at, action, key }`, `{ type: 'cancel', key }`, `{ type: 'notice', to, message }`, `{ type: 'gameOver' }` (back to the lobby). Timers (clue timer, disconnect grace) are scheduled actions, so they are testable and replayable.
 - Permission checks for game actions (current player only, judge only, host only for game moves) live in the reducer, because only the game knows who the judge is. `ReduceCtx` tells the reducer who the host is.
+- `@wsfg/core/kit` holds pure reducer helpers every game can use: `isPresent`/`isConnected`, `pickConnected` (host first), `nextTurnOrder` + `playerOrderSchema`, `carryScores`/`addPoints`/`withoutPlayer`, `tallyVotes`/`dropBallots`, the `secretBallots` leak spec, and `DISCONNECT_GRACE_MS`.
 
 ### Client side
 ```ts
