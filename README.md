@@ -31,12 +31,14 @@ Edit `.env` for local development:
 NODE_ENV=development
 BETTER_AUTH_SECRET=<at least 32 random characters>
 BETTER_AUTH_URL=http://localhost:5173
-ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://[::1]:5173
 TRUSTED_PROXY_HOPS=0
 REAL_IP_HEADER=
 ```
 
 Generate a secret with `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`.
+
+The `[::1]` origin is for the dev-players page; see [`docs/dev-testing.md`](docs/dev-testing.md).
 
 **Create the first admin and start:**
 
@@ -51,7 +53,7 @@ Databases are created and migrated automatically on first start, in `data/` (git
 
 ### Several players in one window
 
-Open **http://localhost:5173/dev-players.html?n=4**, or, signed in as an admin, use the people icon in the app bar (dev only). You get a grid of frames, each a separate player. P1 shares your sign-in, so create the room there. Then put the code in the toolbar and join from each guest frame; they reconnect to the same seats when you reload the page. Guest frames load from `http://[::1]:5173` so they don't share your session cookie, which means that origin has to be in `ALLOWED_ORIGINS`. If your Vite listens on IPv4 instead, use `?guest=http://127.0.0.1:5173` and allow that origin.
+With `http://[::1]:5173` in `ALLOWED_ORIGINS` (it's in the dev `.env` above), open **http://localhost:5173/dev-players.html?n=4** (or, signed in as an admin, click the people icon in the app bar). You get a grid of frames, each a separate player. Setup, how it works and troubleshooting are in [`docs/dev-testing.md`](docs/dev-testing.md).
 
 ### Playing on phones on your network
 
@@ -124,6 +126,7 @@ games/
   imposter/   Word Imposter: shared/ (types), server/ (rules, library, admin, MCP), client/ (views)
 docs/
   decisions.md   every design decision and why
+  dev-testing.md checks, dev-players page (several players in one window)
   mcp.md         Claude / MCP guide
 PLAN.md          the full design and build plan
 ```
