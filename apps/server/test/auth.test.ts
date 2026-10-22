@@ -54,6 +54,17 @@ describe('accounts', () => {
     expect(((await res.json()) as { user: unknown }).user).toMatchObject({ email: 'admin@example.com', role: 'admin' })
   })
 
+  it('does not let a user make themselves an admin', async () => {
+    const post = (path: string, body: unknown) =>
+      t.fetch(path, { method: 'POST', cookie: userCookie, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+    await post('/api/auth/update-user', { role: 'admin' })
+    const me = await t.fetch('/api/auth/admin/list-users', { cookie: userCookie })
+    expect(me.status).toBe(403)
+    const session = await t.fetch('/api/auth/get-session', { cookie: userCookie })
+    expect(((await session.json()) as { user: { role: string } }).user.role).toBe('user')
+    expect((await post('/api/auth/admin/set-role', { userId: 'anything', role: 'admin' })).status).toBe(403)
+  })
+
   it("lets only admins use Better Auth's admin endpoints", async () => {
     const asUser = await t.fetch('/api/auth/admin/list-users', { cookie: userCookie })
     expect(asUser.status).toBe(403)

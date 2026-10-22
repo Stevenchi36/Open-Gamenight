@@ -1,5 +1,6 @@
 /** Imposter admin routes through the real app (core guard + game router), with a fake AI client. */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createServices } from '../src/app.ts'
 import { FakeAnthropic } from './helpers/fake-ai.ts'
 import { startTestServer, type TestServer } from './helpers/server.ts'
 
@@ -30,6 +31,27 @@ describe('/api/admin/imposter', () => {
     expect((await t.fetch('/api/admin/imposter/words')).status).toBe(401)
     expect((await t.fetch('/api/admin/imposter/words', { cookie: user })).status).toBe(403)
     expect((await t.fetch('/api/admin/imposter/words', { cookie: admin })).status).toBe(200)
+  })
+
+  it('never calls the AI for guests, non-admins or cross-site requests', async () => {
+    const before = fake.requests.length
+    const generate = (init: { cookie?: string; headers?: Record<string, string> } = {}) =>
+      t.fetch('/api/admin/imposter/words/generate', {
+        method: 'POST',
+        ...json({ count: 5 }),
+        ...init,
+        headers: { 'content-type': 'application/json', ...init.headers },
+      })
+    expect((await generate()).status).toBe(401)
+    expect((await generate({ cookie: user })).status).toBe(403)
+    expect((await generate({ cookie: admin, headers: { origin: 'https://evil.example' } })).status).toBe(403)
+    expect(fake.requests.length).toBe(before)
+  })
+
+  it('gives the AI service only to admin code, never to gameplay or public routes', () => {
+    const imposter = t.booted.games.find((g) => g.id === 'imposter')!
+    expect(createServices(t.booted, imposter).ai).toBeNull()
+    expect(createServices(t.booted, imposter, { admin: true }).ai).not.toBeNull()
   })
 
   it('adds, lists, flags low stock and removes words', async () => {

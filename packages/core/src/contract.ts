@@ -155,7 +155,10 @@ export interface ServerServices {
    * it through `categories`.
    */
   db: DatabaseSync
-  /** null when ANTHROPIC_API_KEY is unset: hide generation features. */
+  /**
+   * null when ANTHROPIC_API_KEY is unset (hide generation features), and always
+   * null outside adminRouter/mcpTools: gameplay and public routes never get AI.
+   */
   ai: AiService | null
   /** Writes to stderr, so it is safe inside the stdio MCP process. */
   logger: Logger

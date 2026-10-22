@@ -25,11 +25,19 @@ export interface AppDeps {
   ai: AiCore | null
 }
 
-export function createServices(deps: Pick<AppDeps, 'gamesDb' | 'logger' | 'ai'>, game: AnyGameModule): ServerServices {
+/**
+ * Only admin-only code (admin routers) gets the AI service. Gameplay and public
+ * routes get `ai: null`, so no player or guest can ever trigger a paid API call.
+ */
+export function createServices(
+  deps: Pick<AppDeps, 'gamesDb' | 'logger' | 'ai'>,
+  game: AnyGameModule,
+  { admin = false }: { admin?: boolean } = {},
+): ServerServices {
   return {
     gameId: game.id,
     db: deps.gamesDb,
-    ai: deps.ai?.forGame(game.id) ?? null,
+    ai: admin ? (deps.ai?.forGame(game.id) ?? null) : null,
     logger: deps.logger.child(game.id),
     categories: createCategoryService(deps.gamesDb, game.id),
   }
@@ -78,7 +86,7 @@ export function createApp(deps: AppDeps): Express {
 
   app.use(
     '/api/admin',
-    createAdminRouter({ config, auth, games, ai: deps.ai, servicesFor: (game) => createServices(deps, game) }),
+    createAdminRouter({ config, auth, games, ai: deps.ai, servicesFor: (game) => createServices(deps, game, { admin: true }) }),
   )
 
   app.use('/api/games', createPublicGameRouter(deps))
