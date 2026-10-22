@@ -50,6 +50,8 @@ export type PreparedWord = (SecretWord & { notice?: string }) | { builtin: true;
 
 interface Outcome {
   votes: Record<PlayerId, number>
+  /** Voter -> target, as counted in `votes`. */
+  ballots: Record<PlayerId, PlayerId>
   accusedId: PlayerId | null
   caught: boolean
   judgeId: PlayerId | null
@@ -239,8 +241,11 @@ function maybeFinishVoting(state: ImposterState, ctx: Ctx, effects: Fx = []): St
 
 function enterReveal(state: ImposterState, ctx: Ctx, effects: Fx = []): Step {
   const votes: Record<PlayerId, number> = {}
+  const ballots: Record<PlayerId, PlayerId> = {}
   for (const [voter, target] of Object.entries(state.ballots)) {
-    if (state.roundPlayers.includes(voter) && state.roundPlayers.includes(target)) votes[target] = (votes[target] ?? 0) + 1
+    if (!state.roundPlayers.includes(voter) || !state.roundPlayers.includes(target)) continue
+    votes[target] = (votes[target] ?? 0) + 1
+    ballots[voter] = target
   }
   const top = Math.max(0, ...Object.values(votes))
   const leaders = Object.keys(votes).filter((id) => votes[id] === top)
@@ -249,6 +254,7 @@ function enterReveal(state: ImposterState, ctx: Ctx, effects: Fx = []): Step {
   const { guessMode } = state.settings
   const outcome: Outcome = {
     votes,
+    ballots,
     accusedId,
     caught,
     judgeId: null,
@@ -319,6 +325,7 @@ function voidRound(state: ImposterState): Step {
       turnDeadline: null,
       outcome: {
         votes: {},
+        ballots: {},
         accusedId: null,
         caught: false,
         judgeId: null,
@@ -444,6 +451,7 @@ function view(state: ImposterState, viewerId: PlayerId): ImposterView {
     const done = state.phase === 'RESULTS'
     result = {
       votes: o.votes,
+      votedFor: o.ballots,
       accusedId: o.accusedId,
       caught: o.caught,
       imposterId: state.imposterId,

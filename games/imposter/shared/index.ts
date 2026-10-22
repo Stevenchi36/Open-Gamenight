@@ -77,8 +77,10 @@ export interface Clue {
 }
 
 export interface ResultView {
-  /** Votes received per player (tally only; ballots stay secret). */
+  /** Votes received per player. */
   votes: Record<PlayerId, number>
+  /** Voter -> target. Secret during VOTING, public from REVEAL so the table can talk it over. */
+  votedFor: Record<PlayerId, PlayerId>
   /** null on a tie or no votes. */
   accusedId: PlayerId | null
   caught: boolean

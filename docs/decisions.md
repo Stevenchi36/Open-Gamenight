@@ -90,6 +90,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Hold-to-reveal for the role card and the judge's word.** People play around one table; the word must never sit on screen for the imposter to glance at.
 - **Spoken guess confirmed by a judge's tap (host, or first crew member if the host is imposter).** No spelling issues; trust-based by design.
 - **Configurable catch/escape points (defaults 1/2), guess bonus default +1.** Defaults suit 4-7 players; the table can rebalance for bigger groups.
+- **Ballots are secret during voting, then public (who voted for whom) on the reveal and results screens.** No bandwagoning while voting; afterwards the table wants to talk it over, and the 5s reveal alone is too short to read it.
 - **Ties mean the imposter escapes.** Crew must clearly agree to catch them.
 - **Typed clues reject the secret word and exact repeats (case-insensitive).** Prevents giving the word away and lazy copying.
 - **Typed clues are listed by player, numbered by rotation, and stay visible while voting.** Voters compare each player's clues side by side; the view already carries them.

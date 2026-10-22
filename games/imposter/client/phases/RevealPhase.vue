@@ -10,25 +10,7 @@
       </v-card-text>
     </v-card>
 
-    <v-card class="mb-4">
-      <v-card-title class="text-subtitle-1">Votes</v-card-title>
-      <v-card-text>
-        <div v-for="row in tally" :key="row.id" class="mb-2">
-          <div class="d-flex text-body-2">
-            <span>{{ nameOf(room, row.id) }}</span>
-            <v-spacer />
-            <span>{{ row.votes }}</span>
-          </div>
-          <v-progress-linear
-            :model-value="(row.votes / maxVotes) * 100"
-            :color="row.id === result.imposterId ? 'error' : 'primary'"
-            rounded
-            height="8"
-          />
-        </div>
-        <div v-if="tally.length === 0" class="text-medium-emphasis">No votes were cast.</div>
-      </v-card-text>
-    </v-card>
+    <VoteBreakdown :result="result" :view="view" :room="room" />
     <div class="text-center text-body-2 text-medium-emphasis">{{ next }}</div>
   </div>
 </template>
@@ -36,15 +18,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { nameOf, type PhaseProps } from '../util.ts'
+import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)
-const tally = computed(() =>
-  Object.entries(result.value?.votes ?? {})
-    .map(([id, votes]) => ({ id, votes }))
-    .sort((a, b) => b.votes - a.votes),
-)
-const maxVotes = computed(() => Math.max(1, ...tally.value.map((r) => r.votes)))
 const headline = computed(() => (result.value?.caught ? 'Caught!' : 'The imposter escaped'))
 const detail = computed(() => {
   const r = result.value

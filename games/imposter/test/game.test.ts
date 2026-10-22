@@ -254,6 +254,21 @@ describe('voting', () => {
     expect(sim.state.outcome).toMatchObject({ votes: { p1: 2, p2: 2 }, accusedId: null, caught: false })
   })
 
+  it('reveals who voted for whom from REVEAL on, and keeps it through RESULTS', () => {
+    const sim = newGame({ imposter: 'p1', settings: { guessMode: 'off' } })
+    playClues(sim)
+    sim.act('p1', { type: 'cast_vote', targetId: 'p2' })
+    sim.act('p2', { type: 'cast_vote', targetId: 'p1' })
+    sim.act('p3', { type: 'cast_vote', targetId: 'p1' })
+    expect(sim.view('p4').result).toBeUndefined()
+    sim.act('p4', { type: 'cast_vote', targetId: 'p1' })
+    const ballots = { p1: 'p2', p2: 'p1', p3: 'p1', p4: 'p1' }
+    expect(sim.view('p4').result?.votedFor).toEqual(ballots)
+    sim.advance(REVEAL_MS)
+    expect(sim.state.phase).toBe('RESULTS')
+    expect(sim.view('p2').result?.votedFor).toEqual(ballots)
+  })
+
   it('a disconnected imposter stays in the round and can be caught', () => {
     const sim = newGame({ imposter: 'p3' })
     playClues(sim)

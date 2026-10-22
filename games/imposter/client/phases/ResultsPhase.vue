@@ -22,6 +22,8 @@
 
     <ScoreBoard :scores="view.scores" :room="room" :gained="result.pointsAwarded" class="mb-4" />
 
+    <VoteBreakdown v-if="!result.voided" :result="result" :view="view" :room="room" />
+
     <v-btn v-if="isHost" block size="x-large" color="primary" prepend-icon="mdi-replay" @click="send({ type: 'next_round' })">
       Play again
     </v-btn>
@@ -35,6 +37,7 @@
 import { computed } from 'vue'
 import ScoreBoard from '../ScoreBoard.vue'
 import { nameOf, type PhaseProps } from '../util.ts'
+import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)

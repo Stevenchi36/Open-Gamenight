@@ -354,14 +354,14 @@ CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | 
   voted: PlayerId[],                            // who has voted, not for whom
   // REVEAL / GUESS_CHECK / RESULTS only:
   result?: {
-    votes: { [playerId]: number }, accusedId, caught, imposterId,
+    votes: { [playerId]: number }, votedFor: { [voterId]: targetId }, accusedId, caught, imposterId,
     judgeId, guessRequired, guessCorrect: boolean | null,
     secretWord?: string,                        // omitted for the imposter until RESULTS
     imposterWon?, pointsAwarded?                // RESULTS only
   }
 }
 ```
-`you.word` is `null` for the imposter. Votes are hidden until REVEAL; `imposterId` appears from REVEAL onward. `secrets` declares: `secretWord` is visible to crew always, to the imposter only in `RESULTS`; `imposterId` is visible to the imposter always, to others from `REVEAL`. The core leak test checks this.
+`you.word` is `null` for the imposter. Votes (tally and who voted for whom) are hidden until REVEAL and stay shown through RESULTS; `imposterId` appears from REVEAL onward. `secrets` declares: `ballots` are hidden during VOTING; `secretWord` is visible to crew always, to the imposter only in `RESULTS`; `imposterId` is visible to the imposter always, to others from `REVEAL`. The core leak test checks this.
 
 ### Hold-to-reveal (physical table)
 Players sit together, so the imposter could glance at a neighbour's phone. **The word is never on screen at rest:**
