@@ -1,5 +1,6 @@
 import type { GameClientModule } from '@wsfg/core/client'
 import { GAME_ID } from '../shared/index.ts'
+import { needsAction } from './attention.ts'
 
 export const imposterClient: GameClientModule = {
   id: GAME_ID,
@@ -8,4 +9,5 @@ export const imposterClient: GameClientModule = {
   PlayView: () => import('./PlayView.vue'),
   SettingsView: () => import('./SettingsView.vue'),
   adminPages: [{ path: 'words', title: 'Word library', component: () => import('./admin/WordsPage.vue') }],
+  needsAction,
 }

@@ -1,9 +1,12 @@
+import type { RoomView } from '@wsfg/core/protocol'
 import { describe, expect, it } from 'vitest'
 import { needsAction } from '../client/attention.ts'
 import { REVEAL_MS } from '../shared/index.ts'
 import { catchImposter, current, newGame, PLAYERS, playClues, playSpoken, type Sim } from './helpers.ts'
 
-const waitingOn = (sim: Sim) => PLAYERS.filter((id) => needsAction(sim.view(id), id, 'p1', sim.state.settings.clueMode))
+// needsAction reads only the host and settings from the room.
+const roomOf = (sim: Sim) => ({ hostId: 'p1', game: { settings: sim.state.settings } }) as RoomView
+const waitingOn = (sim: Sim) => PLAYERS.filter((id) => needsAction(sim.view(id), id, roomOf(sim)))
 
 describe('needsAction', () => {
   it('flags only the player whose clue turn it is', () => {

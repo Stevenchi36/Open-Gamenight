@@ -146,6 +146,7 @@ interface GameClientModule {
   PlayView: () => Promise<Component>       // props: { view, send, me, room }
   SettingsView: () => Promise<Component>   // props: { settings, update, isHost } (custom per game)
   adminPages?: { path: string; title: string; component: () => Promise<Component> }[]  // mounted under /admin/<id>/
+  needsAction?(view, me, room): boolean   // pure; true shows the shell's pulsing "your move" screen-edge glow
 }
 ```
 The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Auto-generating settings forms from zod is deferred until there are 3+ games.

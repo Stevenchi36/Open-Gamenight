@@ -37,4 +37,9 @@ export interface GameClientModule {
   PlayView: () => Promise<Component>
   SettingsView: () => Promise<Component>
   adminPages?: GameAdminPage[]
+  /**
+   * Whether the game is waiting on this viewer; the shell then shows the "your move" cue.
+   * Pure, from the view and room alone. Method syntax so games can type `view` as their own view.
+   */
+  needsAction?(view: unknown, me: PlayerId, room: RoomView): boolean
 }

@@ -24,6 +24,7 @@
         :room="room"
         :server-now="serverNow"
       />
+      <AttentionGlow v-if="actionNeeded" />
 
       <v-dialog v-model="confirmLobby" max-width="360">
         <v-card title="Back to the lobby?" text="This ends the current game for everyone. Scores reset.">
@@ -64,6 +65,7 @@
 import { clientGames } from '@wsfg/games/client'
 import { computed, defineAsyncComponent, onMounted, ref, shallowRef, watch, type Component } from 'vue'
 import { useRouter } from 'vue-router'
+import AttentionGlow from '../components/AttentionGlow.vue'
 import LobbyView from '../components/LobbyView.vue'
 import { joinRoom, lastName, leaveRoom, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
 
@@ -97,14 +99,20 @@ watch(
   },
 )
 
+const gameModule = computed(() => clientGames.find((g) => g.id === room.value?.game.id))
+const actionNeeded = computed(() => {
+  const r = room.value
+  if (!r || r.phase !== 'playing' || !game.value) return false
+  return gameModule.value?.needsAction?.(game.value, r.you.id, r) ?? false
+})
+
 const views = new Map<string, Component>()
 const playView = shallowRef<Component | null>(null)
 watch(
-  () => room.value?.game.id,
-  (id) => {
-    if (!id) return
-    const module = clientGames.find((g) => g.id === id)
+  gameModule,
+  (module) => {
     if (!module) return
+    const { id } = module
     if (!views.has(id)) views.set(id, defineAsyncComponent(module.PlayView))
     playView.value = views.get(id)!
   },
