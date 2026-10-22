@@ -39,6 +39,8 @@
     <v-btn v-if="isHost && me !== result.judgeId" block variant="tonal" class="mt-4" prepend-icon="mdi-skip-next" @click="send({ type: 'skip_guess' })">
       Skip the guess (counts as missed)
     </v-btn>
+
+    <VoteBreakdown :result="result" :view="view" :room="room" class="mt-4" />
   </div>
 </template>
 
@@ -46,6 +48,7 @@
 import { computed } from 'vue'
 import HoldToReveal from '../HoldToReveal.vue'
 import { nameOf, type PhaseProps } from '../util.ts'
+import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)

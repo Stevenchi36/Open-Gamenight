@@ -90,7 +90,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Hold-to-reveal for the role card and the judge's word.** People play around one table; the word must never sit on screen for the imposter to glance at.
 - **Spoken guess confirmed by a judge's tap (host, or first crew member if the host is imposter).** No spelling issues; trust-based by design.
 - **Configurable catch/escape points (defaults 1/2), guess bonus default +1.** Defaults suit 4-7 players; the table can rebalance for bigger groups.
-- **Ballots are secret during voting, then public (who voted for whom) on the reveal and results screens.** No bandwagoning while voting; afterwards the table wants to talk it over, and the 5s reveal alone is too short to read it.
+- **Ballots are secret during voting, then public (who voted for whom) on the reveal, guess-check and results screens.** No bandwagoning while voting; afterwards the table wants to talk it over, and the 5s reveal alone is too short to read it.
 - **A wordless pulsing screen-edge glow means the game is waiting on you** (your clue turn, your vote, the imposter's guess and the judge, the host's next round). Host-only overrides don't trigger it. Phones lie on the table, so the cue must be visible at a glance without reading.
 - **Ties mean the imposter escapes.** Crew must clearly agree to catch them.
 - **Typed clues reject the secret word and exact repeats (case-insensitive).** Prevents giving the word away and lazy copying.
