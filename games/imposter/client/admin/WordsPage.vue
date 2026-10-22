@@ -17,25 +17,38 @@
       </template>
     </v-alert>
 
-    <v-card class="mb-4">
-      <v-card-text class="d-flex flex-wrap ga-2">
-        <v-chip
-          v-for="c in categories"
-          :key="c.id"
-          :color="filter.categoryId === c.id ? 'primary' : c.runningLow ? 'warning' : undefined"
-          :variant="filter.categoryId === c.id ? 'flat' : 'tonal'"
-          @click="toggleCategory(c.id)"
-        >
-          {{ c.category }} <span class="ml-1 text-caption">{{ c.unused }}/{{ c.total }}</span>
-        </v-chip>
-        <span v-if="categories.length === 0" class="text-medium-emphasis">
-          No categories yet. Add some under Categories (or generate words into a new one). Until the library has words, games use the built-in list.
-        </span>
-      </v-card-text>
-    </v-card>
+    <v-alert v-if="categories.length === 0" type="info" variant="tonal" density="compact" class="mb-4">
+      No categories yet. Add some under Categories (or generate words into a new one). Until the library has words, games use the
+      built-in list.
+    </v-alert>
 
     <v-card>
       <v-card-text class="d-flex flex-wrap ga-2 align-center">
+        <v-autocomplete
+          v-model="filter.categoryId"
+          :items="categories"
+          item-title="category"
+          item-value="id"
+          label="Category"
+          placeholder="All categories"
+          persistent-placeholder
+          prepend-inner-icon="mdi-shape-outline"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 280px; min-width: 200px"
+        >
+          <template #item="{ props: itemProps, item }">
+            <v-list-item v-bind="itemProps" :title="item.category">
+              <template #append>
+                <v-icon v-if="item.runningLow && item.total > 0" color="warning" size="small" class="mr-1">
+                  mdi-alert-outline
+                </v-icon>
+                <span class="text-caption text-medium-emphasis">{{ item.unused }}/{{ item.total }} unused</span>
+              </template>
+            </v-list-item>
+          </template>
+        </v-autocomplete>
         <v-text-field
           v-model="filter.q"
           label="Search words and hints"
@@ -256,9 +269,6 @@ watch(
     }, 250)
   },
 )
-function toggleCategory(id: number) {
-  filter.categoryId = filter.categoryId === id ? null : id
-}
 const nameOf = (id: number | null) => categories.value.find((c) => c.id === id)?.category ?? null
 
 async function refresh() {
