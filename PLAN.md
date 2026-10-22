@@ -149,7 +149,7 @@ interface GameClientModule {
   needsAction?(view, me, room): boolean   // pure; true shows the shell's pulsing "your move" screen-edge glow
 }
 ```
-The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Auto-generating settings forms from zod is deferred until there are 3+ games.
+The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Play views build on `@wsfg/core/ui`: helpers (`nameOf`, `isConnected`, `isHost`, `useCountdown`) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `ProgressCount`, `TurnOrder`, `CountdownTimer`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`). The "your move" glow is the shell's, driven by the module's `needsAction`. Auto-generating settings forms from zod is deferred until there are 3+ games.
 
 ## 3. Core room behaviour
 

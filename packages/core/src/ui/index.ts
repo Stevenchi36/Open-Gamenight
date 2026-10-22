@@ -4,6 +4,7 @@
  */
 export { default as CountdownTimer } from './CountdownTimer.vue'
 export { default as HoldToReveal } from './HoldToReveal.vue'
+export { default as NextRoundButton } from './NextRoundButton.vue'
 export { default as PlayerPicker } from './PlayerPicker.vue'
 export { default as ProgressCount } from './ProgressCount.vue'
 export { default as ScoreBoard } from './ScoreBoard.vue'
