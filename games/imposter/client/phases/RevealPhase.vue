@@ -8,16 +8,15 @@
       {{ detail }}
     </StatusCard>
 
-    <VoteBreakdown :result="result" :view="view" :room="room" />
+    <VoteBreakdown :room="room" :ballots="result.votedFor" :voters="view.roundPlayers" :marked-id="result.imposterId" marked-label="imposter" />
     <div class="text-center text-body-2 text-medium-emphasis">{{ next }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { nameOf, StatusCard } from '@wsfg/core/ui'
+import { nameOf, StatusCard, VoteBreakdown } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { PhaseProps } from '../props.ts'
-import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)

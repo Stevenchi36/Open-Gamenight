@@ -16,7 +16,7 @@
 
     <ScoreBoard :scores="view.scores" :room="room" :gained="result.pointsAwarded" class="mb-4" />
 
-    <VoteBreakdown v-if="!result.voided" :result="result" :view="view" :room="room" />
+    <VoteBreakdown v-if="!result.voided" :room="room" :ballots="result.votedFor" :voters="view.roundPlayers" :marked-id="result.imposterId" marked-label="imposter" />
 
     <template v-if="amHost">
       <v-checkbox v-if="rotating" v-model="shuffle" label="Randomize player order" density="compact" hide-details />
@@ -31,11 +31,10 @@
 </template>
 
 <script setup lang="ts">
-import { isHost, nameOf, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { isHost, nameOf, ScoreBoard, StatusCard, VoteBreakdown } from '@wsfg/core/ui'
 import { computed, ref } from 'vue'
 import type { ImposterSettings } from '../../shared/index.ts'
 import type { PhaseProps } from '../props.ts'
-import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)

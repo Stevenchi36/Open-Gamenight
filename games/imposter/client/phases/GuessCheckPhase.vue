@@ -48,16 +48,15 @@
       Skip the guess (counts as missed)
     </v-btn>
 
-    <VoteBreakdown :result="result" :view="view" :room="room" class="mt-4" />
+    <VoteBreakdown :room="room" :ballots="result.votedFor" :voters="view.roundPlayers" :marked-id="result.imposterId" marked-label="imposter" class="mt-4" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, isHost, nameOf, StatusCard, SubmitField } from '@wsfg/core/ui'
+import { HoldToReveal, isHost, nameOf, StatusCard, SubmitField, VoteBreakdown } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import { GUESS_MAX_LENGTH, type ImposterSettings } from '../../shared/index.ts'
 import type { PhaseProps } from '../props.ts'
-import VoteBreakdown from '../VoteBreakdown.vue'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)
