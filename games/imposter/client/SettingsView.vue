@@ -28,7 +28,11 @@
       label="Words from"
       :model-value="settings.wordSource"
       :items="sources"
-      :hint="settings.wordSource === 'library' ? 'Uses built-in words if the library runs out' : undefined"
+      :hint="
+        settings.wordSource === 'all'
+          ? 'Built-in starter words plus everything added since'
+          : 'Skips the built-in starter words (used only if added words run out)'
+      "
       :disabled="!isHost"
       @update:model-value="(v: unknown) => setSource(v as ImposterSettings['wordSource'])"
     />
@@ -100,8 +104,10 @@ function set<K extends keyof ImposterSettings>(key: K, value: ImposterSettings[K
   props.update({ ...props.settings, [key]: value })
 }
 function setSource(source: ImposterSettings['wordSource']) {
-  // a library category may not exist in the built-in list (and vice versa)
-  props.update({ ...props.settings, wordSource: source, category: null })
+  // keep the category unless it has no added words
+  const current = library.value.find((c) => c.category === props.settings.category)
+  const category = source === 'custom' && current && current.custom === 0 ? null : props.settings.category
+  props.update({ ...props.settings, wordSource: source, category })
 }
 
 const clueModes = [
@@ -114,8 +120,8 @@ const hintModes = [
   { title: 'Category + hint', value: 'category+hint' },
 ]
 const sources = [
-  { title: 'Word library', value: 'library' },
-  { title: 'Built-in list', value: 'builtin' },
+  { title: 'All words', value: 'all' },
+  { title: 'Added only', value: 'custom' },
 ]
 const guessModes = [
   { title: 'Bonus', value: 'bonus' },
@@ -124,13 +130,13 @@ const guessModes = [
 ]
 const timerItems = [{ title: 'Off', value: null as number | null }, ...[15, 30, 45, 60, 90].map((s) => ({ title: `${s} seconds`, value: s as number | null }))]
 
-const library = ref<{ category: string; total: number }[]>([])
+const library = ref<{ category: string; total: number; custom: number }[]>([])
 const builtin = ref<string[]>([])
 onMounted(async () => {
   try {
     const res = await fetch('/api/games/imposter/categories')
     if (res.ok) {
-      const data = (await res.json()) as { library: { category: string; total: number }[]; builtin: string[] }
+      const data = (await res.json()) as { library: { category: string; total: number; custom: number }[]; builtin: string[] }
       library.value = data.library
       builtin.value = data.builtin
     }
@@ -140,9 +146,14 @@ onMounted(async () => {
 })
 
 const categoryItems = computed(() => {
+  const withCount = (key: 'total' | 'custom') =>
+    library.value.map((c) => ({ category: c.category, count: c[key] })).filter((c) => c.count > 0)
+  // with no added words yet, "Added only" plays the starter words anyway
+  const customOnly = props.settings.wordSource === 'custom' ? withCount('custom') : []
+  const available = customOnly.length > 0 ? customOnly : withCount('total')
   const names =
-    props.settings.wordSource === 'library' && library.value.length > 0
-      ? library.value.map((c) => ({ title: `${c.category} (${c.total})`, value: c.category as string | null }))
+    available.length > 0
+      ? available.map((c) => ({ title: `${c.category} (${c.count})`, value: c.category as string | null }))
       : builtin.value.map((c) => ({ title: c, value: c as string | null }))
   const current = props.settings.category
   if (current && !names.some((n) => n.value === current)) names.push({ title: current, value: current })

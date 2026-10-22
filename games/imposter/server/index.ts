@@ -7,7 +7,7 @@ import { defineGame } from '@wsfg/core/contract'
 import express from 'express'
 import { BUILTIN_CATEGORIES } from './builtin-words.ts'
 import { imposter as game, type ImposterAction, type ImposterState, type PreparedWord } from './game.ts'
-import { categoryUsage, countWords, listCategories, pickWord } from './library.ts'
+import { categoryUsage, countWords, pickWord, playableCategories } from './library.ts'
 import { adminRouter } from './admin.ts'
 import { mcpTools } from './mcp.ts'
 import { migrations } from './migrations.ts'
@@ -22,11 +22,21 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
 
   async prepareRound(request, { settings, services }) {
     const newRound = request.trigger === 'init' || request.action.type === 'next_round'
-    if (!newRound || settings.wordSource === 'builtin') return undefined
+    if (!newRound) return undefined
 
     const excludeIds = request.trigger === 'action' ? request.state.usedWordIds : []
-    const row = pickWord(services.db, { category: settings.category, excludeIds })
-    if (row) return { id: row.id, category: row.category, word: row.word, hint: row.hint }
+    const pick = { category: settings.category, excludeIds }
+    if (settings.wordSource === 'custom') {
+      const row = pickWord(services.db, { ...pick, customOnly: true })
+      if (row) return { id: row.id, category: row.category, word: row.word, hint: row.hint }
+    }
+    const row = pickWord(services.db, pick)
+    if (row) {
+      const word = { id: row.id, category: row.category, word: row.word, hint: row.hint }
+      if (settings.wordSource === 'all') return word
+      const where = settings.category ? ` in ${settings.category}` : ''
+      return { ...word, notice: `No unused added words${where}, so built-in words are used.` }
+    }
 
     const notice =
       countWords(services.db) === 0
@@ -43,9 +53,7 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
     router.get('/categories', (_req, res) => {
       res.json({
         // only categories with words are worth picking in the lobby
-        library: listCategories(services.db)
-          .filter((c) => c.total > 0)
-          .map((c) => ({ category: c.category, total: c.total })),
+        library: playableCategories(services.db),
         builtin: BUILTIN_CATEGORIES,
       })
     })

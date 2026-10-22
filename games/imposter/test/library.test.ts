@@ -12,6 +12,7 @@ import {
   listCategories,
   listWords,
   pickWord,
+  playableCategories,
   removeWords,
   updateWord,
 } from '../server/library.ts'
@@ -251,9 +252,8 @@ describe('prepareRound', () => {
   const prepare = (settings: Partial<ImposterSettings>, request: Parameters<NonNullable<typeof imposter.prepareRound>>[0]) =>
     imposter.prepareRound!(request, { settings: { ...defaultSettings, ...settings }, players, services })
 
-  it('returns nothing for builtin mode and for actions that do not start a round', async () => {
+  it('returns nothing for actions that do not start a round', async () => {
     addWords(services, words)
-    expect(await prepare({ wordSource: 'builtin' }, { trigger: 'init' })).toBeUndefined()
     const state = {} as never
     expect(await prepare({}, { trigger: 'action', state, action: { type: 'end_turn' }, actorId: 'p1' })).toBeUndefined()
   })
@@ -265,6 +265,32 @@ describe('prepareRound', () => {
     const state = { usedWordIds: [(a as { id: number }).id] } as never
     const b = await prepare({ category: 'Animals' }, { trigger: 'action', state, action: { type: 'next_round' }, actorId: 'p1' })
     expect((b as { word: string }).word).not.toBe((a as { word: string }).word)
+  })
+
+  it('"Added only" skips starter words until added ones run out, then uses them with a notice', async () => {
+    addWords(services, [{ category: 'Animals', word: 'Otter', hint: 'River' }], 'builtin')
+    addWords(services, [{ category: 'Animals', word: 'Penguin', hint: 'Tuxedo' }], 'manual')
+    const first = await prepare({ wordSource: 'custom' }, { trigger: 'init' })
+    expect(first).toMatchObject({ word: 'Penguin' })
+    expect(first).not.toHaveProperty('notice')
+    const state = { usedWordIds: [(first as { id: number }).id] } as never
+    const next = { trigger: 'action', state, action: { type: 'next_round' }, actorId: 'p1' } as const
+    expect(await prepare({ wordSource: 'custom', category: 'Animals' }, next)).toMatchObject({
+      word: 'Otter',
+      notice: 'No unused added words in Animals, so built-in words are used.',
+    })
+    // "All words" plays starter words without a notice
+    expect(await prepare({ wordSource: 'all' }, next)).not.toHaveProperty('notice')
+  })
+
+  it('lists playable categories with their non-starter counts', () => {
+    addWords(services, [{ category: 'Animals', word: 'Otter', hint: 'River' }], 'builtin')
+    addWords(services, words, 'claude')
+    services.categories.create('Empty')
+    expect(playableCategories(db)).toEqual([
+      { category: 'Animals', total: 3, custom: 2 },
+      { category: 'Food', total: 1, custom: 1 },
+    ])
   })
 
   it('falls back to built-in words with a notice', async () => {

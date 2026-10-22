@@ -174,10 +174,10 @@ describe('integration: full games over real websockets', () => {
     }
   }, 30_000)
 
-  it('plays a full spoken round with built-in words', async () => {
+  it('plays a full spoken round', async () => {
     host.send({ type: 'return_to_lobby' })
     await allUntil((s) => s.room.phase === 'lobby')
-    const settings = { ...(host.last('state')!.room.game.settings as object), clueMode: 'spoken', wordSource: 'builtin', category: null }
+    const settings = { ...(host.last('state')!.room.game.settings as object), clueMode: 'spoken', wordSource: 'all', category: null }
     host.send({ type: 'update_settings', settings })
     await allUntil((s) => (s.room.game.settings as { clueMode: string }).clueMode === 'spoken')
 

@@ -303,8 +303,8 @@ claude mcp add ws-family-games \
 |---|---|---|
 | Rotations | 2 | 1-5 |
 | Imposter hint | `category` | `none` / `category` / `category+hint` |
-| Word source | `library` | `library` (falls back to builtin if empty) / `builtin` |
-| Category | Any | categories from the library, plus "Any" |
+| Word source | `all` | `all` (whole library) / `custom` ("Added only": skips the seeded starter words, falls back to them when it runs out). Both fall back to `builtin-words.ts` if nothing matches |
+| Category | Any | categories from the library that have words in the chosen source, plus "Any" |
 | Clue mode | `typed` | `typed` / `spoken` (players speak; the app tracks turns, voting, score) |
 | Imposter guess | `bonus` | `bonus` / `steal` / `off` |
 | Guess points | 1 | 0-3, shown only in `bonus` mode |
@@ -392,7 +392,7 @@ CREATE TABLE IF NOT EXISTS imposter_words (
 ```
 (Imposter's migration `002_category_ids` moved the original text `category` column into `categories`.)
 - `library.ts`: `listWords`, `listCategories` (total + unused counts), `addWords` (validate, de-dupe, insert, return `{ inserted, skipped }`), `removeWords`, `pickWord`, `generateWords` (via the core AI service).
-- **`pickWord({ category?, excludeIds })`** (run by the runner in `prepareRound`, so the reducer stays pure): least-used word, random among ties, optionally filtered by category, skipping words already used in this room; increments `times_used`/`last_used_at`. If the library is empty or nothing matches, fall back to `builtin-words.ts` and send the host a `notice`. A game must always be able to start.
+- **`pickWord({ category?, excludeIds, customOnly? })`** (run by the runner in `prepareRound`, so the reducer stays pure): least-used word, random among ties, optionally filtered by category (and to non-starter words for "Added only"), skipping words already used in this room; increments `times_used`/`last_used_at`. If the library is empty or nothing matches, fall back to `builtin-words.ts` and send the host a `notice`. A game must always be able to start.
 - Categories with fewer than ~5 unused words are flagged in the admin page ("running low on Foods").
 
 **Admin routes** (`/api/admin/imposter/*`, guarded by core):

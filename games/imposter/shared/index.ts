@@ -22,7 +22,8 @@ export const CLUE_MAX_LENGTH = 24
 export const settingsSchema = z.object({
   rotations: z.number().int().min(1).max(5),
   imposterHint: z.enum(['none', 'category', 'category+hint']),
-  wordSource: z.enum(['library', 'builtin']),
+  /** 'custom' skips the seeded starter words (source 'builtin'), falling back to them when it runs out. */
+  wordSource: z.enum(['all', 'custom']),
   /** null = any category. */
   category: z.string().trim().min(1).max(40).nullable(),
   clueMode: z.enum(['typed', 'spoken']),
@@ -39,7 +40,7 @@ export type ImposterSettings = z.infer<typeof settingsSchema>
 export const defaultSettings: ImposterSettings = {
   rotations: 2,
   imposterHint: 'category',
-  wordSource: 'library',
+  wordSource: 'all',
   category: null,
   clueMode: 'typed',
   guessMode: 'bonus',

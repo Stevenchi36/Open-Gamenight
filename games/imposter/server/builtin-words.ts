@@ -1,6 +1,6 @@
 /**
- * Built-in fallback words: used when wordSource is 'builtin', or when the
- * library is empty or has nothing matching. A game must always be able to start.
+ * Built-in fallback words: used when the library is empty or has nothing
+ * matching (game.ts also picks from them when there is no prepareRound). A game must always be able to start.
  * Format per category: [word, one-word vague hint for the imposter].
  */
 export interface BuiltinWord {

@@ -92,6 +92,18 @@ export function listCategories(db: DatabaseSync): CategoryStats[] {
     .all() as unknown as CategoryStats[]
 }
 
+/** Categories that have words, with total and non-starter counts (for the lobby). */
+export function playableCategories(db: DatabaseSync): { category: string; total: number; custom: number }[] {
+  return db
+    .prepare(
+      `SELECT c.name AS category, COUNT(*) AS total, SUM(w.source != 'builtin') AS custom
+       FROM categories c JOIN imposter_words w ON w.category_id = c.id
+       WHERE c.game_id = '${GAME_ID}'
+       GROUP BY c.id ORDER BY c.name COLLATE NOCASE`,
+    )
+    .all() as { category: string; total: number; custom: number }[]
+}
+
 /** Words per category id (for the core Categories admin page). */
 export function categoryUsage(db: DatabaseSync): Record<number, number> {
   const rows = db.prepare('SELECT category_id AS id, COUNT(*) AS n FROM imposter_words GROUP BY category_id').all() as {
@@ -202,12 +214,16 @@ export function removeWords(db: DatabaseSync, ids: number[]): number {
 /**
  * The least-used word (random among ties), optionally in one category (by
  * name, as stored in room settings), skipping ids already used in this room.
- * Marks it used. null if nothing matches.
+ * `customOnly` skips the seeded starter words. Marks it used. null if nothing matches.
  */
-export function pickWord(db: DatabaseSync, options: { category?: string | null; excludeIds?: number[] } = {}): WordRow | null {
+export function pickWord(
+  db: DatabaseSync,
+  options: { category?: string | null; excludeIds?: number[]; customOnly?: boolean } = {},
+): WordRow | null {
   const where: string[] = []
   const params: (string | number)[] = []
   categoryFilter(where, params, { category: options.category ?? null })
+  if (options.customOnly) where.push("w.source != 'builtin'")
   const exclude = options.excludeIds ?? []
   if (exclude.length > 0) {
     where.push(`w.id NOT IN (${exclude.map(() => '?').join(',')})`)

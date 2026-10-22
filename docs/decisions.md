@@ -95,7 +95,8 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **REVEAL auto-advances after 5s; the host can force the end of voting (`end_voting`).** Neither had an action in the original table; a timed reveal keeps the table's attention without an extra tap.
 - **Late joiners see a `waiting` role (no word) and play from the next round.** Joining mid-round must not hand anyone the secret word.
 - **If the imposter leaves before the reveal, the round is voided (no points).** Nothing meaningful is left to score; the host starts the next round.
-- **The built-in word list shipped with the reducer (milestone 3), not the library (milestone 6).** `wordSource: builtin` needs no DB and the game is playable before the library exists.
+- **The built-in word list shipped with the reducer (milestone 3), not the library (milestone 6).** It needs no DB, so the game is playable before the library exists; it stays as the last-resort fallback.
+- **Word source is "All words" or "Added only" (skips library rows with source `builtin`, i.e. the seeded starter words); there is no "built-in list only" option.** Nobody picks the starter list on purpose, while hosts who have played it through want fresh words. "Added only" falls back to starter words (with a host notice) when added ones run out, then to the in-code list.
 
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
