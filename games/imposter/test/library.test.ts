@@ -142,7 +142,12 @@ describe('migration 004: one-word default hints', () => {
 
 describe('addWords', () => {
   it('validates, inserts, creates missing categories and skips duplicates case-insensitively', () => {
-    expect(addWords(services, words)).toEqual({ inserted: 3, skipped: [], createdCategories: ['Animals', 'Food'] })
+    expect(addWords(services, words)).toEqual({
+      inserted: 3,
+      skipped: [],
+      createdCategories: ['Animals', 'Food'],
+      insertedByCategory: { Animals: 2, Food: 1 },
+    })
     const again = addWords(services, [
       { category: 'animals', word: 'PENGUIN', hint: 'Different hint' },
       { category: 'food', word: 'Taco', hint: 'A taco shell' },
@@ -155,6 +160,7 @@ describe('addWords', () => {
         { word: 'Taco', category: 'food', reason: 'Hint must not contain the word' },
       ],
       createdCategories: [],
+      insertedByCategory: { Food: 1 },
     })
     expect(services.categories.list().map((c) => c.name)).toEqual(['Animals', 'Food'])
   })

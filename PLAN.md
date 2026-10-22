@@ -402,9 +402,9 @@ CREATE TABLE IF NOT EXISTS imposter_words (
 | `GET /categories` | Categories with total / unused counts |
 | `POST /words` | Save one or many (manual entry or approved candidates) |
 | `DELETE /words` | Remove by `{ ids: [] }` |
-| `POST /words/generate` | `{ count (max 50), category?, difficulty? }` -> **candidates only, not saved** |
+| `POST /words/generate` | `{ count (max 50), category?, difficulty?, save? }` -> **candidates only, not saved**; with `save: true`, saves them and returns counts only (`inserted`, `insertedByCategory`, `createdCategories`, `skippedCount`) |
 
-**Generation flow:** admin enters category + count, clicks Generate, reviews candidates in a table (edit or untick), then Save (`POST /words`). Keeps junk and spoiler hints out of the library.
+**Generation flow:** admin enters category + count, clicks Generate, reviews candidates in a table (edit or untick), then Save (`POST /words`). Keeps junk and spoiler hints out of the library. A "no spoilers" checkbox skips the review: the server saves directly and the dialog shows only how many words went into each category, for admins who also play.
 
 **Generation prompt** (`generateWords` -> `ai.generate` with forced tool `submit_words` returning `[{ category, word, hint, difficulty }]`): concrete, widely known words (nouns preferred); hints are a single loosely related word (unless a `hintStyle` override is given), vague enough not to give the word away but enough to bluff with; stay inside the category; vary difficulty; pass existing words in the category as an avoid-list. Validate output; retry once, then return an error (the UI shows it; games are unaffected).
 

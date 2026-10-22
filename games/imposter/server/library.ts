@@ -106,6 +106,8 @@ export interface AddResult {
   skipped: { word: string; category: string; reason: string }[]
   /** Category names that didn't exist and were created. */
   createdCategories: string[]
+  /** Inserted count per category (stored spelling). */
+  insertedByCategory: Record<string, number>
 }
 
 /**
@@ -118,7 +120,7 @@ export function addWords(lib: Library, inputs: WordInput[], source: WordSource =
     `INSERT INTO imposter_words (category_id, word, hint, difficulty, source) VALUES (?, ?, ?, ?, ?)
      ON CONFLICT DO NOTHING`,
   )
-  const result: AddResult = { inserted: 0, skipped: [], createdCategories: [] }
+  const result: AddResult = { inserted: 0, skipped: [], createdCategories: [], insertedByCategory: {} }
   db.exec('BEGIN IMMEDIATE')
   try {
     for (const input of inputs) {
@@ -134,8 +136,10 @@ export function addWords(lib: Library, inputs: WordInput[], source: WordSource =
         result.createdCategories.push(category.name)
       }
       const { changes } = insert.run(category.id, word, hint, difficulty, source)
-      if (changes > 0) result.inserted++
-      else result.skipped.push({ word, category: category.name, reason: 'Already in the library' })
+      if (changes > 0) {
+        result.inserted++
+        result.insertedByCategory[category.name] = (result.insertedByCategory[category.name] ?? 0) + 1
+      } else result.skipped.push({ word, category: category.name, reason: 'Already in the library' })
     }
     db.exec('COMMIT')
   } catch (error) {

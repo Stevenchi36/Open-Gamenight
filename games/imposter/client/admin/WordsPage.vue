@@ -125,11 +125,37 @@
       <v-card>
         <v-card-title>Generate words</v-card-title>
         <v-card-text>
-          <div v-if="!candidates" class="d-flex flex-wrap ga-3 align-center">
+          <div v-if="summary">
+            <p class="mb-2">
+              Added {{ summary.inserted }} word{{ summary.inserted === 1 ? '' : 's' }}{{ summary.inserted ? ':' : '.' }}
+            </p>
+            <ul v-if="summary.inserted" class="ml-6 mb-2">
+              <li v-for="(n, name) in summary.insertedByCategory" :key="name">
+                {{ name }}: {{ n }}<span v-if="summary.createdCategories.includes(name)" class="text-medium-emphasis"> (new category)</span>
+              </li>
+            </ul>
+            <div v-if="summary.skippedCount" class="text-caption text-medium-emphasis">
+              {{ summary.skippedCount }} result{{ summary.skippedCount === 1 ? ' was' : 's were' }} dropped (duplicates or hints that gave the word away).
+            </div>
+          </div>
+          <div v-else-if="!candidates" class="d-flex flex-wrap ga-3 align-center">
             <v-combobox v-model="gen.category" :items="categoryNames" label="Category (empty = mixed)" clearable style="min-width: 220px" />
             <v-select v-model="gen.difficulty" :items="[{ title: 'Mixed', value: null }, ...difficulties.map((d) => ({ title: d, value: d }))]" label="Difficulty" style="max-width: 160px" />
             <v-text-field v-model.number="gen.count" type="number" min="1" max="50" label="How many" style="max-width: 120px" />
-            <div class="text-caption text-medium-emphasis w-100">Nothing is saved until you review the results.</div>
+            <v-checkbox
+              v-model="gen.blind"
+              label="Save without showing me the words (no spoilers)"
+              density="compact"
+              hide-details
+              class="w-100"
+            />
+            <div class="text-caption text-medium-emphasis w-100">
+              {{
+                gen.blind
+                  ? 'Words are saved straight away; you only see how many went into each category.'
+                  : 'Nothing is saved until you review the results.'
+              }}
+            </div>
           </div>
           <template v-else>
             <v-alert v-if="skippedCount" type="info" variant="tonal" density="compact" class="mb-3">
@@ -156,11 +182,14 @@
         <v-card-actions>
           <v-btn v-if="candidates" variant="text" @click="candidates = null">Back</v-btn>
           <v-spacer />
-          <v-btn @click="generating = false">Cancel</v-btn>
-          <v-btn v-if="!candidates" color="primary" :loading="busy" :disabled="!(gen.count >= 1 && gen.count <= 50)" @click="generate">
-            Generate
-          </v-btn>
-          <v-btn v-else color="primary" :disabled="!keepCount" @click="saveCandidates">Save {{ keepCount }}</v-btn>
+          <v-btn v-if="summary" color="primary" @click="generating = false">Done</v-btn>
+          <template v-else>
+            <v-btn @click="generating = false">Cancel</v-btn>
+            <v-btn v-if="!candidates" color="primary" :loading="busy" :disabled="!(gen.count >= 1 && gen.count <= 50)" @click="generate">
+              {{ gen.blind ? 'Generate and save' : 'Generate' }}
+            </v-btn>
+            <v-btn v-else color="primary" :disabled="!keepCount" @click="saveCandidates">Save {{ keepCount }}</v-btn>
+          </template>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -196,6 +225,12 @@ interface Candidate {
   hint: string
   difficulty: Difficulty
   keep: boolean
+}
+interface BlindSummary {
+  inserted: number
+  insertedByCategory: Record<string, number>
+  createdCategories: string[]
+  skippedCount: number
 }
 
 const BASE = '/api/admin/imposter'
@@ -343,19 +378,30 @@ async function deleteEditing() {
 // ---- generate -> review -> save
 const generating = ref(false)
 const busy = ref(false)
-const gen = reactive({ category: null as string | null, difficulty: null as Difficulty | null, count: 20 })
+const gen = reactive({ category: null as string | null, difficulty: null as Difficulty | null, count: 20, blind: false })
 const candidates = ref<Candidate[] | null>(null)
+const summary = ref<BlindSummary | null>(null)
 const skippedCount = ref(0)
 const keepCount = computed(() => candidates.value?.filter((c) => c.keep).length ?? 0)
 
 function openGenerate(category: string | null = nameOf(filter.categoryId)) {
   gen.category = category
   candidates.value = null
+  summary.value = null
   generating.value = true
 }
 async function generate() {
   busy.value = true
   try {
+    if (gen.blind) {
+      // The server saves and returns counts only; the words never reach the browser.
+      summary.value = await api<BlindSummary>('/words/generate', {
+        method: 'POST',
+        body: { count: gen.count, category: gen.category || null, difficulty: gen.difficulty, save: true },
+      })
+      await refresh()
+      return
+    }
     const result = await api<{ candidates: Omit<Candidate, 'keep'>[]; skipped: unknown[] }>('/words/generate', {
       method: 'POST',
       body: { count: gen.count, category: gen.category || null, difficulty: gen.difficulty },

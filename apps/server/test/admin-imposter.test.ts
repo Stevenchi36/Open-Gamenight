@@ -130,6 +130,34 @@ describe('/api/admin/imposter', () => {
     expect(usage).toMatchObject({ enabled: true, calls: 1 })
   })
 
+  it('with save: true, saves the words and returns counts only (no spoilers)', async () => {
+    fake.reply({
+      input: {
+        words: [
+          { category: 'Space', word: 'Quasar', hint: 'Bright', difficulty: 'hard' },
+          { category: 'Space', word: 'Saturn', hint: 'Already there', difficulty: 'easy' },
+          { category: 'Insects', word: 'Beetle', hint: 'Crunchy', difficulty: 'easy' },
+          { category: 'Insects', word: 'Wasp', hint: 'Buzz', difficulty: 'easy' },
+        ],
+      },
+    })
+    const res = await t.fetch('/api/admin/imposter/words/generate', { method: 'POST', cookie: admin, ...json({ count: 5, save: true }) })
+    expect(res.status).toBe(200)
+    const text = await res.text()
+    expect(JSON.parse(text)).toEqual({
+      inserted: 3,
+      insertedByCategory: { Space: 1, Insects: 2 },
+      createdCategories: ['Insects'],
+      skippedCount: 1,
+    })
+    for (const word of ['Quasar', 'Saturn', 'Beetle', 'Wasp', 'Bright', 'Crunchy']) expect(text).not.toContain(word)
+
+    const list = (await (await t.fetch('/api/admin/imposter/words?q=Quasar', { cookie: admin })).json()) as {
+      words: { source: string }[]
+    }
+    expect(list.words).toMatchObject([{ source: 'claude' }])
+  })
+
   it('returns 503 for generation when AI is not configured', async () => {
     const cookie = await noAi.signIn('admin@example.com')
     const res = await noAi.fetch('/api/admin/imposter/words/generate', { method: 'POST', cookie, ...json({ count: 3 }) })

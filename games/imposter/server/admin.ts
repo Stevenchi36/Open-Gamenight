@@ -1,6 +1,8 @@
 /**
  * /api/admin/imposter/* (mounted by the core behind requireAdmin + Origin check).
  * Generation returns candidates only; the admin reviews them and saves via POST /words.
+ * With `save: true` it saves directly and returns counts only, so an admin who
+ * plays never sees the words.
  */
 import { AiError, type AdminUser, type ServerServices } from '@wsfg/core/contract'
 import express, { type Response, type Router } from 'express'
@@ -44,6 +46,7 @@ const generateBody = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
   category: z.string().trim().max(39).nullish(),
   difficulty: difficulty.nullish(),
+  save: z.boolean().default(false),
 })
 
 const AI_STATUS: Record<AiError['code'], number> = { cap: 429, rate_limited: 429, refused: 422, invalid: 502, api: 502 }
@@ -102,14 +105,24 @@ export function adminRouter(services: ServerServices): Router {
     if (!body.success) return invalid(res, body.error)
     const admin = res.locals.user as AdminUser
     try {
-      res.json(
-        await generateWords(ai, services, {
-          count: body.data.count,
-          category: body.data.category ?? null,
-          difficulty: body.data.difficulty ?? null,
-          userId: admin.id,
-        }),
-      )
+      const generated = await generateWords(ai, services, {
+        count: body.data.count,
+        category: body.data.category ?? null,
+        difficulty: body.data.difficulty ?? null,
+        userId: admin.id,
+      })
+      if (!body.data.save) {
+        res.json(generated)
+        return
+      }
+      // Skipped entries name their words, so only their count goes back.
+      const saved = addWords(services, generated.candidates, 'claude')
+      res.json({
+        inserted: saved.inserted,
+        insertedByCategory: saved.insertedByCategory,
+        createdCategories: saved.createdCategories,
+        skippedCount: generated.skipped.length + saved.skipped.length,
+      })
     } catch (error) {
       if (!(error instanceof AiError)) throw error
       res.status(AI_STATUS[error.code]).json({ error: error.code, message: error.message })
