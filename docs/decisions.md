@@ -32,6 +32,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 ## Stack
 - **TypeScript everywhere, pnpm workspaces.** Shared protocol and view types can't drift between server and client.
 - **Vue 3 + Vite SPA with Vuetify 4, served by Express (one origin).** Vuetify covers almost every component needed; one origin means no CORS and simple cookies. Nuxt skipped since Express + `ws` already is the backend.
+- **Vite pre-bundles every Vuetify component (`optimizeDeps.include: vuetify/components/*`).** Auto-import adds component imports after Vite's dep scan, so otherwise the first lazy page using a new component triggers a re-bundle and a full page reload mid-session.
 - **Vitest for unit, core, auth and integration tests; no browser E2E in v1.** Covers the risky logic without the cost of Playwright.
 - **Startup and shutdown live in `startServer()` (server.ts); index.ts only wires signals to it.** Tests run the exact shutdown path in-process. Sending a real SIGTERM to a child process isn't testable on Windows, where it kills the process before handlers run.
 - **Relative imports use `.ts` extensions (`rewriteRelativeImportExtensions`, `erasableSyntaxOnly`); workspace packages export their TS source.** Works unchanged in Vite, Vitest, tsx and Node's native type stripping. The server build (milestone 4/5) must compile or bundle workspace packages for `dist/`.

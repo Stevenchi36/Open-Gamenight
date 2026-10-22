@@ -21,6 +21,9 @@ export default defineConfig({
     // Game packages import vue/vuetify too; make sure everyone shares one copy.
     dedupe: ['vue', 'vuetify', 'vue-router'],
   },
+  // Vuetify's auto-import adds deep imports (vuetify/components/VSwitch) after Vite's dep scan, so each
+  // component first seen on a lazy page was a "new dependency": re-bundle plus a full page reload.
+  optimizeDeps: { include: ['vuetify/components/*', 'vuetify/directives'] },
   server: {
     port: 5173,
     strictPort: true,
