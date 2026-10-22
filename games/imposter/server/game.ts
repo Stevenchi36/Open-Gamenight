@@ -15,11 +15,20 @@ import {
   type ReduceCtx,
   type Transition,
 } from '@wsfg/core/contract'
+import {
+  addPoints,
+  carryScores,
+  DISCONNECT_GRACE_MS,
+  isConnected,
+  isPresent,
+  nextTurnOrder,
+  pickConnected,
+  withoutPlayer,
+} from '@wsfg/core/kit'
 import type { ZodType } from 'zod'
 import {
   clientActionSchema,
   defaultSettings,
-  DISCONNECT_GRACE_MS,
   GAME_ID,
   MAX_PLAYERS,
   MIN_PLAYERS,
@@ -106,8 +115,6 @@ const REVEALED: readonly Phase[] = ['REVEAL', 'GUESS_CHECK', 'RESULTS']
 
 // ---------------------------------------------------------------- helpers
 
-const isPresent = (ctx: Ctx, id: PlayerId) => ctx.players.some((p) => p.id === id)
-const isConnected = (ctx: Ctx, id: PlayerId) => ctx.players.find((p) => p.id === id)?.connected ?? false
 const cancel = (key: (typeof TIMER_KEYS)[number]): Effect<ImposterAction> => ({ type: 'cancel', key })
 
 function totalTurns(state: ImposterState): number {
@@ -155,22 +162,9 @@ function chooseWord(
   }
 }
 
-/**
- * 'rotate': last round's order moved on one seat, so the next player in line starts; players who
- * left drop out and newcomers join the end. 'random', a game's first round, or the host's one-off
- * shuffle on Play again: a fresh shuffle.
- */
-function nextTurnOrder(prev: ImposterState | null, ctx: Ctx, ids: PlayerId[], shuffle: boolean): PlayerId[] {
-  if (!prev || shuffle || ctx.settings.playerOrder === 'random') return ctx.rng.shuffle(ids)
-  const kept = [...prev.turnOrder.slice(1), ...prev.turnOrder.slice(0, 1)].filter((id) => ids.includes(id))
-  return [...kept, ...ids.filter((id) => !kept.includes(id))]
-}
-
+/** The host if they're crew, else the first connected crew member. */
 function pickJudge(state: ImposterState, ctx: Ctx): PlayerId | null {
-  const crew = ctx.players.filter(
-    (p) => p.connected && p.id !== state.imposterId && state.roundPlayers.includes(p.id),
-  )
-  return (crew.find((p) => p.id === ctx.hostId) ?? crew[0])?.id ?? null
+  return pickConnected(ctx, state.roundPlayers.filter((id) => id !== state.imposterId))
 }
 
 // ---------------------------------------------------------------- transitions
@@ -178,8 +172,6 @@ function pickJudge(state: ImposterState, ctx: Ctx): PlayerId | null {
 function startRound(prev: ImposterState | null, ctx: Ctx, prepared: PreparedWord | undefined, shuffle = false): Step {
   const ids = ctx.players.map((p) => p.id)
   const word = chooseWord(ctx, prepared, prev?.usedBuiltin ?? [], prev?.usedWordIds ?? [])
-  const scores: Record<PlayerId, number> = {}
-  for (const id of ids) scores[id] = prev?.scores[id] ?? 0
 
   const state: ImposterState = {
     settings: ctx.settings,
@@ -188,13 +180,13 @@ function startRound(prev: ImposterState | null, ctx: Ctx, prepared: PreparedWord
     secret: word.secret,
     imposterId: ctx.rng.pick(ids),
     roundPlayers: ids,
-    turnOrder: nextTurnOrder(prev, ctx, ids, shuffle),
+    turnOrder: nextTurnOrder(prev?.turnOrder ?? null, ids, ctx.rng, ctx.settings.playerOrder, shuffle),
     turnIndex: 0,
     turnDeadline: null,
     clues: [],
     ballots: {},
     outcome: null,
-    scores,
+    scores: carryScores(prev?.scores, ids),
     usedBuiltin: word.usedBuiltin,
     usedWordIds: word.usedWordIds,
   }
@@ -317,8 +309,7 @@ function finishRound(state: ImposterState, guessCorrect: boolean | null): Step {
   }
   if (guessMode === 'bonus' && guessCorrect === true && imposterInRound) points[state.imposterId]! += guessPoints
 
-  const scores = { ...state.scores }
-  for (const [id, n] of Object.entries(points)) scores[id] = (scores[id] ?? 0) + n
+  const scores = addPoints(state.scores, points)
 
   return {
     state: {
@@ -559,8 +550,7 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
   },
 
   onPlayerRemoved(state, playerId, ctx) {
-    const scores = { ...state.scores }
-    delete scores[playerId]
+    const scores = withoutPlayer(state.scores, playerId)
     if (!state.roundPlayers.includes(playerId)) return { state: { ...state, scores } }
 
     const ballots: Record<PlayerId, PlayerId> = {}

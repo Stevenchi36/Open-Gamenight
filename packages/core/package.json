@@ -8,6 +8,7 @@
   },
   "exports": {
     "./contract": "./src/contract.ts",
+    "./kit": "./src/kit.ts",
     "./client": "./src/client.ts",
     "./protocol": "./src/protocol.ts",
     "./rng": "./src/rng.ts",

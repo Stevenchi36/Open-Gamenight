@@ -1,7 +1,8 @@
 import { assertValidGame } from '@wsfg/core/contract'
+import { DISCONNECT_GRACE_MS } from '@wsfg/core/kit'
 import { describe, expect, it } from 'vitest'
 import { imposter } from '../server/game.ts'
-import { DISCONNECT_GRACE_MS, REVEAL_MS } from '../shared/index.ts'
+import { REVEAL_MS } from '../shared/index.ts'
 import {
   catchImposter,
   crewOf,

@@ -2,6 +2,7 @@
  * Word Imposter types shared by the server module and the Vue client:
  * settings, client actions, and the per-player view.
  */
+import { playerOrderSchema } from '@wsfg/core/kit'
 import { z } from 'zod'
 
 type PlayerId = string
@@ -11,8 +12,6 @@ export const MIN_PLAYERS = 3
 export const MAX_PLAYERS = 12
 /** Fixed at 1 for now; kept as a constant so more can be supported later. */
 export const IMPOSTER_COUNT = 1
-/** Grace before a disconnected player's turn or guess is skipped. */
-export const DISCONNECT_GRACE_MS = 15_000
 /** How long the vote reveal stays up before moving on. */
 export const REVEAL_MS = 5_000
 export const CLUE_MAX_LENGTH = 24
@@ -23,8 +22,7 @@ export const GUESS_MAX_LENGTH = 40
 
 export const settingsSchema = z.object({
   rotations: z.number().int().min(1).max(5),
-  /** Who goes first each round. 'rotate': random first round, then the next player in line starts. 'random': reshuffled every round. */
-  playerOrder: z.enum(['rotate', 'random']),
+  playerOrder: playerOrderSchema,
   imposterHint: z.enum(['none', 'category', 'category+hint']),
   /** 'custom' skips the seeded starter words (source 'builtin'), falling back to them when it runs out. */
   wordSource: z.enum(['all', 'custom']),
