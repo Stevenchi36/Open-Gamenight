@@ -316,6 +316,7 @@ describe('reveal and guess check', () => {
     playClues(sim)
     catchImposter(sim)
     sim.advance(REVEAL_MS)
+    sim.act('p4', { type: 'submit_guess', word: 'penguin' })
     expect(sim.act('p2', { type: 'judge_guess', correct: true })).toEqual({
       ok: false,
       error: 'Only the judge can decide',
@@ -346,6 +347,46 @@ describe('reveal and guess check', () => {
     sim.reconnect('p2')
     sim.advance(DISCONNECT_GRACE_MS * 2)
     expect(sim.state.phase).toBe('GUESS_CHECK')
+  })
+
+  it('typed: the imposter types one guess, everyone sees it, and the judge rules after it arrives', () => {
+    const sim = newGame({ imposter: 'p2' })
+    playClues(sim)
+    catchImposter(sim)
+    sim.advance(REVEAL_MS)
+    expect(sim.view('p3').result?.guess).toBeNull()
+    expect(sim.act('p1', { type: 'judge_guess', correct: true })).toEqual({ ok: false, error: 'Wait for the guess' })
+    expect(sim.act('p3', { type: 'submit_guess', word: 'penguin' })).toEqual({ ok: false, error: 'Only the imposter guesses' })
+    expect(sim.act('p2', { type: 'submit_guess', word: '   ' })).toMatchObject({ ok: false })
+    expect(sim.act('p2', { type: 'submit_guess', word: '  emperor   pengiun ' })).toEqual({ ok: true })
+    expect(sim.act('p2', { type: 'submit_guess', word: 'penguin' })).toEqual({ ok: false, error: 'You already guessed' })
+    for (const id of PLAYERS) expect(sim.view(id).result?.guess).toBe('emperor pengiun')
+    // The imposter still doesn't see the word until the judge rules.
+    expect(sim.view('p2').result?.secretWord).toBeUndefined()
+    sim.act('p1', { type: 'judge_guess', correct: true })
+    expect(sim.view('p2').result).toMatchObject({ guess: 'emperor pengiun', guessCorrect: true, secretWord: 'Penguin' })
+  })
+
+  it('typed: a sent guess stands if the imposter then disconnects', () => {
+    const sim = newGame({ imposter: 'p2' })
+    playClues(sim)
+    catchImposter(sim)
+    sim.advance(REVEAL_MS)
+    sim.act('p2', { type: 'submit_guess', word: 'penguin' })
+    sim.disconnect('p2')
+    sim.advance(DISCONNECT_GRACE_MS * 2)
+    expect(sim.state.phase).toBe('GUESS_CHECK')
+    sim.act('p1', { type: 'judge_guess', correct: true })
+    expect(sim.state.outcome?.guessCorrect).toBe(true)
+  })
+
+  it('spoken: guesses are not typed', () => {
+    const sim = newGame({ settings: { clueMode: 'spoken' }, imposter: 'p2' })
+    playSpoken(sim)
+    catchImposter(sim)
+    sim.advance(REVEAL_MS)
+    expect(sim.act('p2', { type: 'submit_guess', word: 'penguin' })).toEqual({ ok: false, error: 'Say your guess out loud' })
+    expect(sim.view('p1').result?.guess).toBeNull()
   })
 
   it('host can skip the guess (counts as missed)', () => {
@@ -409,6 +450,7 @@ describe('scoring', () => {
       expect(sim.state.phase).toBe('RESULTS')
     } else {
       expect(sim.state.phase).toBe('GUESS_CHECK')
+      expect(sim.act('p3', { type: 'submit_guess', word: 'pengiun' })).toEqual({ ok: true })
       expect(sim.act('p1', { type: 'judge_guess', correct: guess })).toEqual({ ok: true })
     }
     const result = sim.view('p3').result!

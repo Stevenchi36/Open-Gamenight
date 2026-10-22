@@ -17,6 +17,7 @@ function moves(sim: Sim): Move<ImposterAction>[] {
     }
     out.push({ actorId, action: { type: 'end_turn' } })
     for (const targetId of ids) out.push({ actorId, action: { type: 'cast_vote', targetId } })
+    for (const guess of [word, word.toUpperCase(), 'nope']) out.push({ actorId, action: { type: 'submit_guess', word: guess } })
     out.push({ actorId, action: { type: 'judge_guess', correct: true } })
     out.push({ actorId, action: { type: 'judge_guess', correct: false } })
   }

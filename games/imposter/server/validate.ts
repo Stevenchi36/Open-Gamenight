@@ -1,5 +1,5 @@
 /** Clue and word-library validation. Pure; used by the reducer, library and builtin list. */
-import { CLUE_MAX_LENGTH } from '../shared/index.ts'
+import { CLUE_MAX_LENGTH, GUESS_MAX_LENGTH } from '../shared/index.ts'
 
 export type Validation<T> = { ok: true; value: T } | { ok: false; error: string }
 
@@ -17,6 +17,15 @@ export function validateClueFormat(raw: string): Validation<string> {
   if (word.length > CLUE_MAX_LENGTH) return { ok: false, error: `At most ${CLUE_MAX_LENGTH} characters` }
   if (/\p{Cc}/u.test(word)) return { ok: false, error: 'That clue has invalid characters' }
   return { ok: true, value: word }
+}
+
+/** A typed imposter guess: trimmed, inner whitespace collapsed (words can be up to 3 words), 1-40 chars. */
+export function validateGuessFormat(raw: string): Validation<string> {
+  const guess = raw.trim().replace(/\s+/g, ' ')
+  if (guess.length === 0) return { ok: false, error: 'Enter a guess' }
+  if (guess.length > GUESS_MAX_LENGTH) return { ok: false, error: `At most ${GUESS_MAX_LENGTH} characters` }
+  if (/\p{Cc}/u.test(guess)) return { ok: false, error: 'That guess has invalid characters' }
+  return { ok: true, value: guess }
 }
 
 export function isSameWord(a: string, b: string): boolean {

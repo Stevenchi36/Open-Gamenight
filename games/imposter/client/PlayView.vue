@@ -37,7 +37,7 @@ const props = defineProps<{
 
 const clueMode = computed(() => (props.room.game.settings as ImposterSettings).clueMode)
 const myScore = computed(() => props.view.scores[props.me] ?? null)
-const actionNeeded = computed(() => needsAction(props.view, props.me, props.room.hostId))
+const actionNeeded = computed(() => needsAction(props.view, props.me, props.room.hostId, clueMode.value))
 const phaseProps = computed(() => ({
   view: props.view,
   room: props.room,

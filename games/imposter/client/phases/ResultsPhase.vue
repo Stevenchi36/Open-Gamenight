@@ -15,7 +15,7 @@
           {{ nameOf(room, result.imposterId) }} was the imposter{{ result.caught ? ' and got caught' : ' and escaped' }}.
         </div>
         <div v-if="result.guessRequired" class="text-body-2 mt-1">
-          Their guess was {{ result.guessCorrect ? 'right' : 'wrong' }}.
+          Their guess<template v-if="result.guess">, "{{ result.guess }}",</template> was {{ result.guessCorrect ? 'right' : 'wrong' }}.
         </div>
       </v-card-text>
     </v-card>

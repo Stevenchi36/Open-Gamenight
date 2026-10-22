@@ -286,7 +286,7 @@ claude mcp add ws-family-games \
 4. This repeats for N **rotations** (default 2).
 5. **Vote phase.** Everyone (including the imposter) votes secretly for who they think the imposter is, with live "x/y voted" progress.
 6. **Reveal.** Show tallies and the imposter. **Caught** = the plurality vote lands on the imposter; **escapes** = wrong player or a tie.
-7. **Guess check** (per `guessMode`). The imposter says their guess for the secret word **out loud**. A **judge** taps **Got it** or **Missed it**.
+7. **Guess check** (per `guessMode`). The imposter says their guess for the secret word **out loud** (spoken mode) or **types it** once (typed mode; everyone sees it). Either way a **judge** taps **Got it** or **Missed it**, so misspellings can still count.
    - The judge is the host, unless the host is the imposter, in which case it is the first connected crew member in join order; reassigned if the judge disconnects.
    - The imposter's screen does not show the secret word until the judge answers.
    - The app can't verify a spoken guess; the judge's tap is the source of truth by design.
@@ -324,7 +324,7 @@ CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | 
   - A disconnected player on their turn is auto-skipped after a ~15s grace (scheduled effect).
 - `VOTING`: one vote each, not for yourself; changes allowed until everyone has voted. Advance when all connected players have voted, or the host forces it. **A disconnected imposter stays in the round** and can be voted for and caught.
 - `REVEAL`: tally, set `caught`. Go to `GUESS_CHECK` if `guessMode` is `bonus`, or `steal` and caught; otherwise `RESULTS`.
-- `GUESS_CHECK`: only the judge can send `judge_guess { correct }`. The host can `skip_guess` (counts as missed). If the imposter is disconnected, the guess counts as missed after the 15s grace. The imposter's view keeps hiding the secret word.
+- `GUESS_CHECK`: only the judge can send `judge_guess { correct }`; in typed mode, only after the imposter's one `submit_guess`. The host can `skip_guess` (counts as missed). If the imposter is disconnected without having sent a guess, it counts as missed after the 15s grace. The imposter's view keeps hiding the secret word.
 - `RESULTS`: apply scoring, show the secret word to everyone, outcome, points this round, scoreboard. Host: **Play again** (`next_round`) or **Back to lobby**.
 
 ### Actions (inside the `action` envelope)
@@ -335,6 +335,7 @@ CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | 
 | `start_voting` | `{}` | host |
 | `end_voting` | `{}` (force the reveal before everyone has voted) | host |
 | `cast_vote` | `{ targetId }` | player |
+| `submit_guess` | `{ word }` (typed mode, once, 1-40 chars) | **imposter only** |
 | `judge_guess` | `{ correct: boolean }` | **judge only** |
 | `skip_guess` | `{}` | host |
 | `next_round` | `{}` | host |
@@ -355,7 +356,7 @@ CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | 
   // REVEAL / GUESS_CHECK / RESULTS only:
   result?: {
     votes: { [playerId]: number }, votedFor: { [voterId]: targetId }, accusedId, caught, imposterId,
-    judgeId, guessRequired, guessCorrect: boolean | null,
+    judgeId, guessRequired, guess: string | null, guessCorrect: boolean | null,
     secretWord?: string,                        // omitted for the imposter until RESULTS
     imposterWon?, pointsAwarded?                // RESULTS only
   }
@@ -438,7 +439,7 @@ Router guards redirect non-admins from `/admin/*` (UX only).
 
 ### State and components
 - `useRoom()` composable: owns the websocket (auto-reconnect with the stored token, "reconnecting..." banner, `server_restarting` message), exposes the latest `room` and `game` views, and `send` helpers. A reactive object is enough; Pinia optional.
-- Imposter `PlayView` switches on `phase`: `CluesView` (typed: role card, turn order, clue feed, input on your turn), `SpokenTurnView` (role card, big current-speaker card, **Done**, host **Skip** / **Start voting**, rotation progress, visual timer), `VotingView`, `RevealView`, `GuessCheckView` (imposter: "say your guess out loud"; judge: hold-to-reveal word + **Got it** / **Missed it**; others: waiting), `ResultsView`.
+- Imposter `PlayView` switches on `phase`: `CluesView` (typed: role card, turn order, clue feed, input on your turn), `SpokenTurnView` (role card, big current-speaker card, **Done**, host **Skip** / **Start voting**, rotation progress, visual timer), `VotingView`, `RevealView`, `GuessCheckView` (imposter: "say your guess out loud", or a guess input in typed mode; judge: the typed guess + hold-to-reveal word + **Got it** / **Missed it**; others: waiting), `ResultsView`.
 - Shared `HoldToReveal` component used by the role card and the judge screen.
 - Mobile-first; Vuetify components instead of custom CSS where possible:
   - Layout: `v-app`, `v-app-bar`, `v-main`, `v-container`, `v-row`/`v-col`

@@ -33,7 +33,7 @@ import {
   type ResultView,
 } from '../shared/index.ts'
 import { BUILTIN_WORDS } from './builtin-words.ts'
-import { isSameWord, validateClueFormat } from './validate.ts'
+import { isSameWord, validateClueFormat, validateGuessFormat } from './validate.ts'
 
 // ---------------------------------------------------------------- state
 
@@ -56,6 +56,8 @@ interface Outcome {
   caught: boolean
   judgeId: PlayerId | null
   guessRequired: boolean
+  /** Typed mode: the imposter's typed guess, for the judge to rule on. */
+  guess: string | null
   guessCorrect: boolean | null
   imposterWon: boolean | null
   pointsAwarded: Record<PlayerId, number> | null
@@ -259,6 +261,7 @@ function enterReveal(state: ImposterState, ctx: Ctx, effects: Fx = []): Step {
     caught,
     judgeId: null,
     guessRequired: guessMode === 'bonus' || (guessMode === 'steal' && caught),
+    guess: null,
     guessCorrect: null,
     imposterWon: null,
     pointsAwarded: null,
@@ -330,6 +333,7 @@ function voidRound(state: ImposterState): Step {
         caught: false,
         judgeId: null,
         guessRequired: false,
+        guess: null,
         guessCorrect: null,
         imposterWon: null,
         pointsAwarded: {},
@@ -392,9 +396,21 @@ function reduce(state: ImposterState, action: ImposterAction, ctx: ReduceCtx<Imp
       if (state.phase !== 'VOTING') return gameError('It is not time to vote')
       return enterReveal(state, ctx)
 
+    case 'submit_guess': {
+      if (state.phase !== 'GUESS_CHECK' || !state.outcome) return gameError('It is not time to guess')
+      if (state.settings.clueMode !== 'typed') return gameError('Say your guess out loud')
+      if (actor !== state.imposterId) return gameError('Only the imposter guesses')
+      // Locked once sent, so the imposter can't read the table's reaction and try again.
+      if (state.outcome.guess !== null) return gameError('You already guessed')
+      const format = validateGuessFormat(action.word)
+      if (!format.ok) return gameError(format.error)
+      return { state: { ...state, outcome: { ...state.outcome, guess: format.value } }, effects: [cancel('guess_timeout')] }
+    }
+
     case 'judge_guess':
       if (state.phase !== 'GUESS_CHECK') return gameError('There is no guess to judge')
       if (actor === null || actor !== state.outcome?.judgeId) return gameError('Only the judge can decide')
+      if (state.settings.clueMode === 'typed' && state.outcome.guess === null) return gameError('Wait for the guess')
       return finishRound(state, action.correct)
 
     case 'skip_guess':
@@ -423,7 +439,8 @@ function reduce(state: ImposterState, action: ImposterAction, ctx: ReduceCtx<Imp
         return advanceTurn(state, ctx)
       }
       if (action.type === 'reveal_done') return state.phase === 'REVEAL' ? revealDone(state, ctx) : { state }
-      if (state.phase !== 'GUESS_CHECK' || isConnected(ctx, state.imposterId)) return { state }
+      // A typed guess already in stands: the judge can still rule on it.
+      if (state.phase !== 'GUESS_CHECK' || isConnected(ctx, state.imposterId) || state.outcome?.guess) return { state }
       return finishRound(state, false)
     }
   }
@@ -457,6 +474,7 @@ function view(state: ImposterState, viewerId: PlayerId): ImposterView {
       imposterId: state.imposterId,
       judgeId: o.judgeId,
       guessRequired: o.guessRequired,
+      guess: o.guess,
       guessCorrect: o.guessCorrect,
       ...(seesWord || done ? { secretWord: state.secret.word } : {}),
       ...(done ? { imposterWon: o.imposterWon ?? false, pointsAwarded: o.pointsAwarded ?? {} } : {}),
@@ -508,7 +526,7 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
       case 'VOTING':
         return maybeFinishVoting(state, ctx)
       case 'GUESS_CHECK': {
-        const effects: Fx = playerId === state.imposterId ? [scheduleGuessTimeout(state, ctx)] : []
+        const effects: Fx = playerId === state.imposterId && !state.outcome?.guess ? [scheduleGuessTimeout(state, ctx)] : []
         if (playerId !== state.outcome?.judgeId) return { state, effects }
         return { state: { ...state, outcome: { ...state.outcome, judgeId: pickJudge(state, ctx) } }, effects }
       }
@@ -569,10 +587,13 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
       name: 'secretWord',
       visibleTo: (s, viewerId) =>
         s.phase === 'RESULTS' || (viewerId !== s.imposterId && s.roundPlayers.includes(viewerId)),
-      // If the imposter typed the exact word as a clue, they already have the string
+      // If the imposter typed the exact word as a clue or guess, they already have the string
       // (without knowing it is the word); the variant check still covers them.
       values: (s) =>
-        s.clues.some((c) => c.playerId === s.imposterId && isSameWord(c.word, s.secret.word)) ? [] : [s.secret.word],
+        s.clues.some((c) => c.playerId === s.imposterId && isSameWord(c.word, s.secret.word)) ||
+        (s.outcome?.guess != null && isSameWord(s.outcome.guess, s.secret.word))
+          ? []
+          : [s.secret.word],
       variants: (s) => [{ ...s, secret: { ...s.secret, word: 'Zz Variant Word' } }],
     },
     {

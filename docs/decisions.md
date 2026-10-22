@@ -89,6 +89,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Imposter chosen uniformly at random every round (repeats allowed).** A shuffle bag would let players deduce who hasn't been imposter yet.
 - **Hold-to-reveal for the role card and the judge's word.** People play around one table; the word must never sit on screen for the imposter to glance at.
 - **Spoken guess confirmed by a judge's tap (host, or first crew member if the host is imposter).** No spelling issues; trust-based by design.
+- **In typed mode the imposter types the guess, but the judge still rules on it.** Typing settles "what did they actually say"; the judge keeps misspellings and near-misses from being auto-failed. One try, locked once sent, so the imposter can't read the room and retry. Everyone sees the guess. A sent guess stands if the imposter then disconnects.
 - **Configurable catch/escape points (defaults 1/2), guess bonus default +1.** Defaults suit 4-7 players; the table can rebalance for bigger groups.
 - **Ballots are secret during voting, then public (who voted for whom) on the reveal, guess-check and results screens.** No bandwagoning while voting; afterwards the table wants to talk it over, and the 5s reveal alone is too short to read it.
 - **A wordless pulsing screen-edge glow means the game is waiting on you** (your clue turn, your vote, the imposter's guess and the judge, the host's next round). Host-only overrides don't trigger it. Phones lie on the table, so the cue must be visible at a glance without reading.

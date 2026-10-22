@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { needsAction } from '../client/attention.ts'
 import { REVEAL_MS } from '../shared/index.ts'
-import { catchImposter, current, newGame, PLAYERS, playClues, type Sim } from './helpers.ts'
+import { catchImposter, current, newGame, PLAYERS, playClues, playSpoken, type Sim } from './helpers.ts'
 
-const waitingOn = (sim: Sim) => PLAYERS.filter((id) => needsAction(sim.view(id), id, 'p1'))
+const waitingOn = (sim: Sim) => PLAYERS.filter((id) => needsAction(sim.view(id), id, 'p1', sim.state.settings.clueMode))
 
 describe('needsAction', () => {
   it('flags only the player whose clue turn it is', () => {
@@ -19,13 +19,23 @@ describe('needsAction', () => {
     expect(waitingOn(sim)).toEqual(['p1', 'p3', 'p4'])
   })
 
-  it('flags nobody during the reveal, then the imposter and judge during the guess', () => {
+  it('typed: flags nobody during the reveal, then the imposter until the guess is sent, then the judge', () => {
     const sim = newGame({ imposter: 'p3' })
     playClues(sim)
     catchImposter(sim)
     expect(waitingOn(sim)).toEqual([])
     sim.advance(REVEAL_MS)
     expect(sim.state.phase).toBe('GUESS_CHECK')
+    expect(waitingOn(sim)).toEqual(['p3'])
+    sim.act('p3', { type: 'submit_guess', word: 'penguin' })
+    expect(waitingOn(sim)).toEqual(['p1'])
+  })
+
+  it('spoken: flags the imposter and the judge together during the guess', () => {
+    const sim = newGame({ imposter: 'p3', settings: { clueMode: 'spoken' } })
+    playSpoken(sim)
+    catchImposter(sim)
+    sim.advance(REVEAL_MS)
     expect(waitingOn(sim)).toEqual(['p1', 'p3'])
   })
 

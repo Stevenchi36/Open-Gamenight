@@ -16,6 +16,8 @@ export const DISCONNECT_GRACE_MS = 15_000
 /** How long the vote reveal stays up before moving on. */
 export const REVEAL_MS = 5_000
 export const CLUE_MAX_LENGTH = 24
+/** Library words are under 30 chars; the slack leaves room for misspellings. */
+export const GUESS_MAX_LENGTH = 40
 
 // ---------------------------------------------------------------- settings
 
@@ -59,6 +61,7 @@ export const clientActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('start_voting') }),
   z.object({ type: z.literal('cast_vote'), targetId: z.string().min(1).max(64) }),
   z.object({ type: z.literal('end_voting') }),
+  z.object({ type: z.literal('submit_guess'), word: z.string().max(100) }),
   z.object({ type: z.literal('judge_guess'), correct: z.boolean() }),
   z.object({ type: z.literal('skip_guess') }),
   z.object({ type: z.literal('next_round') }),
@@ -87,6 +90,8 @@ export interface ResultView {
   imposterId: PlayerId
   judgeId: PlayerId | null
   guessRequired: boolean
+  /** Typed mode: the imposter's guess once sent (always null in spoken mode). The judge still rules on it. */
+  guess: string | null
   guessCorrect: boolean | null
   /** Omitted for the imposter until RESULTS. */
   secretWord?: string

@@ -17,7 +17,7 @@ interface GameView {
   turn: { currentPlayerId: string | null }
   clues: { word: string }[]
   scores: Record<string, number>
-  result?: { judgeId: string | null; imposterId: string; secretWord?: string; imposterWon?: boolean; caught: boolean }
+  result?: { judgeId: string | null; imposterId: string; secretWord?: string; imposterWon?: boolean; caught: boolean; guess: string | null }
 }
 
 let t: TestServer
@@ -156,6 +156,10 @@ describe('integration: full games over real websockets', () => {
     const notJudge = crew.find((c) => c !== judge)!
     await expectError(notJudge, { type: 'action', action: { type: 'judge_guess', correct: true } }, 'Only the judge can decide')
     await expectError(imposter, { type: 'action', action: { type: 'judge_guess', correct: true } }, 'Only the judge can decide')
+    // Typed mode: the imposter types the guess first (a misspelling the judge accepts).
+    await expectError(judge, { type: 'action', action: { type: 'judge_guess', correct: true } }, 'Wait for the guess')
+    imposter.send({ type: 'action', action: { type: 'submit_guess', word: 'misspeled' } })
+    await allUntil((s) => (s.game as GameView).result?.guess === 'misspeled')
     judge.send({ type: 'action', action: { type: 'judge_guess', correct: true } })
     await allUntil(phaseIs('RESULTS'))
 
