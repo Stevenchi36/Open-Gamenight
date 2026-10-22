@@ -97,6 +97,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
+- **Updates run through `npm run deploy` (`scripts/deploy.sh`): fast-forward pull, frozen install, build, `supervisorctl restart`.** One command, no skipped build; fails fast on a diverged checkout or lockfile drift. Not `pnpm deploy`, which is pnpm's own built-in command.
 - **Real client IP via configurable `TRUSTED_PROXY_HOPS` / `REAL_IP_HEADER` (`CF-Connecting-IP`).** Otherwise every IP-based limit sees Cloudflare's IPs; configurable for self-hosters.
 - **Branding via `APP_NAME` / `APP_PRIMARY_COLOR`; nothing domain-specific hard-coded.** Ready for self-hosting later.
 - **Docker and license deferred.** Pick the license deliberately (MIT vs AGPL) before open-sourcing.
