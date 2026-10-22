@@ -406,7 +406,7 @@ CREATE TABLE IF NOT EXISTS imposter_words (
 
 **Generation flow:** admin enters category + count, clicks Generate, reviews candidates in a table (edit or untick), then Save (`POST /words`). Keeps junk and spoiler hints out of the library.
 
-**Generation prompt** (`generateWords` -> `ai.generate` with forced tool `submit_words` returning `[{ category, word, hint, difficulty }]`): concrete, widely known words (nouns preferred); hints vague enough not to give the word away but enough to bluff with; stay inside the category; vary difficulty; pass existing words in the category as an avoid-list. Validate output; retry once, then return an error (the UI shows it; games are unaffected).
+**Generation prompt** (`generateWords` -> `ai.generate` with forced tool `submit_words` returning `[{ category, word, hint, difficulty }]`): concrete, widely known words (nouns preferred); hints are a single loosely related word (unless a `hintStyle` override is given), vague enough not to give the word away but enough to bluff with; stay inside the category; vary difficulty; pass existing words in the category as an avoid-list. Validate output; retry once, then return an error (the UI shows it; games are unaffected).
 
 **MCP tools:** `imposter_add_words` (`{ words: [{ category, word, hint, difficulty? }] }`; when driven from Claude Code/Desktop, Claude writes the words itself, so **no API key is needed**), `imposter_list_categories`, `imposter_search_words` (`{ category?, query?, limit? }`), `imposter_remove_words` (`{ ids }`), `imposter_generate_words` (only when `ANTHROPIC_API_KEY` is set; saves directly, still subject to the token cap).
 

@@ -231,6 +231,8 @@ export interface GenerateRequest {
   /** Category name; may be new (it's created when the candidates are saved). */
   category?: string | null
   difficulty?: Difficulty | null
+  /** Overrides the default one-word hints, e.g. "short phrases". */
+  hintStyle?: string | null
   userId: string | null
 }
 
@@ -258,7 +260,7 @@ Everyone except the imposter sees a secret word; the imposter only sees the cate
 Rules for each entry:
 - word: a concrete, widely known thing (nouns preferred), 1-3 words, under 30 characters. Family friendly.
 - category: short, under 40 characters. Stay inside the requested category when one is given.
-- hint: vague enough not to give the word away, but enough for the imposter to bluff a clue. Under 120 characters. Never contains the word itself or an obvious form of it.
+- hint: a single, loosely related word (e.g. "Splash" for Water Gun, not "Squirt your friends"). Vague enough not to give the word away, but enough for the imposter to bluff a clue. Never contains the word itself or an obvious form of it.
 - difficulty: easy (everyone knows it, many easy clues), medium, or hard (still well known, but trickier to clue).
 - No duplicates, and nothing from the avoid list.`
 
@@ -283,6 +285,7 @@ export async function generateWords(
   const prompt = [
     `Write ${count} new entries${category ? ` in the category "${category}"` : ' across a few fun, varied categories'}.`,
     request.difficulty ? `Difficulty: ${request.difficulty} for all of them.` : 'Mix the difficulties.',
+    request.hintStyle?.trim() ? `Hint style (overrides the one-word default): ${request.hintStyle.trim()}` : '',
     !category && known.length ? `Existing categories (reuse these names where they fit): ${known.join(', ')}.` : '',
     avoid.length ? `Avoid these words, already in the library: ${avoid.join(', ')}.` : '',
   ]

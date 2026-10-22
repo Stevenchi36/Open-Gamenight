@@ -148,12 +148,12 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 | `imposter_create_category` | Create an empty category `{ name }`. Rarely needed: `add_words` creates missing ones. |
 | `imposter_rename_category` | Rename `{ id, name }`. Its words stay in it. |
 | `imposter_delete_category` | Delete an empty category `{ id }`. Refused while it has words: move them with `update_word` or remove them first. |
-| `imposter_generate_words` | **Only registered when `ANTHROPIC_API_KEY` is set where the MCP server runs.** Generates with the server-side API and saves directly, within the daily token cap. Costs API credits; you usually don't need it from Claude Code. |
+| `imposter_generate_words` | **Only registered when `ANTHROPIC_API_KEY` is set where the MCP server runs.** Generates with the server-side API and saves directly, within the daily token cap. Hints are one word unless you pass `hintStyle` (e.g. "short phrases"). Costs API credits; you usually don't need it from Claude Code. |
 
 **Rules for a word** (enforced by the tools and the admin page):
 - `word`: 1-3 words, under 30 characters.
 - `category`: under 40 characters.
-- `hint`: under 120 characters, and must not contain the word.
+- `hint`: under 120 characters, and must not contain the word. By default Claude writes a single loosely related word ("Splash" for Water Gun), so the imposter can bluff without being handed the answer; ask for a different style if you want longer hints.
 - `difficulty`: `easy` | `medium` | `hard` (default `medium`).
 - A word that's already in the same category (ignoring case) is skipped.
 - Categories are shared rows (`categories` table), managed with the `*_category` tools or in the admin panel (Admin → Word Imposter → Categories). A category that still has words can't be deleted; move or delete its words first.
@@ -161,7 +161,8 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 ## Example prompts
 
 - "List the imposter categories and tell me which are running low."
-- "Add 25 words to the imposter library in a new category called Sports. Concrete things everyone knows, vague hints the imposter can bluff with, a mix of difficulties."
+- "Add 25 words to the imposter library in a new category called Sports. Concrete things everyone knows, a mix of difficulties."
+- "Rewrite the hints in the Food category as single vague words."
 - "Search the Food category for any hints that give the word away too easily and suggest better ones." (Claude can remove and re-add the ones you approve.)
 - "Add 10 words to every category that has fewer than 5 unused words. Check existing words first so you don't repeat them."
 - "Remove all imposter words in the Weather category with difficulty hard."

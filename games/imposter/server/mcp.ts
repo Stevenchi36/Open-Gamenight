@@ -22,7 +22,10 @@ const wordInput = z.object({
   word: z.string().describe('The secret word: concrete, widely known, 1-3 words, under 30 characters.'),
   hint: z
     .string()
-    .describe('A vague hint for the imposter: enough to bluff with, must not contain or give away the word.'),
+    .describe(
+      'A vague hint for the imposter. By default a single loosely related word (e.g. "Splash" for Water Gun, not "Squirt your friends"), ' +
+        'unless the user asked for a different hint style. Must not contain or give away the word.',
+    ),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
 })
 
@@ -42,13 +45,18 @@ const updateSchema = z.object({
     .optional()
     .describe('Or move to the category with this name (created if it does not exist); ignored when categoryId is given'),
   word: z.string().optional(),
-  hint: z.string().optional().describe('Must not contain the word'),
+  hint: z.string().optional().describe('One vague word by default, unless the user asks otherwise. Must not contain the word'),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
 })
 const generateSchema = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
   category: z.string().optional(),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+  hintStyle: z
+    .string()
+    .max(200)
+    .optional()
+    .describe('Only when the user asks for something other than one-word hints, e.g. "short phrases"'),
 })
 
 export function mcpTools(services: ServerServices): McpToolDef[] {
@@ -57,7 +65,8 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
     {
       name: 'add_words',
       description:
-        'Add words to the Word Imposter library. Each needs a category name, the word, and a vague hint for the imposter. ' +
+        'Add words to the Word Imposter library. Each needs a category name, the word, and a vague hint for the imposter: ' +
+        'one loosely related word by default (the imposter must be able to bluff, not deduce the word), unless the user asks for longer or more specific hints. ' +
         'Categories that do not exist yet are created (reported in createdCategories); prefer existing names from list_categories. ' +
         'Duplicates (same category + word) and invalid entries are skipped and reported.',
       inputSchema: addSchema,
@@ -108,11 +117,12 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         'Usually unnecessary from Claude Code/Desktop: you can write words yourself and call add_words.',
       inputSchema: generateSchema,
       handler: async (args) => {
-        const { count, category, difficulty } = generateSchema.parse(args)
+        const { count, category, difficulty, hintStyle } = generateSchema.parse(args)
         const { candidates, skipped } = await generateWords(ai, services, {
           count,
           category: category ?? null,
           difficulty: difficulty ?? null,
+          hintStyle: hintStyle ?? null,
           userId: null,
         })
         const saved = addWords(services, candidates, 'claude')

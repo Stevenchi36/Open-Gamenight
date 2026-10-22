@@ -1,4 +1,5 @@
 import type { Migration } from '@wsfg/core/contract'
+import { VAGUE_DEFAULT_HINTS } from './default-hints.ts'
 import { DEFAULT_WORDS } from './default-words.ts'
 
 /**
@@ -61,10 +62,19 @@ export const migrations: Migration[] = [
     id: '003_default_words',
     sql: seedSql(),
   },
+  {
+    // Swap the starter hints for one-word ones. Only rows still carrying
+    // the 003 hint change, so hints an admin has edited are kept.
+    id: '004_vague_default_hints',
+    sql: vagueHintsSql(),
+  },
 ]
 
+function text(s: string): string {
+  return `'${s.replaceAll("'", "''")}'`
+}
+
 function seedSql(): string {
-  const text = (s: string) => `'${s.replaceAll("'", "''")}'`
   const categories = Object.keys(DEFAULT_WORDS).map((name) => `('imposter', ${text(name)})`)
   const words = Object.entries(DEFAULT_WORDS).flatMap(([category, list]) =>
     list.map(([word, hint, difficulty]) => `(${text(category)}, ${text(word)}, ${text(hint)}, ${text(difficulty)})`),
@@ -75,5 +85,23 @@ function seedSql(): string {
       SELECT c.id, d.column2, d.column3, d.column4, 'builtin'
       FROM (VALUES ${words.join(',\n')}) d
       JOIN categories c ON c.game_id = 'imposter' AND c.name = d.column1 COLLATE NOCASE;
+  `
+}
+
+function vagueHintsSql(): string {
+  const rows = Object.entries(VAGUE_DEFAULT_HINTS).flatMap(([category, list]) =>
+    list.map(([word, hint]) => {
+      const old = DEFAULT_WORDS[category]!.find(([w]) => w === word)![1]
+      return `(${text(category)}, ${text(word)}, ${text(old)}, ${text(hint)})`
+    }),
+  )
+  return `
+    WITH s (category, word, old_hint, new_hint) AS (VALUES ${rows.join(',\n')})
+    UPDATE imposter_words SET hint = s.new_hint
+      FROM s
+      JOIN categories c ON c.game_id = 'imposter' AND c.name = s.category COLLATE NOCASE
+      WHERE imposter_words.category_id = c.id
+        AND imposter_words.word = s.word COLLATE NOCASE
+        AND imposter_words.hint = s.old_hint;
   `
 }

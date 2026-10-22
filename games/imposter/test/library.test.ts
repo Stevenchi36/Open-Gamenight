@@ -15,6 +15,7 @@ import {
   removeWords,
   updateWord,
 } from '../server/library.ts'
+import { VAGUE_DEFAULT_HINTS } from '../server/default-hints.ts'
 import { DEFAULT_WORDS } from '../server/default-words.ts'
 import { migrations } from '../server/migrations.ts'
 import { validateWord } from '../server/validate.ts'
@@ -103,6 +104,39 @@ describe('migration 003: default words', () => {
     expect(d.prepare("SELECT name FROM categories WHERE name = 'Animals' COLLATE NOCASE").all()).toEqual([{ name: 'animals' }])
     expect(listWords(d, { q: 'penguin' }).words.map((w) => w.hint)).toEqual(['My own hint'])
     expect(listWords(d).total).toBe(total)
+  })
+})
+
+describe('migration 004: one-word default hints', () => {
+  const vague = Object.entries(VAGUE_DEFAULT_HINTS).flatMap(([category, list]) =>
+    list.map(([word, hint]) => ({ category, word, hint })),
+  )
+
+  it('covers every default word with a valid single-word hint', () => {
+    expect(vague.map((v) => `${v.category}/${v.word}`).sort()).toEqual(
+      Object.entries(DEFAULT_WORDS)
+        .flatMap(([category, list]) => list.map(([word]) => `${category}/${word}`))
+        .sort(),
+    )
+    for (const v of vague) {
+      expect(v.hint, `${v.category}/${v.word}`).toMatch(/^\S+$/)
+      expect(validateWord(v), `${v.category}/${v.word}`).toMatchObject({ ok: true })
+    }
+  })
+
+  it('replaces seeded hints but keeps ones an admin edited', () => {
+    const d = new DatabaseSync(':memory:')
+    d.exec('PRAGMA foreign_keys = ON')
+    d.exec(CATEGORIES_MIGRATION.sql)
+    const vagueId = '004_vague_default_hints'
+    for (const m of migrations) if (m.id !== vagueId) d.exec(m.sql)
+    d.exec("UPDATE imposter_words SET hint = 'My own hint' WHERE word = 'Penguin'")
+    d.exec(migrations.find((m) => m.id === vagueId)!.sql)
+
+    const hintOf = (word: string) => listWords(d, { q: word }).words.find((w) => w.word === word)!.hint
+    expect(hintOf('Water Gun')).toBe('Splash')
+    expect(hintOf('Penguin')).toBe('My own hint')
+    expect(listWords(d).total).toBe(vague.length)
   })
 })
 
@@ -279,6 +313,15 @@ describe('generateWords', () => {
     expect(result.skipped.map((s) => s.word)).toEqual(['Comet', 'nebula'])
     expect(JSON.stringify(calls[0])).toContain('Comet') // avoid-list in the prompt
     expect(listWords(db).total).toBe(1) // nothing saved
+  })
+
+  it('asks for one-word hints unless a hint style is given', async () => {
+    const { ai, calls } = fakeAi({ words: [entry('Nebula')] }, { words: [entry('Pulsar')] })
+    await generateWords(ai, services, { count: 1, userId: null })
+    await generateWords(ai, services, { count: 1, hintStyle: 'short phrases', userId: null })
+    expect(JSON.stringify(calls[0])).toContain('a single, loosely related word')
+    expect(JSON.stringify(calls[0])).not.toContain('Hint style')
+    expect(JSON.stringify(calls[1])).toContain('Hint style (overrides the one-word default): short phrases')
   })
 
   it('retries once on an invalid response, then errors', async () => {

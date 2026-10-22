@@ -72,6 +72,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Game admin routers read the signed-in admin from `res.locals.user` (`AdminUser` in the contract).** The core already resolved it in requireAdmin; games don't re-check sessions.
 - **The MCP process reads the repo `.env` (without overriding its own env), so `imposter_generate_words` appears when the server has a key.** One place to configure the key, model and caps.
 - **Generated words are reviewed by an admin before saving (UI path).** Keeps junk and spoiler hints out of the library.
+- **Imposter hints default to a single, loosely related word (seeds, built-ins, MCP guidance, AI prompt); migration `004_vague_default_hints` rewrites the starter hints that are still unedited.** Phrase hints ("Squirt your friends") handed the imposter the word. Longer hints are still allowed when asked for (`hintStyle` on generation); validation does not enforce one word.
 - **One stdio MCP server with namespaced tools from every game.** One registration covers all games; driving it from Claude Code needs no API key.
 - **The MCP process runs migrations on games.db at start and defaults GAMES_DB_PATH to <repo>/data/games.db.** It works before the web server has ever run, from any working directory.
 - **Games may expose a read-only `publicRouter` at /api/games/<id> (GET only, rate-limited).** The lobby's category picker needs library categories, and admin routes are the wrong place for player-facing data.

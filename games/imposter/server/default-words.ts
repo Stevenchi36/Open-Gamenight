@@ -1,7 +1,8 @@
 /**
  * Starter library, seeded by migration 003_default_words so a fresh install
  * has categories to pick from. Frozen with that migration: to ship more
- * defaults, add a new migration instead of editing this list.
+ * defaults, add a new migration instead of editing this list. The hints here
+ * are the 003 originals; migration 004 swaps them for default-hints.ts.
  * Format per category: [word, hint, difficulty].
  */
 import type { Difficulty } from './library.ts'

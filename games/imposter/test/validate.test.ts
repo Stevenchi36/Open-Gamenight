@@ -48,6 +48,10 @@ describe('built-in words', () => {
     for (const w of BUILTIN_WORDS) expect(validateWord(w), `${w.category}/${w.word}`).toMatchObject({ ok: true })
   })
 
+  it('every hint is a single word', () => {
+    for (const w of BUILTIN_WORDS) expect(w.hint, `${w.category}/${w.word}`).toMatch(/^\S+$/)
+  })
+
   it('has no duplicate words within a category', () => {
     const keys = BUILTIN_WORDS.map((w) => `${w.category}|${w.word}`.toLowerCase())
     expect(new Set(keys).size).toBe(keys.length)
