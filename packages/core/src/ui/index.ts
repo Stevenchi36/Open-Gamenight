@@ -5,4 +5,5 @@
 export { default as HoldToReveal } from './HoldToReveal.vue'
 export { default as ScoreBoard } from './ScoreBoard.vue'
 export { default as StatusCard } from './StatusCard.vue'
+export { default as SubmitField } from './SubmitField.vue'
 export * from './helpers.ts'

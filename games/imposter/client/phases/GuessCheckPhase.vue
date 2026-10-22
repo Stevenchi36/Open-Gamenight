@@ -5,19 +5,7 @@
         What do you think the secret word is? {{ judgeLine }}
       </StatusCard>
       <StatusCard v-else-if="result.guess === null" color="primary" variant="flat" prominent compact overline="Your last chance" title="What's the secret word?">
-        <v-form class="d-flex ga-2" @submit.prevent="submitGuess">
-          <v-text-field
-            v-model="guess"
-            label="Your guess"
-            :maxlength="GUESS_MAX_LENGTH"
-            autofocus
-            autocomplete="off"
-            autocapitalize="off"
-            hide-details
-            bg-color="surface"
-          />
-          <v-btn type="submit" color="surface" size="large" :disabled="!guess.trim()" icon="mdi-send" aria-label="Send guess" />
-        </v-form>
+        <SubmitField label="Your guess" :maxlength="GUESS_MAX_LENGTH" send-label="Send guess" on-color @submit="(word) => send({ type: 'submit_guess', word })" />
         <div class="text-body-2 mt-2">One try. {{ judgeLine }}</div>
       </StatusCard>
       <StatusCard v-else color="primary" variant="flat" prominent overline="You guessed" :title="result.guess">
@@ -65,8 +53,8 @@
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, isHost, nameOf, StatusCard } from '@wsfg/core/ui'
-import { computed, ref } from 'vue'
+import { HoldToReveal, isHost, nameOf, StatusCard, SubmitField } from '@wsfg/core/ui'
+import { computed } from 'vue'
 import { GUESS_MAX_LENGTH, type ImposterSettings } from '../../shared/index.ts'
 import type { PhaseProps } from '../props.ts'
 import VoteBreakdown from '../VoteBreakdown.vue'
@@ -79,10 +67,4 @@ const waitingForGuess = computed(() => typed.value && result.value?.guess === nu
 const judgeLine = computed(() =>
   result.value?.judgeId ? `${nameOf(props.room, result.value.judgeId)} decides if it's right.` : 'Waiting for a judge to reconnect.',
 )
-
-const guess = ref('')
-function submitGuess() {
-  const word = guess.value.trim()
-  if (word) props.send({ type: 'submit_guess', word })
-}
 </script>

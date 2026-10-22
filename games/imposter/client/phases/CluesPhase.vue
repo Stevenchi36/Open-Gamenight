@@ -6,19 +6,7 @@
     <v-card v-if="myTurn" color="primary" variant="tonal" class="mb-4">
       <v-card-text>
         <div class="text-h6 mb-2">Your turn: one word</div>
-        <v-form class="d-flex ga-2" @submit.prevent="submit">
-          <v-text-field
-            v-model="clue"
-            label="Your clue"
-            maxlength="24"
-            autofocus
-            autocomplete="off"
-            autocapitalize="off"
-            hide-details="auto"
-            :error-messages="localError"
-          />
-          <v-btn type="submit" color="primary" size="large" :disabled="!clue.trim()" icon="mdi-send" aria-label="Send clue" />
-        </v-form>
+        <SubmitField v-model="clue" label="Your clue" :maxlength="24" send-label="Send clue" :error="localError" @submit="submit" />
       </v-card-text>
     </v-card>
     <div v-else class="text-h6 text-center mb-4">
@@ -34,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { isHost, nameOf } from '@wsfg/core/ui'
+import { isHost, nameOf, SubmitField } from '@wsfg/core/ui'
 import { computed, ref } from 'vue'
 import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'
@@ -47,8 +35,7 @@ const amHost = computed(() => isHost(props.room, props.me))
 const clue = ref('')
 const localError = ref('')
 
-function submit() {
-  const word = clue.value.trim()
+function submit(word: string) {
   if (/\s/.test(word)) {
     localError.value = 'One word only'
     return
