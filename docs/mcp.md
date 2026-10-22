@@ -170,6 +170,8 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 - "Merge the imposter categories Snacks and Food: move every Snacks word into Food, then delete Snacks."
 - "Find imposter words whose category doesn't really fit them and move them somewhere better."
 
+**Claude keeps new words secret.** After adding or generating words, Claude reports only how many it added and to which categories, so you can still play. Ask "show me the words" if you want to see them. (They are still in the tool call itself; Claude Code shows it collapsed, so don't expand it if you're playing.)
+
 Good hints are the heart of the game. Asking Claude to look at existing words first (`search_words`) gets you new words and a consistent style.
 
 ## Troubleshooting

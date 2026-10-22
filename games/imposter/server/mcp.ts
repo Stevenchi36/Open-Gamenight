@@ -29,7 +29,13 @@ const wordInput = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
 })
 
-const addSchema = z.object({ words: z.array(wordInput).min(1).max(200) })
+// The person asking may be about to play, so the reply must not spoil the words.
+// The note rides on the tool result too, because that's what the model reads
+// right before it answers.
+const SECRET_REPLY_RULE =
+  "Keep the words secret in your reply: the person may be playing. Report only counts and category names; don't list the words or hints unless they explicitly ask to see them."
+
+const addSchema =z.object({ words: z.array(wordInput).min(1).max(200) })
 const searchSchema = z.object({
   categoryId: z.number().int().optional().describe('Category id from list_categories (takes precedence over category)'),
   category: z.string().optional().describe('Category name, case-insensitive'),
@@ -68,9 +74,10 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         'Add words to the Word Imposter library. Each needs a category name, the word, and a vague hint for the imposter: ' +
         'one loosely related word by default (the imposter must be able to bluff, not deduce the word), unless the user asks for longer or more specific hints. ' +
         'Categories that do not exist yet are created (reported in createdCategories); prefer existing names from list_categories. ' +
-        'Duplicates (same category + word) and invalid entries are skipped and reported.',
+        'Duplicates (same category + word) and invalid entries are skipped and reported. ' +
+        SECRET_REPLY_RULE,
       inputSchema: addSchema,
-      handler: async (args) => addWords(services, addSchema.parse(args).words, 'claude'),
+      handler: async (args) => ({ ...addWords(services, addSchema.parse(args).words, 'claude'), note: SECRET_REPLY_RULE }),
     },
     {
       name: 'list_categories',
@@ -114,7 +121,8 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
       name: 'generate_words',
       description:
         'Generate words with the server-side Claude API and save them directly (counts against the daily AI token cap). ' +
-        'Usually unnecessary from Claude Code/Desktop: you can write words yourself and call add_words.',
+        'Usually unnecessary from Claude Code/Desktop: you can write words yourself and call add_words. ' +
+        SECRET_REPLY_RULE,
       inputSchema: generateSchema,
       handler: async (args) => {
         const { count, category, difficulty, hintStyle } = generateSchema.parse(args)
@@ -126,7 +134,7 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
           userId: null,
         })
         const saved = addWords(services, candidates, 'claude')
-        return { ...saved, skipped: [...skipped, ...saved.skipped] }
+        return { ...saved, skipped: [...skipped, ...saved.skipped], note: SECRET_REPLY_RULE }
       },
     })
   }

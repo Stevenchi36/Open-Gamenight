@@ -80,6 +80,7 @@ describe('MCP server', () => {
         { word: 'OTTER', reason: 'Already in the library' },
         { word: 'Seal', reason: 'Hint must not contain the word' },
       ],
+      note: expect.stringContaining("don't list the words"),
     })
 
     const db = new DatabaseSync(dbPath, { readOnly: true })
