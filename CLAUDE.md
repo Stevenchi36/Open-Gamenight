@@ -1,0 +1,32 @@
+# ws-family-games
+
+Multiplayer party-game platform (pnpm workspace, TypeScript, Node 26). Word Imposter is the first game and the reference implementation for future ones.
+
+- `PLAN.md`: the design spec. Read the relevant section before building or changing a feature.
+- `docs/decisions.md`: every design decision with its reason. Check it before changing behaviour. When you make or change a decision, add or edit its one-line entry there in the same change.
+- `docs/mcp.md`: read before touching MCP tools, or when working with the word library through the `ws-family-games` MCP server.
+
+## Invariants
+
+- **Pure games.** A game's `init`/`reduce`/`view`/lifecycle hooks are pure: randomness from `ctx.rng`, time from `ctx.now`, timers as `schedule`/`cancel` effects, I/O only in `prepareRound`. That purity is what makes `createSim` tests and replay work.
+- **Only `view()` leaves the server.** Per-player views are the secrecy boundary. Every game declares `secrets`, and its leak test (`runLeakTest`) must stay green. A new field in a view is a new thing to check against `secrets`.
+- **Game boundary.** Within the repo, games import only from `@wsfg/core/*` and their own folder; server services arrive through `ServerServices`. Game tables are prefixed `<gameId>_`. The one shared table is core `categories`: games read/join it filtered by their own `game_id`, reference it by foreign key, and write through `services.categories`.
+- **Server-side auth.** Every admin and game-admin route sits behind `requireAdmin` + the Origin check (the core mounts them); `create_room` needs a session. Client guards are UX only. IP-based limits use `clientIp()`.
+- **Registries are static.** A new game is one entry in `games/index.ts` and one in `games/client.ts`.
+
+## Code conventions
+
+- Node runs the server's TypeScript directly (type stripping), with no build step. So: relative imports carry the `.ts` extension, and code uses erasable syntax only (plain classes with declared fields, union types for enumerations, `import type` for types). Workspace packages export their `.ts` source.
+- SQLite is `node:sqlite` (`DatabaseSync`): synchronous, with no transaction helper. Wrap multi-statement writes in `transaction()` from `apps/server/src/db.ts`, or `BEGIN IMMEDIATE`/`COMMIT`/`ROLLBACK` in game code. Match constraint errors on the primary code (`errcode & 0xff === 19`) plus the message; extended codes vary (`ON DELETE RESTRICT` reports 1811).
+- Migrations are append-only: add a new numbered migration and leave applied ones exactly as they are. Core migrations run before every game's.
+- The MCP process and everything it imports write logs to stderr (the shared logger, `console.error`), because stdout is the protocol.
+- AI calls go through `services.ai` (one strict tool, `tool_choice: auto`, validated output); the model and caps come from env.
+- Comments explain *why*; keep them brief and match the surrounding density.
+
+## Workflow
+
+- Done means `pnpm test`, `pnpm typecheck` and `pnpm lint` all pass, plus `pnpm --filter @wsfg/client build` when client or `games/*/client` code changed.
+- Write multi-line file content with the Write/Edit tools; Git Bash heredocs on this Windows machine have silently truncated files.
+- Create a new file before writing the import that references it. Vite's dev server caches a failed import, doesn't notice new files in `games/*`, and only recovers when `pnpm dev` restarts.
+- Commit after each self-contained change. Line endings are LF (`.gitattributes`).
+- Dev data lives in `data/` (gitignored). The dev server migrates on start, so schema changes apply to the developer's real `data/games.db` as soon as `pnpm dev` reloads: verify migrations against existing rows, not only fresh databases.
