@@ -52,6 +52,8 @@ export async function startTestServer(
     aiClient?: MessagesClient
     /** Keep the default word library from the migrations; otherwise tests start with an empty one. */
     seededLibrary?: boolean
+    /** Repo root to resolve against; the built client is served from <rootDir>/apps/client/dist. */
+    rootDir?: string
   } = {},
 ): Promise<TestServer> {
   const dir = mkdtempSync(join(tmpdir(), 'wsfg-test-'))
@@ -64,7 +66,7 @@ export async function startTestServer(
     AUTH_DB_PATH: join(dir, 'auth.db'),
     GAMES_DB_PATH: join(dir, 'games.db'),
     ...options.env,
-  })
+  }, options.rootDir)
   const running = await startServer(config, {
     auth: { rateLimit: options.authRateLimit ?? false },
     ...(options.games ? { games: options.games } : {}),

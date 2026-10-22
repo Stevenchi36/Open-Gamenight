@@ -90,7 +90,8 @@ export function createApp(deps: AppDeps): Express {
   // Built SPA (production). In dev, Vite serves the client and proxies /api and /ws here.
   if (existsSync(join(config.clientDistDir, 'index.html'))) {
     app.use(express.static(config.clientDistDir, { index: false, maxAge: '1h' }))
-    app.get('/*splat', (_req, res) => {
+    // `{*splat}` is optional, so `/` matches too; Express 5's `/*splat` needs at least one character.
+    app.get('/{*splat}', (_req, res) => {
       res.sendFile(join(config.clientDistDir, 'index.html'))
     })
   }
