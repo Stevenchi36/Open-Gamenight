@@ -16,6 +16,9 @@ export default createVuetify({
   },
   defaults: {
     VBtn: { rounded: 'lg' },
+    // the global rounded-lg would otherwise round every segment inside a group
+    VBtnToggle: { rounded: 'lg', VBtn: { rounded: false } },
+    VBtnGroup: { rounded: 'lg', VBtn: { rounded: false } },
     VCard: { rounded: 'xl' },
     VTextField: { variant: 'outlined', density: 'comfortable' },
     VSelect: { variant: 'outlined', density: 'comfortable' },
