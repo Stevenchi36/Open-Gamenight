@@ -136,14 +136,18 @@ In Claude Code, mention the server by name:
 
 ## Tools
 
-All tools are prefixed with the game id. Word Imposter's:
+All tools are prefixed with the game id. The `*_category` tools come from the core and appear for every game that uses the shared categories table; the rest are the game's own. Word Imposter's:
 
 | Tool | What it does |
 |---|---|
 | `imposter_list_categories` | All categories (including empty ones) with ids, total and unused counts, plus `runningLow` (fewer than 5 unused). |
-| `imposter_search_words` | Search by `category` and/or `query` (substring of word or hint), up to `limit` (max 200). Returns ids. |
+| `imposter_search_words` | Search by `categoryId` or `category` (name) and/or `query` (substring of word or hint), up to `limit` (max 200). Returns word ids. |
 | `imposter_add_words` | Add `{ words: [{ category, word, hint, difficulty? }] }`, up to 200 per call. `category` is a name: matched to an existing category ignoring case, or created (listed in `createdCategories`). Duplicates and invalid entries are skipped and listed with a reason. Saved with source `claude`. |
+| `imposter_update_word` | Edit one word `{ id, categoryId? | category?, word?, hint?, difficulty? }`: move it to another category (by id, or by name, which is created if new) or fix its text. Same rules as adding. |
 | `imposter_remove_words` | Remove by `{ ids: [...] }` (ids from `search_words`). |
+| `imposter_create_category` | Create an empty category `{ name }`. Rarely needed: `add_words` creates missing ones. |
+| `imposter_rename_category` | Rename `{ id, name }`. Its words stay in it. |
+| `imposter_delete_category` | Delete an empty category `{ id }`. Refused while it has words: move them with `update_word` or remove them first. |
 | `imposter_generate_words` | **Only registered when `ANTHROPIC_API_KEY` is set where the MCP server runs.** Generates with the server-side API and saves directly, within the daily token cap. Costs API credits; you usually don't need it from Claude Code. |
 
 **Rules for a word** (enforced by the tools and the admin page):
@@ -152,7 +156,7 @@ All tools are prefixed with the game id. Word Imposter's:
 - `hint`: under 120 characters, and must not contain the word.
 - `difficulty`: `easy` | `medium` | `hard` (default `medium`).
 - A word that's already in the same category (ignoring case) is skipped.
-- Categories are shared rows (`categories` table): rename or delete them in the admin panel (Admin → Word Imposter → Categories). A category that still has words can't be deleted; move or delete its words first.
+- Categories are shared rows (`categories` table), managed with the `*_category` tools or in the admin panel (Admin → Word Imposter → Categories). A category that still has words can't be deleted; move or delete its words first.
 
 ## Example prompts
 
@@ -161,6 +165,9 @@ All tools are prefixed with the game id. Word Imposter's:
 - "Search the Food category for any hints that give the word away too easily and suggest better ones." (Claude can remove and re-add the ones you approve.)
 - "Add 10 words to every category that has fewer than 5 unused words. Check existing words first so you don't repeat them."
 - "Remove all imposter words in the Weather category with difficulty hard."
+- "Rename the imposter category Food to Food & Drink."
+- "Merge the imposter categories Snacks and Food: move every Snacks word into Food, then delete Snacks."
+- "Find imposter words whose category doesn't really fit them and move them somewhere better."
 
 Good hints are the heart of the game. Asking Claude to look at existing words first (`search_words`) gets you new words and a consistent style.
 

@@ -44,9 +44,13 @@ describe('MCP server', () => {
     const { tools } = await client.listTools()
     expect(tools.map((t) => t.name).sort()).toEqual([
       'imposter_add_words',
+      'imposter_create_category',
+      'imposter_delete_category',
       'imposter_list_categories',
       'imposter_remove_words',
+      'imposter_rename_category',
       'imposter_search_words',
+      'imposter_update_word',
     ])
   })
 
@@ -64,6 +68,7 @@ describe('MCP server', () => {
     expect(result.isError).toBeFalsy()
     expect(text(result)).toMatchObject({
       inserted: 21,
+      createdCategories: ['Animals', 'Food'],
       skipped: [
         { word: 'OTTER', reason: 'Already in the library' },
         { word: 'Seal', reason: 'Hint must not contain the word' },
@@ -97,6 +102,38 @@ describe('MCP server', () => {
     const result = await client.callTool({ name: 'imposter_remove_words', arguments: { ids: 'all' } }).catch((e) => e)
     expect(result instanceof Error || (result as { isError?: boolean }).isError).toBeTruthy()
     const { tools } = await client.listTools()
-    expect(tools.length).toBe(4)
+    expect(tools.length).toBe(8)
+  })
+
+  it('manages categories: create, rename, refuse to delete while in use, move words out, delete', async () => {
+    type Cat = { id: number; category: string; total: number }
+    const call = async (name: string, args: Record<string, unknown>) => client.callTool({ name, arguments: args })
+    const categories = async () => text(await call('imposter_list_categories', {})) as Cat[]
+
+    const created = text(await call('imposter_create_category', { name: 'Board Games' })) as { id: number; name: string }
+    expect(created.name).toBe('Board Games')
+    expect((await categories()).find((c) => c.id === created.id)).toMatchObject({ total: 0 })
+    const dup = await call('imposter_create_category', { name: 'board games' })
+    expect(dup.isError).toBe(true)
+    expect(JSON.stringify(dup.content)).toContain('already a category called')
+
+    expect(text(await call('imposter_rename_category', { id: created.id, name: 'Games' }))).toMatchObject({ name: 'Games' })
+    await call('imposter_add_words', { words: [{ category: 'games', word: 'Chess', hint: 'Kings and queens' }] })
+
+    const refused = await call('imposter_delete_category', { id: created.id })
+    expect(refused.isError).toBe(true)
+    expect(JSON.stringify(refused.content)).toContain('still has words')
+
+    // move Chess out by category name (created on the fly), then the empty category can go
+    const chess = (text(await call('imposter_search_words', { categoryId: created.id })) as { words: { id: number }[] }).words[0]!
+    const moved = text(await call('imposter_update_word', { id: chess.id, category: 'Strategy', hint: 'Checkmate wins' }))
+    expect(moved).toMatchObject({ category: 'Strategy', word: 'Chess', hint: 'Checkmate wins' })
+    expect(text(await call('imposter_delete_category', { id: created.id }))).toEqual({ deleted: 'Games' })
+    expect((await categories()).map((c) => c.category)).toEqual(['Animals', 'Food', 'Strategy'])
+
+    // bad edits come back as tool errors
+    const bad = await call('imposter_update_word', { id: chess.id, hint: 'Chess is fun' })
+    expect(bad.isError).toBe(true)
+    expect(JSON.stringify(bad.content)).toContain('Hint must not contain the word')
   })
 })

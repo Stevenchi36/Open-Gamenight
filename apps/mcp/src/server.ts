@@ -13,7 +13,7 @@ import { existsSync } from 'node:fs'
 import { isAbsolute, join, resolve } from 'node:path'
 import { McpServer } from '@modelcontextprotocol/server'
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio'
-import { createCategoryService } from '@wsfg/core/categories'
+import { categoryMcpTools, createCategoryService } from '@wsfg/core/categories'
 import type { AnyGameModule, ServerServices } from '@wsfg/core/contract'
 import { games } from '@wsfg/games/server'
 import { createAiCore } from '@wsfg/server/ai'
@@ -72,7 +72,12 @@ export async function main(): Promise<void> {
 }
 
 function registerGameTools(server: McpServer, game: AnyGameModule, services: ServerServices): void {
-  for (const tool of game.mcpTools?.(services) ?? []) {
+  const tools = [
+    ...(game.mcpTools?.(services) ?? []),
+    // games on the shared categories table also get create/rename/delete_category
+    ...(game.categories ? categoryMcpTools(services.categories) : []),
+  ]
+  for (const tool of tools) {
     const name = `${game.id}_${tool.name}`
     server.registerTool(name, { description: tool.description, inputSchema: tool.inputSchema }, async (args: unknown) => {
       try {

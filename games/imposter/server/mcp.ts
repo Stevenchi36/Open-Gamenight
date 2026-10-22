@@ -6,7 +6,16 @@
  */
 import type { McpToolDef, ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
-import { addWords, generateWords, listCategories, listWords, LOW_STOCK_THRESHOLD, MAX_GENERATE, removeWords } from './library.ts'
+import {
+  addWords,
+  generateWords,
+  listCategories,
+  listWords,
+  LOW_STOCK_THRESHOLD,
+  MAX_GENERATE,
+  removeWords,
+  updateWord,
+} from './library.ts'
 
 const wordInput = z.object({
   category: z.string().describe('Category, e.g. "Animals". Reuse existing category names where they fit.'),
@@ -19,11 +28,23 @@ const wordInput = z.object({
 
 const addSchema = z.object({ words: z.array(wordInput).min(1).max(200) })
 const searchSchema = z.object({
-  category: z.string().optional(),
+  categoryId: z.number().int().optional().describe('Category id from list_categories (takes precedence over category)'),
+  category: z.string().optional().describe('Category name, case-insensitive'),
   query: z.string().optional().describe('Substring match on word or hint'),
   limit: z.number().int().min(1).max(200).optional(),
 })
 const removeSchema = z.object({ ids: z.array(z.number().int()).min(1).max(500) })
+const updateSchema = z.object({
+  id: z.number().int().describe('Word id (from search_words)'),
+  categoryId: z.number().int().optional().describe('Move to this category id (from list_categories)'),
+  category: z
+    .string()
+    .optional()
+    .describe('Or move to the category with this name (created if it does not exist); ignored when categoryId is given'),
+  word: z.string().optional(),
+  hint: z.string().optional().describe('Must not contain the word'),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+})
 const generateSchema = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
   category: z.string().optional(),
@@ -31,7 +52,7 @@ const generateSchema = z.object({
 })
 
 export function mcpTools(services: ServerServices): McpToolDef[] {
-  const { db, ai } = services
+  const { db, ai, categories } = services
   const tools: McpToolDef[] = [
     {
       name: 'add_words',
@@ -44,18 +65,32 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
     },
     {
       name: 'list_categories',
-      description: `List library categories (including empty ones) with total and unused word counts. Categories with fewer than ${LOW_STOCK_THRESHOLD} unused words are running low.`,
+      description: `List library categories (including empty ones) with their ids, total and unused word counts. Categories with fewer than ${LOW_STOCK_THRESHOLD} unused words are running low. Manage them with imposter_create_category, imposter_rename_category and imposter_delete_category.`,
       inputSchema: z.object({}),
       handler: async () =>
         listCategories(db).map((c) => ({ ...c, runningLow: c.unused < LOW_STOCK_THRESHOLD })),
     },
     {
       name: 'search_words',
-      description: 'Search the library by category and/or a substring of the word or hint.',
+      description: 'Search the library by category (id or name) and/or a substring of the word or hint. Returns word ids for update_word and remove_words.',
       inputSchema: searchSchema,
       handler: async (args) => {
-        const { category, query, limit } = searchSchema.parse(args)
-        return listWords(db, { category: category ?? null, q: query ?? null, limit: limit ?? 50 })
+        const { categoryId, category, query, limit } = searchSchema.parse(args)
+        return listWords(db, { categoryId: categoryId ?? null, category: category ?? null, q: query ?? null, limit: limit ?? 50 })
+      },
+    },
+    {
+      name: 'update_word',
+      description:
+        'Edit one word: move it to another category, or change its word, hint or difficulty. Same rules as add_words. ' +
+        'Use it to empty a category before imposter_delete_category.',
+      inputSchema: updateSchema,
+      handler: async (args) => {
+        const { id, categoryId, category, ...patch } = updateSchema.parse(args)
+        const target = categoryId ?? (category ? categories.ensure(category).id : undefined)
+        const result = updateWord(services, id, { ...patch, ...(target ? { categoryId: target } : {}) })
+        if (!result.ok) throw new Error(result.error)
+        return result.value
       },
     },
     {

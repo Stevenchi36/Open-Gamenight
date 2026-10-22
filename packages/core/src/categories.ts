@@ -7,7 +7,8 @@
  * Server-only (node:sqlite); the browser never imports this module.
  */
 import type { DatabaseSync } from 'node:sqlite'
-import type { Migration } from './contract.ts'
+import { z } from 'zod'
+import type { McpToolDef, Migration } from './contract.ts'
 
 export const CATEGORY_NAME_MAX_LENGTH = 39
 
@@ -136,4 +137,49 @@ export function createCategoryService(db: DatabaseSync, gameId: string): Categor
       }
     },
   }
+}
+
+// ---------------------------------------------------------------- MCP tools
+
+const createSchema = z.object({ name: z.string().describe('Category name, under 40 characters') })
+const renameSchema = z.object({
+  id: z.number().int().describe('Category id (from list_categories)'),
+  name: z.string().describe('New name, under 40 characters'),
+})
+const deleteSchema = z.object({ id: z.number().int().describe('Category id (from list_categories)') })
+
+/**
+ * Category management tools for a game that uses the shared table. The MCP
+ * server registers them as `<gameId>_create_category` etc. for every game
+ * with a `categories` hook; listing stays the game's own tool (it adds counts).
+ */
+export function categoryMcpTools(categories: CategoryService): McpToolDef[] {
+  return [
+    {
+      name: 'create_category',
+      description: 'Create an empty category. (add_words also creates missing categories, so this is only needed to set one up ahead of time.)',
+      inputSchema: createSchema,
+      handler: async (args) => categories.create(createSchema.parse(args).name),
+    },
+    {
+      name: 'rename_category',
+      description: 'Rename a category. Everything in it stays in it. Fails if another category already has that name.',
+      inputSchema: renameSchema,
+      handler: async (args) => {
+        const { id, name } = renameSchema.parse(args)
+        return categories.rename(id, name)
+      },
+    },
+    {
+      name: 'delete_category',
+      description: 'Delete an empty category. Fails while anything still uses it: move those items to another category or remove them first.',
+      inputSchema: deleteSchema,
+      handler: async (args) => {
+        const { id } = deleteSchema.parse(args)
+        const category = categories.get(id)
+        categories.remove(id)
+        return { deleted: category?.name ?? id }
+      },
+    },
+  ]
 }
