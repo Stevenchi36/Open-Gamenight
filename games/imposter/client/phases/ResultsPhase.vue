@@ -37,10 +37,9 @@
 </template>
 
 <script setup lang="ts">
+import { isHost, nameOf, ScoreBoard } from '@wsfg/core/ui'
 import { computed, ref } from 'vue'
 import type { ImposterSettings } from '../../shared/index.ts'
-import ScoreBoard from '../ScoreBoard.vue'
-import { isHost, nameOf } from '@wsfg/core/ui'
 import type { PhaseProps } from '../props.ts'
 import VoteBreakdown from '../VoteBreakdown.vue'
 

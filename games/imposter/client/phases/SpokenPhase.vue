@@ -30,9 +30,9 @@
 </template>
 
 <script setup lang="ts">
+import { isConnected, isHost, nameOf } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import RoleCard from '../RoleCard.vue'
-import { isConnected, isHost, nameOf } from '@wsfg/core/ui'
 import type { PhaseProps } from '../props.ts'
 import TurnHeader from './TurnHeader.vue'
 

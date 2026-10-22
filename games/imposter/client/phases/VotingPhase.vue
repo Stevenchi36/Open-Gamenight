@@ -39,10 +39,10 @@
 </template>
 
 <script setup lang="ts">
+import { isHost, nameOf } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'
-import { isHost, nameOf } from '@wsfg/core/ui'
 import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()

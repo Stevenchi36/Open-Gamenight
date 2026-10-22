@@ -16,8 +16,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { nameOf } from '@wsfg/core/ui'
+import { computed } from 'vue'
 import type { PhaseProps } from '../props.ts'
 import VoteBreakdown from '../VoteBreakdown.vue'
 

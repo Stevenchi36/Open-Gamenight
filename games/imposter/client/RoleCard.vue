@@ -2,7 +2,7 @@
   <v-alert v-if="you.role === 'waiting'" type="info" variant="tonal" class="mb-4">
     You joined during this round. You'll get a word when the next round starts.
   </v-alert>
-  <HoldToReveal v-else class="mb-4">
+  <HoldToReveal v-else label="Hold to see your word" class="mb-4">
     <!-- Crew and imposter cards look the same from across the table. -->
     <template v-if="you.role === 'crew'">
       <div class="text-overline">Your word</div>
@@ -20,8 +20,8 @@
 </template>
 
 <script setup lang="ts">
+import { HoldToReveal } from '@wsfg/core/ui'
 import type { ImposterView } from '../shared/index.ts'
-import HoldToReveal from './HoldToReveal.vue'
 
 defineProps<{ you: ImposterView['you'] }>()
 </script>

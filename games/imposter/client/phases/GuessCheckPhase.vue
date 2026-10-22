@@ -84,10 +84,9 @@
 </template>
 
 <script setup lang="ts">
+import { HoldToReveal, isHost, nameOf } from '@wsfg/core/ui'
 import { computed, ref } from 'vue'
 import { GUESS_MAX_LENGTH, type ImposterSettings } from '../../shared/index.ts'
-import HoldToReveal from '../HoldToReveal.vue'
-import { isHost, nameOf } from '@wsfg/core/ui'
 import type { PhaseProps } from '../props.ts'
 import VoteBreakdown from '../VoteBreakdown.vue'
 

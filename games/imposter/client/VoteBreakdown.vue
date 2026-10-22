@@ -35,9 +35,9 @@
 
 <script setup lang="ts">
 import type { RoomView } from '@wsfg/core/protocol'
+import { nameOf } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { ImposterView, ResultView } from '../shared/index.ts'
-import { nameOf } from '@wsfg/core/ui'
 
 const props = defineProps<{ result: ResultView; view: ImposterView; room: RoomView }>()
 

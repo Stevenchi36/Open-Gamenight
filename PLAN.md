@@ -442,7 +442,7 @@ Router guards redirect non-admins from `/admin/*` (UX only).
 ### State and components
 - `useRoom()` composable: owns the websocket (auto-reconnect with the stored token, "reconnecting..." banner, `server_restarting` message), exposes the latest `room` and `game` views, and `send` helpers. A reactive object is enough; Pinia optional.
 - Imposter `PlayView` switches on `phase`: `CluesView` (typed: role card, turn order, clue feed, input on your turn), `SpokenTurnView` (role card, big current-speaker card, **Done**, host **Skip** / **Start voting**, rotation progress, visual timer), `VotingView`, `RevealView`, `GuessCheckView` (imposter: "say your guess out loud", or a guess input in typed mode; judge: the typed guess + hold-to-reveal word + **Got it** / **Missed it**; others: waiting), `ResultsView`.
-- Shared `HoldToReveal` component used by the role card and the judge screen.
+- `HoldToReveal` (from `@wsfg/core/ui`, shared by all games) for the role card and the judge screen.
 - Mobile-first; Vuetify components instead of custom CSS where possible:
   - Layout: `v-app`, `v-app-bar`, `v-main`, `v-container`, `v-row`/`v-col`
   - Inputs: `v-form`, `v-text-field`, `v-otp-input` (room code), `v-btn`

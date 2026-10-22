@@ -1,6 +1,6 @@
 <template>
   <v-card
-    class="no-select"
+    class="hold-to-reveal"
     :color="revealed ? 'primary' : undefined"
     :variant="revealed ? 'flat' : 'tonal'"
     role="button"
@@ -32,7 +32,7 @@
 // The secret is never on screen at rest: it shows only while pressed.
 import { onMounted, onUnmounted, ref } from 'vue'
 
-withDefaults(defineProps<{ label?: string }>(), { label: 'Hold to see your word' })
+withDefaults(defineProps<{ label?: string }>(), { label: 'Hold to reveal' })
 const revealed = ref(false)
 const show = () => (revealed.value = true)
 const hide = () => (revealed.value = false)
@@ -42,3 +42,13 @@ const onVisibility = () => {
 onMounted(() => document.addEventListener('visibilitychange', onVisibility))
 onUnmounted(() => document.removeEventListener('visibilitychange', onVisibility))
 </script>
+
+<style scoped>
+/* Long-press must not select text or open the callout menu over the secret. */
+.hold-to-reveal {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+</style>
