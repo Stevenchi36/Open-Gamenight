@@ -94,7 +94,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **A wordless pulsing screen-edge glow means the game is waiting on you** (your clue turn, your vote, the imposter's guess and the judge, the host's next round). Host-only overrides don't trigger it. Phones lie on the table, so the cue must be visible at a glance without reading.
 - **Ties mean the imposter escapes.** Crew must clearly agree to catch them.
 - **Typed clues reject the secret word and exact repeats (case-insensitive).** Prevents giving the word away and lazy copying.
-- **Typed clues are listed by player, numbered by rotation, and stay visible while voting.** Voters compare each player's clues side by side; the view already carries them.
+- **Typed clues are listed by player (name as a small heading, clues as a bulleted list) and stay visible while voting.** Voters compare each player's clues side by side; the view already carries them.
 - **Clue timer auto-skips in typed mode but is visual only in spoken mode.** A hard cut-off while someone is talking is annoying.
 - **A disconnected imposter stays in the round; their guess counts as missed after a 15s grace.** The game never stalls and their role still matters.
 - **The imposter's clue is never checked against the secret word.** Rejecting it would let the imposter retry guesses until one bounces, revealing the word. Crew clues equal to the word are still rejected.
