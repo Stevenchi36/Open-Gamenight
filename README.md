@@ -49,6 +49,10 @@ Open **http://localhost:5173**. Vite serves the client and proxies `/api` and `/
 
 Databases are created and migrated automatically on first start, in `data/` (gitignored).
 
+### Several players in one window
+
+Open **http://localhost:5173/dev-players.html?n=4**, or, signed in as an admin, use the people icon in the app bar (dev only). You get a grid of frames, each a separate player. P1 shares your sign-in, so create the room there. Then put the code in the toolbar and join from each guest frame; they reconnect to the same seats when you reload the page. Guest frames load from `http://[::1]:5173` so they don't share your session cookie, which means that origin has to be in `ALLOWED_ORIGINS`. If your Vite listens on IPv4 instead, use `?guest=http://127.0.0.1:5173` and allow that origin.
+
 ### Playing on phones on your network
 
 Add your machine's LAN address to `ALLOWED_ORIGINS` (e.g. `http://192.168.1.20:5173`) and start Vite with `--host`:

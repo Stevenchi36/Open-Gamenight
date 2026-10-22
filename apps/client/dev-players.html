@@ -1,0 +1,163 @@
+<!doctype html>
+<!--
+  Dev only: several players in one window, e.g. http://localhost:5173/dev-players.html?n=4&code=ABCD
+  Vite serves this file in dev; the build only bundles index.html, so it never ships.
+
+  Frame 1 (host) loads from this page's origin and so shares your sign-in. Guest frames load from
+  another host for the same dev server (default [::1]), so they get no session cookie: signed-in
+  frames would all merge into one seat. Each frame's name keeps its localStorage keys apart (see
+  src/lib/storage.ts). The guest origin must be in ALLOWED_ORIGINS.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dev players</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f3f1f6;
+        --panel: #ffffff;
+        --border: #d8d4de;
+        --text: #1d1b20;
+        --muted: #625b71;
+        --host: #6750a4;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #141218;
+          --panel: #211f26;
+          --border: #3a3640;
+          --text: #e6e0e9;
+          --muted: #a59cb0;
+          --host: #d0bcff;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.4 system-ui, sans-serif;
+      }
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 16px;
+        padding: 8px 12px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+      }
+      label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+      input { font: inherit; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
+      input[name='n'] { width: 4em; }
+      input[name='code'] { width: 6em; text-transform: uppercase; }
+      input[name='guest'] { width: 14em; }
+      button { font: inherit; padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); cursor: pointer; }
+      #grid { flex: 1; display: grid; gap: 6px; padding: 6px; min-height: 0; }
+      .frame { display: flex; flex-direction: column; min-width: 0; min-height: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
+      .frame header { display: flex; gap: 8px; align-items: center; padding: 2px 8px; font-size: 12px; color: var(--muted); }
+      .frame header b { color: var(--text); }
+      .frame.host header b { color: var(--host); }
+      .frame header button { margin-left: auto; padding: 0 8px; font-size: 12px; }
+      iframe { flex: 1; width: 100%; border: 0; background: var(--bg); }
+    </style>
+  </head>
+  <body>
+    <form id="controls">
+      <label>Players <input name="n" type="number" min="1" max="12" /></label>
+      <label>Room code <input name="code" maxlength="8" placeholder="none" /></label>
+      <label>Guest origin <input name="guest" /></label>
+      <button type="submit">Apply</button>
+      <span style="color: var(--muted)">Create the room in P1, enter its code here, then join as each guest.</span>
+    </form>
+    <div id="grid"></div>
+
+    <script type="module">
+      const params = new URLSearchParams(location.search)
+      const port = location.port ? `:${location.port}` : ''
+      const state = {
+        n: Math.min(12, Math.max(1, Number(params.get('n')) || 3)),
+        code: (params.get('code') ?? '').trim().toUpperCase(),
+        guest: params.get('guest') ?? `${location.protocol}//[::1]${port}`,
+      }
+
+      const form = document.getElementById('controls')
+      const grid = document.getElementById('grid')
+
+      function path() {
+        return state.code ? `/room/${encodeURIComponent(state.code)}` : '/'
+      }
+
+      // Pick the column count that gives each frame the most room at a roughly phone-like shape.
+      function layout() {
+        const { clientWidth: w, clientHeight: h } = grid
+        let best = 1
+        let bestScore = 0
+        for (let cols = 1; cols <= state.n; cols++) {
+          const rows = Math.ceil(state.n / cols)
+          const score = Math.min(w / cols, (h / rows) * 0.75)
+          if (score > bestScore) [best, bestScore] = [cols, score]
+        }
+        const rows = Math.ceil(state.n / best)
+        grid.style.gridTemplateColumns = `repeat(${best}, 1fr)`
+        grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`
+      }
+
+      function render() {
+        grid.replaceChildren()
+        for (let i = 1; i <= state.n; i++) {
+          const host = i === 1
+          const origin = host ? location.origin : state.guest
+          const box = document.createElement('section')
+          box.className = host ? 'frame host' : 'frame'
+
+          const header = document.createElement('header')
+          header.innerHTML = `<b>P${i}</b><span>${host ? 'host · your session' : 'guest'} · ${origin}</span>`
+          const iframe = document.createElement('iframe')
+          // The frame's name becomes its window.name: the storage prefix in src/lib/storage.ts.
+          iframe.name = `wsfg-p${i}`
+          iframe.src = origin + path()
+          const reload = document.createElement('button')
+          reload.type = 'button'
+          reload.textContent = 'Reload'
+          reload.onclick = () => (iframe.src = origin + path())
+          header.append(reload)
+
+          box.append(header, iframe)
+          grid.append(box)
+        }
+        layout()
+      }
+
+      function sync() {
+        form.n.value = state.n
+        form.code.value = state.code
+        form.guest.value = state.guest
+        const next = new URLSearchParams({ n: String(state.n) })
+        if (state.code) next.set('code', state.code)
+        if (params.has('guest') || state.guest !== `${location.protocol}//[::1]${port}`) next.set('guest', state.guest)
+        history.replaceState(null, '', `?${next}`)
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault()
+        state.n = Math.min(12, Math.max(1, Number(form.n.value) || 1))
+        state.code = form.code.value.trim().toUpperCase()
+        state.guest = form.guest.value.trim().replace(/\/$/, '')
+        sync()
+        render()
+      })
+      addEventListener('resize', layout)
+
+      if (location.hostname !== 'localhost') {
+        console.warn('Open this page on http://localhost so P1 shares your sign-in and guests use a different host.')
+      }
+      sync()
+      render()
+    </script>
+  </body>
+</html>

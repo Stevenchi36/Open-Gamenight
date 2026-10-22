@@ -10,6 +10,7 @@
           :aria-label="isDark ? 'Light theme' : 'Dark theme'"
           @click="toggleTheme"
         />
+        <DevPlayersButton v-if="isDev && isAdmin" />
         <v-btn v-if="isAdmin" icon="mdi-shield-crown-outline" to="/admin" aria-label="Admin" />
         <v-btn v-if="!user && route.name !== 'login'" variant="text" to="/login">Sign in</v-btn>
         <v-menu v-else-if="user">
@@ -45,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, defineAsyncComponent, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
 import { authClient } from './lib/auth-client.ts'
@@ -62,6 +63,9 @@ const session = authClient.useSession()
 const user = computed(() => session.value.data?.user ?? null)
 const isAdmin = computed(() => (user.value as { role?: string } | null)?.role === 'admin')
 const isDark = computed(() => theme.global.current.value.dark)
+// Dev only, and the build drops the import. Hidden inside the dev-players frames themselves.
+const DevPlayersButton = import.meta.env.DEV ? defineAsyncComponent(() => import('./components/DevPlayersButton.vue')) : null
+const isDev = !!DevPlayersButton && window.self === window.top
 
 function toggleTheme() {
   const next = isDark.value ? 'light' : 'dark'
