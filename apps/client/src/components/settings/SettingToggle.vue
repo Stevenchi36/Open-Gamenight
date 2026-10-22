@@ -5,11 +5,12 @@
       :model-value="modelValue"
       :disabled="disabled"
       mandatory
+      border
       divided
       density="comfortable"
       color="primary"
-      variant="outlined"
-      class="flex-wrap"
+      variant="text"
+      class="border-opacity-50"
       @update:model-value="(v: unknown) => emit('update:modelValue', v)"
     >
       <v-btn v-for="item in items" :key="String(item.value)" :value="item.value" size="small">{{ item.title }}</v-btn>
