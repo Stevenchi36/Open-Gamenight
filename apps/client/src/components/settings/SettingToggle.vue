@@ -5,10 +5,11 @@
       :model-value="modelValue"
       :disabled="disabled"
       mandatory
+      divided
       density="comfortable"
       color="primary"
       variant="outlined"
-      class="setting-toggle"
+      class="flex-wrap"
       @update:model-value="(v: unknown) => emit('update:modelValue', v)"
     >
       <v-btn v-for="item in items" :key="String(item.value)" :value="item.value" size="small">{{ item.title }}</v-btn>
@@ -27,18 +28,3 @@ defineProps<{
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: unknown] }>()
 </script>
-
-<style scoped>
-/* Vuetify joins group buttons edge to edge; separate them so they wrap cleanly on phones. */
-.setting-toggle {
-  flex-wrap: wrap;
-  gap: 8px;
-  height: auto;
-  overflow: visible;
-  border-radius: 0;
-}
-.setting-toggle > .v-btn {
-  border: thin solid currentColor;
-  border-radius: 4px;
-}
-</style>
