@@ -1,24 +1,18 @@
 <template>
   <div v-if="result">
-    <v-card v-if="result.voided" variant="tonal" class="mb-4 text-center">
-      <v-card-text class="py-6">
-        <div class="text-h5 mb-1">Round cancelled</div>
-        <div class="text-body-1">The imposter left, so nobody scores this round.</div>
-      </v-card-text>
-    </v-card>
-    <v-card v-else :color="won ? 'success' : 'error'" variant="tonal" class="mb-4 text-center">
-      <v-card-text class="py-6">
-        <div class="text-overline">{{ result.imposterWon ? 'The imposter wins' : 'The crew wins' }}</div>
-        <div class="text-h4 font-weight-bold mb-2">{{ won ? 'You won!' : 'You lost' }}</div>
-        <div class="text-body-1">
-          The word was <strong>{{ result.secretWord }}</strong>.
-          {{ nameOf(room, result.imposterId) }} was the imposter{{ result.caught ? ' and got caught' : ' and escaped' }}.
-        </div>
-        <div v-if="result.guessRequired" class="text-body-2 mt-1">
-          Their guess<template v-if="result.guess">, "{{ result.guess }}",</template> was {{ result.guessCorrect ? 'right' : 'wrong' }}.
-        </div>
-      </v-card-text>
-    </v-card>
+    <StatusCard v-if="result.voided" compact title="Round cancelled">The imposter left, so nobody scores this round.</StatusCard>
+    <StatusCard
+      v-else
+      :color="won ? 'success' : 'error'"
+      :overline="result.imposterWon ? 'The imposter wins' : 'The crew wins'"
+      :title="won ? 'You won!' : 'You lost'"
+    >
+      The word was <strong>{{ result.secretWord }}</strong>.
+      {{ nameOf(room, result.imposterId) }} was the imposter{{ result.caught ? ' and got caught' : ' and escaped' }}.
+      <div v-if="result.guessRequired" class="text-body-2 mt-1">
+        Their guess<template v-if="result.guess">, "{{ result.guess }}",</template> was {{ result.guessCorrect ? 'right' : 'wrong' }}.
+      </div>
+    </StatusCard>
 
     <ScoreBoard :scores="view.scores" :room="room" :gained="result.pointsAwarded" class="mb-4" />
 
@@ -37,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { isHost, nameOf, ScoreBoard } from '@wsfg/core/ui'
+import { isHost, nameOf, ScoreBoard, StatusCard } from '@wsfg/core/ui'
 import { computed, ref } from 'vue'
 import type { ImposterSettings } from '../../shared/index.ts'
 import type { PhaseProps } from '../props.ts'

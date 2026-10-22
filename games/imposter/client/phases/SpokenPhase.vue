@@ -3,20 +3,12 @@
     <RoleCard :you="view.you" />
     <TurnHeader v-bind="props" />
 
-    <v-card :color="myTurn ? 'primary' : undefined" :variant="myTurn ? 'flat' : 'tonal'" class="mb-4 text-center">
-      <v-card-text class="py-8">
-        <template v-if="myTurn">
-          <div class="text-overline">Your turn</div>
-          <div class="text-h4 font-weight-bold mb-4">Say one word</div>
-          <v-btn size="x-large" color="surface" @click="send({ type: 'end_turn' })">Done</v-btn>
-        </template>
-        <template v-else>
-          <div class="text-overline">Speaking now</div>
-          <div class="text-h4 font-weight-bold">{{ nameOf(room, view.turn.currentPlayerId) }}</div>
-          <div v-if="!currentConnected" class="text-body-2 mt-2">Away. Skipping soon if they don't come back.</div>
-        </template>
-      </v-card-text>
-    </v-card>
+    <StatusCard v-if="myTurn" color="primary" variant="flat" prominent overline="Your turn" title="Say one word">
+      <v-btn size="x-large" color="surface" class="mt-2" @click="send({ type: 'end_turn' })">Done</v-btn>
+    </StatusCard>
+    <StatusCard v-else prominent overline="Speaking now" :title="nameOf(room, view.turn.currentPlayerId)">
+      <div v-if="!currentConnected" class="text-body-2">Away. Skipping soon if they don't come back.</div>
+    </StatusCard>
 
     <div v-if="amHost" class="d-flex ga-2">
       <v-btn v-if="!myTurn" class="flex-grow-1" variant="tonal" prepend-icon="mdi-skip-next" @click="send({ type: 'end_turn' })">
@@ -30,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { isConnected, isHost, nameOf } from '@wsfg/core/ui'
+import { isConnected, isHost, nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import RoleCard from '../RoleCard.vue'
 import type { PhaseProps } from '../props.ts'
