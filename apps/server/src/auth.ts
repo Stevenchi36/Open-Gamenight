@@ -4,6 +4,7 @@
  * create-admin script for the first one).
  */
 import { betterAuth, type BetterAuthOptions } from 'better-auth'
+import { createAuthMiddleware, isAPIError } from 'better-auth/api'
 import { getMigrations } from 'better-auth/db/migration'
 import { admin } from 'better-auth/plugins'
 import type { DatabaseSync } from 'node:sqlite'
@@ -33,6 +34,15 @@ function authOptions(config: Config, db: DatabaseSync, options: AuthOptions) {
       disableSignUp: true,
     },
     plugins: [admin()],
+    hooks: {
+      // The admin plugin's set-user-password keeps existing sessions, and
+      // revokeSessionsOnPasswordReset only covers the emailed reset flow. An
+      // admin resetting a compromised account must also sign out whoever has it.
+      after: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== '/admin/set-user-password' || isAPIError(ctx.context.returned)) return
+        await ctx.context.internalAdapter.deleteUserSessions(String(ctx.body.userId))
+      }),
+    },
     rateLimit: {
       // Better Auth only enables this in production by default; we want it everywhere.
       enabled: options.rateLimit ?? true,

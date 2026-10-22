@@ -63,7 +63,7 @@
     <v-dialog :model-value="!!passwordFor" max-width="400" @update:model-value="passwordFor = null">
       <v-card :title="`Set password for ${passwordFor?.name}`">
         <v-card-text>
-          <v-text-field v-model="newPassword" label="New password" hint="At least 8 characters" persistent-hint />
+          <v-text-field v-model="newPassword" label="New password" hint="At least 8 characters. Signs them out on every device." persistent-hint />
         </v-card-text>
         <v-card-actions>
           <v-spacer />

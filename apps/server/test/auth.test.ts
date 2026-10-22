@@ -75,6 +75,26 @@ describe('accounts', () => {
     expect((await t.fetch('/api/admin/status', { cookie })).status).toBe(401)
     await expect(t.signIn('banned@example.com')).rejects.toThrow(/sign-in failed/)
   })
+
+  it("signs a user out everywhere when an admin sets their password", async () => {
+    const target = await t.createUser('reset@example.com', 'user')
+    const cookie = await t.signIn('reset@example.com')
+    const setPassword = (newPassword: string) =>
+      t.fetch('/api/auth/admin/set-user-password', {
+        method: 'POST',
+        cookie: adminCookie,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ userId: target.id, newPassword }),
+      })
+    const session = async () => ((await (await t.fetch('/api/auth/get-session', { cookie })).json()) as { user?: unknown } | null)?.user
+
+    // A rejected reset (too short) leaves the session alone.
+    expect((await setPassword('short')).status).toBe(400)
+    expect(await session()).toBeDefined()
+
+    expect((await setPassword('a-new-password-456')).status).toBe(200)
+    expect(await session()).toBeUndefined()
+  })
 })
 
 describe('core and game admin routes', () => {

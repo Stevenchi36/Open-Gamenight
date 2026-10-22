@@ -54,6 +54,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Keep Better Auth with closed sign-up and the admin plugin.** Audience is semi-public now and the project may be self-hosted by others; it's mostly config.
 - **Roles `user` and `admin` via the admin plugin's `role` column.** No custom user-management backend.
 - **No email in v1; admins reset passwords.** Nothing to send email with yet; admin reset covers a small user base.
+- **An admin password reset signs the user out everywhere (an `after` hook in `auth.ts`).** Better Auth's admin `set-user-password` keeps sessions, so resetting a compromised account wouldn't lock out whoever has it.
 - **Game admin routes are mounted by core under `/api/admin/<gameId>` behind `requireAdmin` + Origin check.** Games get admin features without being able to forget auth.
 
 ## Data and AI
