@@ -302,7 +302,7 @@ claude mcp add ws-family-games \
 | Setting | Default | Notes |
 |---|---|---|
 | Rotations | 2 | 1-5 |
-| Round player order | `rotate` | `rotate` (random first round; each later round the next player in line goes first, same order; leavers drop out, newcomers join the end) / `random` (reshuffled every round) |
+| Round player order | `rotate` | `rotate` (random first round; each later round the next player in line goes first, same order; leavers drop out, newcomers join the end; the host can tick **Randomize player order** on Play again for a one-off reshuffle) / `random` (reshuffled every round) |
 | Imposter hint | `category` | `none` / `category` / `category+hint` |
 | Word source | `all` | `all` (whole library) / `custom` ("Added only": skips the seeded starter words, falls back to them when it runs out). Both fall back to `builtin-words.ts` if nothing matches |
 | Category | Any | categories from the library that have words in the chosen source, plus "Any" |
@@ -339,7 +339,7 @@ CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | 
 | `submit_guess` | `{ word }` (typed mode, once, 1-40 chars) | **imposter only** |
 | `judge_guess` | `{ correct: boolean }` | **judge only** |
 | `skip_guess` | `{}` | host |
-| `next_round` | `{}` | host |
+| `next_round` | `{ shuffle? }` (one-off turn order reshuffle) | host |
 
 ### Validation
 - Clue (typed only): trimmed, a single token (no spaces), 1-24 chars, **not equal to the secret word**, and **not a repeat** of an earlier clue this round (both case-insensitive). Rejected with `error { code: 'game' }` so the player can retry.

@@ -67,7 +67,8 @@ export const clientActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('submit_guess'), word: z.string().max(100) }),
   z.object({ type: z.literal('judge_guess'), correct: z.boolean() }),
   z.object({ type: z.literal('skip_guess') }),
-  z.object({ type: z.literal('next_round') }),
+  /** shuffle: one-off reshuffle of the turn order ('rotate' then carries on from the new order). */
+  z.object({ type: z.literal('next_round'), shuffle: z.boolean().optional() }),
 ])
 
 export type ClientAction = z.infer<typeof clientActionSchema>

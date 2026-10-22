@@ -157,10 +157,11 @@ function chooseWord(
 
 /**
  * 'rotate': last round's order moved on one seat, so the next player in line starts; players who
- * left drop out and newcomers join the end. 'random' (and every game's first round): a fresh shuffle.
+ * left drop out and newcomers join the end. 'random', a game's first round, or the host's one-off
+ * shuffle on Play again: a fresh shuffle.
  */
-function nextTurnOrder(prev: ImposterState | null, ctx: Ctx, ids: PlayerId[]): PlayerId[] {
-  if (!prev || ctx.settings.playerOrder === 'random') return ctx.rng.shuffle(ids)
+function nextTurnOrder(prev: ImposterState | null, ctx: Ctx, ids: PlayerId[], shuffle: boolean): PlayerId[] {
+  if (!prev || shuffle || ctx.settings.playerOrder === 'random') return ctx.rng.shuffle(ids)
   const kept = [...prev.turnOrder.slice(1), ...prev.turnOrder.slice(0, 1)].filter((id) => ids.includes(id))
   return [...kept, ...ids.filter((id) => !kept.includes(id))]
 }
@@ -174,7 +175,7 @@ function pickJudge(state: ImposterState, ctx: Ctx): PlayerId | null {
 
 // ---------------------------------------------------------------- transitions
 
-function startRound(prev: ImposterState | null, ctx: Ctx, prepared: PreparedWord | undefined): Step {
+function startRound(prev: ImposterState | null, ctx: Ctx, prepared: PreparedWord | undefined, shuffle = false): Step {
   const ids = ctx.players.map((p) => p.id)
   const word = chooseWord(ctx, prepared, prev?.usedBuiltin ?? [], prev?.usedWordIds ?? [])
   const scores: Record<PlayerId, number> = {}
@@ -187,7 +188,7 @@ function startRound(prev: ImposterState | null, ctx: Ctx, prepared: PreparedWord
     secret: word.secret,
     imposterId: ctx.rng.pick(ids),
     roundPlayers: ids,
-    turnOrder: nextTurnOrder(prev, ctx, ids),
+    turnOrder: nextTurnOrder(prev, ctx, ids, shuffle),
     turnIndex: 0,
     turnDeadline: null,
     clues: [],
@@ -432,7 +433,7 @@ function reduce(state: ImposterState, action: ImposterAction, ctx: ReduceCtx<Imp
       if (!isHost) return gameError('Only the host can start the next round')
       if (state.phase !== 'RESULTS') return gameError('The round is not over yet')
       if (ctx.players.length < MIN_PLAYERS) return gameError(`Need at least ${MIN_PLAYERS} players`)
-      return startRound(state, ctx, ctx.prepared)
+      return startRound(state, ctx, ctx.prepared, action.shuffle ?? false)
 
     // ---- scheduled (actorId null only); stale timers are no-ops
     case 'turn_timeout':

@@ -510,6 +510,24 @@ describe('rounds and players', () => {
     expect(sim.state.turnOrder).toEqual([c, d, a, 'p5'])
   })
 
+  it('rotate: the host can reshuffle once on Play again, then it rotates from the new order', () => {
+    let reshuffled = false
+    for (let seed = 1; seed < 50 && !reshuffled; seed++) {
+      const sim = newGame({ seed, settings: { guessMode: 'off' } })
+      const [a, b, c, d] = sim.state.turnOrder
+      playClues(sim)
+      catchImposter(sim)
+      sim.advance(REVEAL_MS)
+      expect(sim.act('p1', { type: 'next_round', shuffle: true })).toEqual({ ok: true })
+      const order = sim.state.turnOrder
+      expect([...order].sort()).toEqual([...PLAYERS])
+      reshuffled = order.join() !== [b, c, d, a].join()
+      finishRound(sim)
+      expect(sim.state.turnOrder).toEqual([...order.slice(1), order[0]])
+    }
+    expect(reshuffled).toBe(true)
+  })
+
   it('random: reshuffles every round', () => {
     const orders = new Set<string>()
     const sim = newGame({ settings: { guessMode: 'off', playerOrder: 'random' } })
