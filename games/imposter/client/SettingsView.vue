@@ -10,6 +10,18 @@
       @update:model-value="(v: number) => set('rotations', v)"
     />
     <SettingToggle
+      label="Round player order"
+      :model-value="settings.playerOrder"
+      :items="playerOrders"
+      :hint="
+        settings.playerOrder === 'rotate'
+          ? 'Random at first, then the next player in line goes first each round'
+          : 'A new random order every round'
+      "
+      :disabled="!isHost"
+      @update:model-value="(v: unknown) => set('playerOrder', v as ImposterSettings['playerOrder'])"
+    />
+    <SettingToggle
       label="Clue mode"
       :model-value="settings.clueMode"
       :items="clueModes"
@@ -110,6 +122,10 @@ function setSource(source: ImposterSettings['wordSource']) {
   props.update({ ...props.settings, wordSource: source, category })
 }
 
+const playerOrders = [
+  { title: 'Rotate', value: 'rotate' },
+  { title: 'Random', value: 'random' },
+]
 const clueModes = [
   { title: 'Typed', value: 'typed' },
   { title: 'Spoken', value: 'spoken' },

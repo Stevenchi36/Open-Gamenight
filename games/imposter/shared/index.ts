@@ -23,6 +23,8 @@ export const GUESS_MAX_LENGTH = 40
 
 export const settingsSchema = z.object({
   rotations: z.number().int().min(1).max(5),
+  /** Who goes first each round. 'rotate': random first round, then the next player in line starts. 'random': reshuffled every round. */
+  playerOrder: z.enum(['rotate', 'random']),
   imposterHint: z.enum(['none', 'category', 'category+hint']),
   /** 'custom' skips the seeded starter words (source 'builtin'), falling back to them when it runs out. */
   wordSource: z.enum(['all', 'custom']),
@@ -41,6 +43,7 @@ export type ImposterSettings = z.infer<typeof settingsSchema>
 
 export const defaultSettings: ImposterSettings = {
   rotations: 2,
+  playerOrder: 'rotate',
   imposterHint: 'category',
   wordSource: 'all',
   category: null,

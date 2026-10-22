@@ -11,6 +11,7 @@ import {
   PLAYERS,
   playClues,
   playSpoken,
+  type Sim,
   voteAll,
   WORD,
 } from './helpers.ts'
@@ -476,6 +477,47 @@ describe('rounds and players', () => {
     expect(sim.state.roundPlayers).toEqual(['p1', 'p2', 'p3', 'p4', 'p5'])
     expect(sim.state.scores).toEqual({ ...scores, p5: 0 })
     expect(sim.state.usedWordIds).toEqual([7, 7])
+  })
+
+  function finishRound(sim: Sim): void {
+    playClues(sim)
+    catchImposter(sim)
+    sim.advance(REVEAL_MS)
+    expect(sim.act('p1', { type: 'next_round' })).toEqual({ ok: true })
+  }
+
+  it('rotate (default): the next player in line goes first each round, in the same order', () => {
+    const sim = newGame({ settings: { guessMode: 'off' } })
+    const [a, b, c, d] = sim.state.turnOrder
+    finishRound(sim)
+    expect(sim.state.turnOrder).toEqual([b, c, d, a])
+    finishRound(sim)
+    expect(sim.state.turnOrder).toEqual([c, d, a, b])
+  })
+
+  it('rotate: players who left drop out and newcomers join the end of the line', () => {
+    let seed = 1
+    while (newGame({ seed }).state.turnOrder[1] === 'p1') seed++
+    const sim = newGame({ seed, settings: { guessMode: 'off' } })
+    const [a, b, c, d] = sim.state.turnOrder
+    playClues(sim)
+    catchImposter(sim)
+    sim.advance(REVEAL_MS)
+    // a went first, so b would be next; with b gone it passes to c
+    sim.remove(b!)
+    sim.join({ id: 'p5' })
+    expect(sim.act('p1', { type: 'next_round' })).toEqual({ ok: true })
+    expect(sim.state.turnOrder).toEqual([c, d, a, 'p5'])
+  })
+
+  it('random: reshuffles every round', () => {
+    const orders = new Set<string>()
+    const sim = newGame({ settings: { guessMode: 'off', playerOrder: 'random' } })
+    for (let round = 0; round < 10; round++) {
+      orders.add(sim.state.turnOrder.join())
+      finishRound(sim)
+    }
+    expect(orders.size).toBeGreaterThan(2)
   })
 
   it('shows a late joiner a waiting view without the word', () => {

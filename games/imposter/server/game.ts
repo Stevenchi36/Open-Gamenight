@@ -155,6 +155,16 @@ function chooseWord(
   }
 }
 
+/**
+ * 'rotate': last round's order moved on one seat, so the next player in line starts; players who
+ * left drop out and newcomers join the end. 'random' (and every game's first round): a fresh shuffle.
+ */
+function nextTurnOrder(prev: ImposterState | null, ctx: Ctx, ids: PlayerId[]): PlayerId[] {
+  if (!prev || ctx.settings.playerOrder === 'random') return ctx.rng.shuffle(ids)
+  const kept = [...prev.turnOrder.slice(1), ...prev.turnOrder.slice(0, 1)].filter((id) => ids.includes(id))
+  return [...kept, ...ids.filter((id) => !kept.includes(id))]
+}
+
 function pickJudge(state: ImposterState, ctx: Ctx): PlayerId | null {
   const crew = ctx.players.filter(
     (p) => p.connected && p.id !== state.imposterId && state.roundPlayers.includes(p.id),
@@ -177,7 +187,7 @@ function startRound(prev: ImposterState | null, ctx: Ctx, prepared: PreparedWord
     secret: word.secret,
     imposterId: ctx.rng.pick(ids),
     roundPlayers: ids,
-    turnOrder: ctx.rng.shuffle(ids),
+    turnOrder: nextTurnOrder(prev, ctx, ids),
     turnIndex: 0,
     turnDeadline: null,
     clues: [],

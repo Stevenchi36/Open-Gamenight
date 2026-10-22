@@ -282,7 +282,7 @@ claude mcp add ws-family-games \
 ### Rules
 1. Host starts a round. Everyone except the imposter receives the **same secret word**. The imposter sees only the **category** and, optionally, a **vague hint**.
 2. The imposter is chosen **uniformly at random every round** (repeats allowed; deliberately no shuffle bag, so nobody can deduce who hasn't been imposter yet). Imposter count is fixed at 1 (keep a constant for later).
-3. **Clue phase.** Players take turns in a fixed random order. On your turn, give **one word** linked to the secret word, typed or spoken (see Clue mode). The imposter bluffs. In typed mode everyone sees clues as they arrive.
+3. **Clue phase.** Players take turns in an order set per round (see Round player order) and fixed for all its rotations. On your turn, give **one word** linked to the secret word, typed or spoken (see Clue mode). The imposter bluffs. In typed mode everyone sees clues as they arrive.
 4. This repeats for N **rotations** (default 2).
 5. **Vote phase.** Everyone (including the imposter) votes secretly for who they think the imposter is, with live "x/y voted" progress.
 6. **Reveal.** Show tallies and the imposter. **Caught** = the plurality vote lands on the imposter; **escapes** = wrong player or a tie.
@@ -302,6 +302,7 @@ claude mcp add ws-family-games \
 | Setting | Default | Notes |
 |---|---|---|
 | Rotations | 2 | 1-5 |
+| Round player order | `rotate` | `rotate` (random first round; each later round the next player in line goes first, same order; leavers drop out, newcomers join the end) / `random` (reshuffled every round) |
 | Imposter hint | `category` | `none` / `category` / `category+hint` |
 | Word source | `all` | `all` (whole library) / `custom` ("Added only": skips the seeded starter words, falls back to them when it runs out). Both fall back to `builtin-words.ts` if nothing matches |
 | Category | Any | categories from the library that have words in the chosen source, plus "Any" |
@@ -317,7 +318,7 @@ claude mcp add ws-family-games \
 CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | gameOver -> lobby)
 ```
 (The lobby is core; `init` starts at `CLUES`.)
-- `CLUES`: `turnOrder` (shuffled with `rng`) x `rotations`; `turnIndex` tracks the current turn.
+- `CLUES`: `turnOrder` (per `playerOrder`: shuffled with `rng`, or last round's order moved on one seat) x `rotations`; `turnIndex` tracks the current turn.
   - **Typed:** only the current player can `submit_clue`; the turn advances on submit.
   - **Spoken:** nothing is typed; the current speaker taps **Done** (`end_turn`); the host can tap it for anyone. No clue feed.
   - Last turn done -> `VOTING`. Host can `start_voting` at any time to skip remaining turns.
