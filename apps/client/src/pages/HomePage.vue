@@ -24,6 +24,7 @@
             @update:model-value="(v: string) => (code = v.toUpperCase())"
           />
           <v-text-field v-model="name" label="Your name" maxlength="16" counter autocomplete="nickname" />
+          <v-alert v-if="joinError" type="error" variant="tonal" density="compact" class="mb-4">{{ joinError }}</v-alert>
           <v-btn type="submit" color="primary" size="large" block :loading="joining" :disabled="code.length !== 4 || !name.trim()">
             Join
           </v-btn>
@@ -75,6 +76,8 @@ const name = ref(lastName())
 const hostName = ref(lastName())
 const gameId = ref<string | null>(null)
 const joining = ref(false)
+// Shown on the form rather than as a toast: retries would queue one toast each, long after a fix.
+const joinError = ref<string | null>(null)
 const creating = ref(false)
 const selectedGame = computed(() => config.games.find((g) => g.id === gameId.value))
 
@@ -93,13 +96,16 @@ watch(
   { immediate: true },
 )
 
+watch([code, name], () => (joinError.value = null))
+
 async function join() {
   joining.value = true
+  joinError.value = null
   try {
     const joined = await joinRoom(code.value.toUpperCase(), name.value.trim())
     void router.push(`/room/${joined}`)
   } catch (error) {
-    toast((error as Error).message, 'error')
+    joinError.value = (error as Error).message
   } finally {
     joining.value = false
   }

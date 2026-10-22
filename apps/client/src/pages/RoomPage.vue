@@ -49,6 +49,7 @@
         </v-alert>
         <v-form @submit.prevent="join">
           <v-text-field v-model="name" label="Your name" maxlength="16" counter autofocus autocomplete="nickname" />
+          <v-alert v-if="joinError" type="error" variant="tonal" density="compact" class="mb-4">{{ joinError }}</v-alert>
           <v-btn type="submit" color="primary" size="large" block :loading="joining" :disabled="!name.trim()">Join</v-btn>
         </v-form>
       </v-card-text>
@@ -74,6 +75,8 @@ const game = computed(() => roomState.game)
 const isHost = computed(() => !!room.value && room.value.hostId === room.value.you.id)
 const name = ref(lastName())
 const joining = ref(false)
+// On the form, not a toast, so retries don't queue up (see HomePage).
+const joinError = ref<string | null>(null)
 const confirmLobby = ref(false)
 const rejoining = ref(false)
 
@@ -108,12 +111,15 @@ watch(
   { immediate: true },
 )
 
+watch(name, () => (joinError.value = null))
+
 async function join() {
   joining.value = true
+  joinError.value = null
   try {
     await joinRoom(props.code, name.value.trim())
   } catch (error) {
-    toast((error as Error).message, 'error')
+    joinError.value = (error as Error).message
   } finally {
     joining.value = false
   }

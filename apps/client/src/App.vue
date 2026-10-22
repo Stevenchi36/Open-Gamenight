@@ -41,7 +41,8 @@
       <router-view />
     </v-main>
 
-    <v-snackbar-queue v-model="toasts" location="bottom" closable />
+    <!-- overflow: a new toast replaces the current one instead of queueing behind it, so repeats can't pile up -->
+    <v-snackbar-queue v-model="toasts" location="bottom" display-strategy="overflow" closable />
   </v-app>
 </template>
 
