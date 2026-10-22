@@ -414,6 +414,70 @@ CREATE TABLE IF NOT EXISTS imposter_words (
 
 **MCP tools:** `imposter_add_words` (`{ words: [{ category, word, hint, difficulty? }] }`; when driven from Claude Code/Desktop, Claude writes the words itself, so **no API key is needed**), `imposter_list_categories`, `imposter_search_words` (`{ category?, query?, limit? }`), `imposter_remove_words` (`{ ids }`), `imposter_generate_words` (only when `ANTHROPIC_API_KEY` is set; saves directly, still subject to the token cap).
 
+## 7a. Liar's Dice (`games/liarsdice`)
+
+The second game, and the first without words or votes on players. Lettered rather than numbered so later sections keep their numbers.
+
+### Rules
+1. A **match** is played in rounds until one player has dice left. Everyone starts with `startingDice` dice.
+2. **Each round** everyone with dice rolls them secretly (`ctx.rng`). You see only your own dice; everyone sees how many dice each player has.
+3. **Bidding.** Players take turns in seat order. The starter opens with a bid: "there are at least *quantity* dice showing *face*" across **all** dice in play. Each later player either **raises** or **calls "Liar!"** on the bid just made. Quantity is 1 to the total dice in play.
+4. **Raising.** A raise is a higher quantity (any face), or the same quantity with a higher face. With **wild ones** (default on), ones count as every face, and bids on ones follow the Perudo rule:
+   - The opening bid of a round can't be on ones.
+   - To ones: quantity at least half the previous quantity, rounded up.
+   - From ones: quantity at least double the previous quantity plus one.
+   - Ones to ones: a higher quantity.
+5. **Liar.** All dice are revealed and the bid's face counted (plus ones, when wild and the face isn't 1). If the count is at least the quantity the bid stands and the caller loses a die; otherwise the bidder loses a die.
+6. **Spot on** (setting, default off). Instead of raising or calling, the current player claims the bid is exactly right. Exactly right: the caller gains a die back (never above `startingDice`). Otherwise the caller loses a die.
+7. Whoever lost or gained a die starts the next round; if they're out, the next player in seat order with dice.
+8. A player with no dice is **out** for the rest of the match. The last player with dice wins the match and scores **1 point**; scores carry across matches. The host starts a new match (seats move on one, so a different player opens).
+
+### Settings (host, lobby only)
+| Setting | Default | Notes |
+|---|---|---|
+| Starting dice | 5 | 1-6 |
+| Wild ones | on | ones count as every face; Perudo rules for bidding on ones |
+| Spot on | off | allows the exact-count call |
+
+### State machine
+```
+BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
+```
+- `BIDDING`: `turn` is the current player; they `bid` or (once a bid exists, and it isn't their own) `call` / `spot_on`. A disconnected player's turn passes to the next player after the 15s grace; the bid stands.
+- `REVEAL`: all dice shown with the outcome for `REVEAL_MS` (8s), then the next round rolls, or `RESULTS` if one player has dice.
+- `RESULTS`: the winner and the scoreboard. Host: **Play again** (`new_match`) or **Back to lobby**.
+- A player leaving mid-round restarts the round: everyone re-rolls and nobody loses a die (a notice says why). Late joiners wait for the next match.
+
+### Actions
+| action | payload | Who |
+|---|---|---|
+| `bid` | `{ quantity, face }` | current player |
+| `call` | `{}` | current player, not on their own bid |
+| `spot_on` | `{}` | current player, not on their own bid, when enabled |
+| `new_match` | `{}` | host, in `RESULTS` |
+
+### View (per player)
+```ts
+{
+  phase, round,
+  you: { status: 'playing' | 'out' | 'waiting', dice: number[] },  // your dice only
+  seats: [{ id, dice: number }],          // seat order with dice counts (0 = out)
+  totalDice, turn: PlayerId | null,
+  bid: { playerId, quantity, face } | null,
+  bids: Bid[],                            // this round's bids, oldest first
+  lastRound: {                            // the latest challenge: REVEAL, and the summary afterwards
+    dice: { [playerId]: number[] }, bid, callerId, call: 'liar' | 'spot_on',
+    count, loserId: PlayerId | null, gainerId: PlayerId | null,
+  } | null,
+  winnerId: PlayerId | null,              // RESULTS only
+  scores,
+}
+```
+`secrets` declares: each player's dice are visible to that player only while `BIDDING`; from `REVEAL` everyone sees the round's dice. `lastRound.dice` is the previous round's roll, public once revealed.
+
+### Hold-to-reveal
+Your dice sit behind `HoldToReveal`, like Imposter's role card: phones lie on a shared table.
+
 ## 8. Vue client (`apps/client`)
 
 ### Setup

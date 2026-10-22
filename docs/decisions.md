@@ -108,6 +108,18 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **The built-in word list shipped with the reducer (milestone 3), not the library (milestone 6).** It needs no DB, so the game is playable before the library exists; it stays as the last-resort fallback.
 - **Word source is "All words" or "Added only" (skips library rows with source `builtin`, i.e. the seeded starter words); there is no "built-in list only" option.** Nobody picks the starter list on purpose, while hosts who have played it through want fresh words. "Added only" falls back to starter words (with a host notice) when added ones run out, then to the in-code list.
 
+## Liar's Dice rules
+- **Liar's Dice is the second game.** It's built on hidden per-player information like Imposter but has no words or votes on players, so it tests whether `kit` and `ui` really fit a different game.
+- **Perudo rules: wild ones on by default (opening bid can't be on ones, half/double+1 when switching), spot on optional.** They're the best-known rules; wild ones and the halving rule keep late rounds with few dice interesting.
+- **Only the next player can call, and never on their own bid.** It's the classic turn structure, and it keeps the game turn-based rather than a race to tap.
+- **The player who lost (or gained) a die starts the next round.** Standard rule; it gives the loser the opening bid.
+- **A disconnected player's turn passes after the 15s grace with the bid unchanged; nobody auto-bids or auto-calls for them.** Any automatic move would be an arbitrary choice that can cost a die.
+- **A player leaving mid-round restarts the round (re-roll, no die lost).** The bid was made against dice that are now gone, and nobody should lose a die over it.
+- **One point per match won, carried across matches; seats move on one each match.** A match is the natural unit to win; rotating seats changes who opens.
+- **Your dice show only while held (`HoldToReveal`).** Same reason as Imposter's role card: phones lie on a shared table.
+- **REVEAL stays up for 8s, then the next round rolls; a summary of the last challenge stays visible while bidding.** Counting dice takes longer than reading an Imposter vote, and the summary keeps "what just happened" readable after the timer.
+- **No bid timer in v1.** The disconnect grace stops a stalled turn; a timer can come later if tables want one.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Updates run through `npm run deploy` (`scripts/deploy.sh`): fast-forward pull, frozen install, build, `supervisorctl restart`.** One command, no skipped build; fails fast on a diverged checkout or lockfile drift. Not `pnpm deploy`, which is pnpm's own built-in command.
