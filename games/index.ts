@@ -4,5 +4,6 @@
  */
 import type { AnyGameModule } from '@wsfg/core/contract'
 import { imposter } from '@wsfg/game-imposter/server'
+import { liarsDice } from '@wsfg/game-liarsdice/server'
 
-export const games: readonly AnyGameModule[] = [imposter]
+export const games: readonly AnyGameModule[] = [imposter, liarsDice]

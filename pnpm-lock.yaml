@@ -313,6 +313,9 @@ importers:
       '@wsfg/game-imposter':
         specifier: workspace:*
         version: link:imposter
+      '@wsfg/game-liarsdice':
+        specifier: workspace:*
+        version: link:liarsdice
 
   games/imposter:
     dependencies:
