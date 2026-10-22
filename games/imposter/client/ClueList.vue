@@ -2,16 +2,15 @@
   <v-card class="mb-4">
     <v-card-title class="text-subtitle-1">Clues</v-card-title>
     <v-card-text v-if="view.clues.length === 0" class="text-medium-emphasis">No clues yet.</v-card-text>
-    <v-list v-else density="compact">
-      <v-list-item v-for="row in byPlayer" :key="row.playerId" :subtitle="nameOf(room, row.playerId)">
-        <v-list-item-title class="text-wrap">
-          <span v-for="(c, i) in row.clues" :key="c.rotation" :class="{ 'ml-3': i > 0 }">
-            <span v-if="view.turn.totalRotations > 1" class="text-medium-emphasis">{{ c.rotation }}.</span>
-            {{ c.word }}
-          </span>
-        </v-list-item-title>
-      </v-list-item>
-    </v-list>
+    <v-card-text v-else class="pt-0">
+      <div v-for="row in byPlayer" :key="row.playerId" class="mb-3">
+        <h4 class="text-subtitle-1 font-weight-bold">{{ nameOf(room, row.playerId) }}</h4>
+        <div v-for="c in row.clues" :key="c.rotation" class="pl-4 text-body-1">
+          <span v-if="view.turn.totalRotations > 1" class="text-medium-emphasis">{{ c.rotation }}.</span>
+          {{ c.word }}
+        </div>
+      </div>
+    </v-card-text>
   </v-card>
 </template>
 
