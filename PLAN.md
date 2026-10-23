@@ -562,7 +562,7 @@ CREATE TABLE flock_questions (
 The fourth game: a few random paint colours are shown, and everyone picks the colour they'd make if mixed in equal parts. The closest guesses score. No library, no hidden roles: the only secrets are the guesses and the answer until the reveal.
 
 ### Rules
-1. Each round shows **2-6 random colours** (setting). Everyone in the round picks one colour with a colour picker, in secret, and can change it until the reveal.
+1. Each round shows **2-4 random colours**, set by the difficulty (setting). Everyone in the round picks one colour with a colour picker, in secret, and can change it until the reveal.
 2. **Reveal** when every connected round player has guessed, when the guess timer runs out, or when the host taps **Reveal now**.
 3. **The answer** is the colours mixed like paint in equal parts: Kubelka-Munk pigment mixing (spectral.js, vendored in `server/spectral.ts`), so blue + yellow makes green. Computed once at round start.
 4. **Closeness** is the OKLab distance between a guess and the answer (perceptual: equal distances look about equally different). Shown as a percentage to 2 decimals, `100 × e^(−distance / 0.25)`: a curve, so near misses score high, poor guesses low, and it never reaches 0 (far-off guesses still show which was closer).
@@ -576,7 +576,7 @@ The fourth game: a few random paint colours are shown, and everyone picks the co
 | Setting | Default | Notes |
 |---|---|---|
 | Rounds | unlimited | `null` / 5 / 10 / 15 / 20 |
-| Colours to mix | 2 | 2-6, or `'random'` (2-6, new count each round) |
+| Difficulty | easy | `easy` (2 colours) / `medium` (3) / `hard` (4) / `all` (a random difficulty each round) |
 | Scoring | ranked | `ranked` / `closest` |
 | Guess timer | off | 30 / 45 / 60 / 90 / 120 seconds; on expiry, reveal with the guesses in |
 

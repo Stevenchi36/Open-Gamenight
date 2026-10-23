@@ -32,10 +32,11 @@ describe('a round', () => {
     expect(sim.state.target).toBe(mixPaint(sim.state.colors))
   })
 
-  it('uses the colour count setting, or a random 2-6', () => {
-    expect(newGame({ settings: { colorCount: 5 } }).view('p1').colors).toHaveLength(5)
-    const counts = new Set(Array.from({ length: 40 }, (_, seed) => newGame({ seed, settings: { colorCount: 'random' } }).view('p1').colors.length))
-    expect([...counts].sort()).toEqual([2, 3, 4, 5, 6])
+  it('mixes 2, 3 or 4 colours by difficulty, or a random difficulty each round', () => {
+    expect(newGame({ settings: { difficulty: 'medium' } }).view('p1').colors).toHaveLength(3)
+    expect(newGame({ settings: { difficulty: 'hard' } }).view('p1').colors).toHaveLength(4)
+    const counts = new Set(Array.from({ length: 40 }, (_, seed) => newGame({ seed, settings: { difficulty: 'all' } }).view('p1').colors.length))
+    expect([...counts].sort()).toEqual([2, 3, 4])
   })
 
   it('lets players change their guess, and rejects bad colours and late joiners', () => {

@@ -20,7 +20,7 @@ function moves(sim: Sim): Move<ClientAction>[] {
 
 const configs: Array<[string, Partial<ColorMixSettings>]> = [
   ['defaults (ranked, unlimited, 2 colours)', {}],
-  ['closest, 2 rounds, random colours, timer', { scoring: 'closest', rounds: 2, colorCount: 'random', guessTimerSeconds: 30 }],
+  ['closest, 2 rounds, all difficulties, timer', { scoring: 'closest', rounds: 2, difficulty: 'all', guessTimerSeconds: 30 }],
 ]
 
 describe('colormix secret-leak test', () => {

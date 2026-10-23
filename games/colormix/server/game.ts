@@ -19,10 +19,10 @@ import { addPoints, carryScores, isConnected, withoutPlayer, type Scores } from 
 import {
   clientActionSchema,
   defaultSettings,
+  DIFFICULTIES,
+  DIFFICULTY_COLORS,
   HEX_COLOR,
-  MAX_COLORS,
   meta,
-  MIN_COLORS,
   MIN_PLAYERS,
   settingsSchema,
   type ClientAction,
@@ -71,9 +71,9 @@ const CANCEL_TIMER: Effect<ColorMixTimer> = { type: 'cancel', key: 'guess_timer'
 /** A new round. `fresh` (new_game): scores and the round count start over. */
 function startRound(prev: ColorMixState | null, ctx: Ctx, fresh = false): Step {
   const ids = ctx.players.map((p) => p.id)
-  const { colorCount, guessTimerSeconds } = ctx.settings
-  const count = colorCount === 'random' ? MIN_COLORS + ctx.rng.int(MAX_COLORS - MIN_COLORS + 1) : colorCount
-  const colors = randomColors(ctx.rng, count)
+  const { difficulty, guessTimerSeconds } = ctx.settings
+  const level = difficulty === 'all' ? DIFFICULTIES[ctx.rng.int(DIFFICULTIES.length)]! : difficulty
+  const colors = randomColors(ctx.rng, DIFFICULTY_COLORS[level])
   const deadline = guessTimerSeconds ? ctx.now + guessTimerSeconds * 1000 : null
   const seq = (prev?.seq ?? 0) + 1
 

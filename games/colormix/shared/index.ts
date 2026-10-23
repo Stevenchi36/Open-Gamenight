@@ -20,8 +20,10 @@ export const meta: GameMeta = {
   maxPlayers: MAX_PLAYERS,
 }
 
-export const MIN_COLORS = 2
-export const MAX_COLORS = 6
+export const DIFFICULTIES = ['easy', 'medium', 'hard'] as const
+export type Difficulty = (typeof DIFFICULTIES)[number]
+/** Colours to mix at each difficulty. */
+export const DIFFICULTY_COLORS: Record<Difficulty, number> = { easy: 2, medium: 3, hard: 4 }
 export const ROUND_COUNTS = [5, 10, 15, 20] as const
 export const GUESS_TIMERS = [30, 45, 60, 90, 120] as const
 
@@ -36,8 +38,8 @@ export type Scoring = z.infer<typeof scoringSchema>
 export const settingsSchema = z.object({
   /** Rounds in a game; null = unlimited (play until the host stops). */
   rounds: z.number().int().min(1).max(50).nullable(),
-  /** Colours to mix each round, or 'random' (a new count from 2-6 each round). */
-  colorCount: z.union([z.number().int().min(MIN_COLORS).max(MAX_COLORS), z.literal('random')]),
+  /** Sets the colours to mix (DIFFICULTY_COLORS); 'all': a random difficulty each round. */
+  difficulty: z.enum([...DIFFICULTIES, 'all']),
   /** ranked: 1 point per player you beat. closest: 1 point for the closest guess. */
   scoring: scoringSchema,
   /** Seconds to guess; null = off. On expiry the guesses in so far are revealed. */
@@ -48,7 +50,7 @@ export type ColorMixSettings = z.infer<typeof settingsSchema>
 
 export const defaultSettings: ColorMixSettings = {
   rounds: null,
-  colorCount: 2,
+  difficulty: 'easy',
   scoring: 'ranked',
   guessTimerSeconds: null,
 }

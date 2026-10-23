@@ -9,12 +9,12 @@
       @update:model-value="(v: unknown) => set('rounds', v as number | null)"
     />
     <SettingSelect
-      label="Colours to mix"
-      :model-value="settings.colorCount"
-      :items="colorItems"
-      :hint="settings.colorCount === 'random' ? `A new number each round, ${MIN_COLORS} to ${MAX_COLORS}` : undefined"
+      label="Difficulty"
+      :model-value="settings.difficulty"
+      :items="difficultyItems"
+      :hint="settings.difficulty === 'all' ? 'A random difficulty each round' : undefined"
       :disabled="!isHost"
-      @update:model-value="(v: unknown) => set('colorCount', v as ColorMixSettings['colorCount'])"
+      @update:model-value="(v: unknown) => set('difficulty', v as DifficultySetting)"
     />
     <SettingToggle
       label="Scoring"
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { GUESS_TIMERS, MAX_COLORS, MIN_COLORS, ROUND_COUNTS, type ColorMixSettings, type Scoring } from '../shared/index.ts'
+import { DIFFICULTIES, DIFFICULTY_COLORS, GUESS_TIMERS, ROUND_COUNTS, type ColorMixSettings, type Scoring } from '../shared/index.ts'
 
 const props = defineProps<{ settings: ColorMixSettings; update: (s: ColorMixSettings) => void; isHost: boolean }>()
 
@@ -44,15 +44,15 @@ function set<K extends keyof ColorMixSettings>(key: K, value: ColorMixSettings[K
   props.update({ ...props.settings, [key]: value })
 }
 
-type ColorCount = ColorMixSettings['colorCount']
+type DifficultySetting = ColorMixSettings['difficulty']
 
 const roundItems = [
   { title: 'Unlimited', value: null as number | null },
   ...ROUND_COUNTS.map((n) => ({ title: `${n} rounds`, value: n as number | null })),
 ]
-const colorItems = [
-  ...Array.from({ length: MAX_COLORS - MIN_COLORS + 1 }, (_, i) => ({ title: `${MIN_COLORS + i} colours`, value: (MIN_COLORS + i) as ColorCount })),
-  { title: 'Random', value: 'random' as ColorCount },
+const difficultyItems = [
+  ...DIFFICULTIES.map((d) => ({ title: `${d[0]!.toUpperCase()}${d.slice(1)} (${DIFFICULTY_COLORS[d]} colours)`, value: d as DifficultySetting })),
+  { title: 'All difficulties', value: 'all' as DifficultySetting },
 ]
 const scoringItems = [
   { title: 'Ranked', value: 'ranked' as Scoring },
