@@ -8,7 +8,7 @@ A game is a description the core runs, not a class to extend. The core already o
 
 - **Server:** a `GameModule` object built with `defineGame` (`packages/core/src/contract.ts`): `init`/`reduce`/`onTimer`/`view`, settings and player-action schema (timer actions are a separate type, handled by `onTimer`), player limits, `secrets`, and optional lifecycle hooks and integrations (migrations, `prepareRound`, admin/public routers, MCP tools, categories).
 - **Rules:** `RULES.md` in the game folder: short, player-facing Markdown (goal, a round, scoring, settings, tips). The room's **How to play** dialog shows it, so keep it in step with the game's `PLAN.md` section whenever rules or settings change. Read it for a quick picture of how a game plays.
-- **Client:** a `GameClientModule` (`packages/core/src/client.ts`): lazy `PlayView` and `SettingsView`, `rules` (loads `../RULES.md?raw`), optional `adminPages`, and `needsAction(view, me, room)` so the shell's glow knows when the game is waiting on this player.
+- **Client:** a `GameClientModule` built with `defineGameClient<View, Settings>` (`packages/core/src/client.ts`): lazy `PlayView` (gets `view`, `send`, `me`, `room`, typed `settings`, `serverNow`) and `SettingsView`, `rules` (loads `../RULES.md?raw`), optional `adminPages`, and `needsAction(view, me, room, settings)` so the shell's glow knows when the game is waiting on this player.
 
 ## Reuse first
 

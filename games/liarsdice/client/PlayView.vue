@@ -27,5 +27,6 @@ const phaseProps = computed(() => ({
   me: props.me,
   send: props.send,
   serverNow: props.serverNow,
+  settings: props.settings,
 }))
 </script>

@@ -29,13 +29,12 @@
 <script setup lang="ts">
 import { nameOf, NextRoundButton, ScoreBoard, StatusCard, VoteBreakdown } from '@wsfg/core/ui'
 import { computed, ref } from 'vue'
-import type { ImposterSettings } from '../../shared/index.ts'
 import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)
 // 'random' reshuffles every round anyway
-const rotating = computed(() => (props.room.game.settings as ImposterSettings).playerOrder === 'rotate')
+const rotating = computed(() => props.settings.playerOrder === 'rotate')
 const shuffle = ref(false)
 const won = computed(() => {
   const r = result.value

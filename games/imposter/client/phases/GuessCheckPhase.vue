@@ -55,13 +55,13 @@
 <script setup lang="ts">
 import { HoldToReveal, isHost, nameOf, StatusCard, SubmitField, VoteBreakdown } from '@wsfg/core/ui'
 import { computed } from 'vue'
-import { GUESS_MAX_LENGTH, type ImposterSettings } from '../../shared/index.ts'
+import { GUESS_MAX_LENGTH } from '../../shared/index.ts'
 import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)
 const amHost = computed(() => isHost(props.room, props.me))
-const typed = computed(() => (props.room.game.settings as ImposterSettings).clueMode === 'typed')
+const typed = computed(() => props.settings.clueMode === 'typed')
 const waitingForGuess = computed(() => typed.value && result.value?.guess === null)
 const judgeLine = computed(() =>
   result.value?.judgeId ? `${nameOf(props.room, result.value.judgeId)} decides if it's right.` : 'Waiting for a judge to reconnect.',

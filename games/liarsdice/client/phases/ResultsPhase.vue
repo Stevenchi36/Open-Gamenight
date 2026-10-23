@@ -20,11 +20,9 @@
 <script setup lang="ts">
 import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
-import type { LiarsDiceSettings } from '../../shared/index.ts'
 import RoundResultCard from '../RoundResultCard.vue'
 import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
-const settings = computed(() => props.room.game.settings as LiarsDiceSettings)
 const gained = computed(() => (props.view.winnerId ? { [props.view.winnerId]: 1 } : {}))
 </script>

@@ -9,13 +9,11 @@
 <script setup lang="ts">
 import { nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
-import type { LiarsDiceSettings } from '../../shared/index.ts'
 import RoundResultCard from '../RoundResultCard.vue'
 import SeatList from '../SeatList.vue'
 import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
-const settings = computed(() => props.room.game.settings as LiarsDiceSettings)
 const result = computed(() => props.view.lastRound)
 const headline = computed(() => {
   const r = result.value

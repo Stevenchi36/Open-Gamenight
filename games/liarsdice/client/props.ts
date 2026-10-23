@@ -1,8 +1,8 @@
 import type { PlayViewProps } from '@wsfg/core/client'
-import type { ClientAction, LiarsDiceView } from '../shared/index.ts'
+import type { ClientAction, LiarsDiceSettings, LiarsDiceView } from '../shared/index.ts'
 
 /** Props every phase component gets from PlayView. */
-export type PhaseProps = PlayViewProps<LiarsDiceView, ClientAction>
+export type PhaseProps = PlayViewProps<LiarsDiceView, ClientAction, LiarsDiceSettings>
 
 const FACE_NAMES = ['one', 'two', 'three', 'four', 'five', 'six']
 

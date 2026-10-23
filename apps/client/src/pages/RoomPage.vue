@@ -23,6 +23,7 @@
         :send="sendAction"
         :me="room.you.id"
         :room="room"
+        :settings="room.game.settings"
         :server-now="serverNow"
       />
       <AttentionGlow v-if="actionNeeded" />
@@ -105,7 +106,7 @@ const gameModule = computed(() => clientGames.find((g) => g.id === room.value?.g
 const actionNeeded = computed(() => {
   const r = room.value
   if (!r || r.phase !== 'playing' || !game.value) return false
-  return gameModule.value?.needsAction?.(game.value, r.you.id, r) ?? false
+  return gameModule.value?.needsAction?.(game.value, r.you.id, r, r.game.settings) ?? false
 })
 
 const views = new Map<string, Component>()

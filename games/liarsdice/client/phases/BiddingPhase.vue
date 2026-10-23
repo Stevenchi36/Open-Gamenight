@@ -76,20 +76,19 @@
 <script setup lang="ts">
 import { HoldToReveal, nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
-import { FACES, isLegalBid, minQuantity, type LiarsDiceSettings } from '../../shared/index.ts'
+import { FACES, isLegalBid, minQuantity } from '../../shared/index.ts'
 import DiceRow from '../DiceRow.vue'
 import RoundResultCard from '../RoundResultCard.vue'
 import SeatList from '../SeatList.vue'
 import { bidText, type PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
-const settings = computed(() => props.room.game.settings as LiarsDiceSettings)
 const myTurn = computed(() => props.view.turn === props.me)
 const callable = computed(() => props.view.bid !== null && props.view.bid.playerId !== props.me)
 
 const faces = computed(() =>
   Array.from({ length: FACES }, (_, i) => {
-    const min = minQuantity(props.view.bid, i + 1, settings.value.wildOnes)
+    const min = minQuantity(props.view.bid, i + 1, props.settings.wildOnes)
     return { face: i + 1, min, allowed: min !== null && min <= props.view.totalDice }
   }),
 )
@@ -97,7 +96,7 @@ const faces = computed(() =>
 const face = ref(2)
 const quantity = ref(1)
 const minForFace = computed(() => faces.value[face.value - 1]?.min ?? 1)
-const canBid = computed(() => isLegalBid(props.view.bid, { quantity: quantity.value, face: face.value }, settings.value.wildOnes) && quantity.value <= props.view.totalDice)
+const canBid = computed(() => isLegalBid(props.view.bid, { quantity: quantity.value, face: face.value }, props.settings.wildOnes) && quantity.value <= props.view.totalDice)
 
 function pickFace(f: number) {
   face.value = f

@@ -16,7 +16,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ImposterSettings } from '../shared/index.ts'
 import CluesPhase from './phases/CluesPhase.vue'
 import GuessCheckPhase from './phases/GuessCheckPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
@@ -27,7 +26,7 @@ import type { PhaseProps } from './props.ts'
 
 const props = defineProps<PhaseProps>()
 
-const clueMode = computed(() => (props.room.game.settings as ImposterSettings).clueMode)
+const clueMode = computed(() => props.settings.clueMode)
 const myScore = computed(() => props.view.scores[props.me] ?? null)
 const phaseProps = computed(() => ({
   view: props.view,
@@ -35,6 +34,7 @@ const phaseProps = computed(() => ({
   me: props.me,
   send: props.send,
   serverNow: props.serverNow,
+  settings: props.settings,
 }))
 </script>
 

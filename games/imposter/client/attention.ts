@@ -5,7 +5,7 @@ import type { ImposterSettings, ImposterView } from '../shared/index.ts'
  * Whether the game is waiting on this viewer. Host-only overrides (skip, force reveal)
  * don't count: the game isn't waiting on those.
  */
-export function needsAction(view: ImposterView, me: string, room: RoomView): boolean {
+export function needsAction(view: ImposterView, me: string, room: RoomView, settings: ImposterSettings): boolean {
   switch (view.phase) {
     case 'CLUES':
       return view.turn.currentPlayerId === me
@@ -13,7 +13,7 @@ export function needsAction(view: ImposterView, me: string, room: RoomView): boo
       return view.roundPlayers.includes(me) && view.you.vote === null
     case 'GUESS_CHECK': {
       const r = view.result
-      if ((room.game.settings as ImposterSettings).clueMode === 'spoken') return me === r?.imposterId || me === r?.judgeId
+      if (settings.clueMode === 'spoken') return me === r?.imposterId || me === r?.judgeId
       // Typed: the imposter until the guess is sent, then the judge.
       return r?.guess == null ? me === r?.imposterId : me === r.judgeId
     }
