@@ -193,16 +193,23 @@ export type PrepareRequest<S, A, T> =
   | { trigger: 'timer'; state: S; action: T }
 
 /**
- * S: state. A: player actions. T: timer actions (`never` if the game schedules none).
- * V: per-player view. Settings: lobby settings. P: prepareRound output.
+ * What both the server module and the client module say about a game. Each game
+ * declares it once, as `meta` in its `shared/`, and spreads it into both.
  */
-export interface GameModule<S, A, T, V, Settings, P = undefined> {
+export interface GameMeta {
   /** Lowercase letters and digits, starting with a letter. Used for routes, tables and MCP tools. */
   id: string
   name: string
   description: string
   minPlayers: number
   maxPlayers: number
+}
+
+/**
+ * S: state. A: player actions. T: timer actions (`never` if the game schedules none).
+ * V: per-player view. Settings: lobby settings. P: prepareRound output.
+ */
+export interface GameModule<S, A, T, V, Settings, P = undefined> extends GameMeta {
   settingsSchema: ZodType<Settings>
   defaultSettings: Settings
   /** Player actions only; timer actions never come from a client. */

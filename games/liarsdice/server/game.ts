@@ -21,9 +21,8 @@ import {
   countFace,
   defaultSettings,
   FACES,
-  GAME_ID,
   isLegalBid,
-  MAX_PLAYERS,
+  meta,
   MIN_PLAYERS,
   REVEAL_MS,
   settingsSchema,
@@ -267,11 +266,7 @@ function view(state: LiarsDiceState, viewerId: PlayerId): LiarsDiceView {
 // ---------------------------------------------------------------- module
 
 export const liarsDice = defineGame<LiarsDiceState, ClientAction, LiarsDiceTimer, LiarsDiceView, LiarsDiceSettings>({
-  id: GAME_ID,
-  name: "Liar's Dice",
-  description: 'Roll in secret, bid on what everyone holds, and call out the liars.',
-  minPlayers: MIN_PLAYERS,
-  maxPlayers: MAX_PLAYERS,
+  ...meta,
   settingsSchema,
   defaultSettings,
   actionSchema: clientActionSchema,

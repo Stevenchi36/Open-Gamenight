@@ -3,6 +3,7 @@
  * settings, client actions, the per-player view, and the bid rules
  * (the client uses them to offer only legal raises).
  */
+import type { GameMeta } from '@wsfg/core/contract'
 import { z } from 'zod'
 
 type PlayerId = string
@@ -10,6 +11,16 @@ type PlayerId = string
 export const GAME_ID = 'liarsdice'
 export const MIN_PLAYERS = 2
 export const MAX_PLAYERS = 10
+
+/** Spread into both the server and the client module. */
+export const meta: GameMeta = {
+  id: GAME_ID,
+  name: "Liar's Dice",
+  description: 'Roll in secret, bid on what everyone holds, and call out the liars.',
+  minPlayers: MIN_PLAYERS,
+  maxPlayers: MAX_PLAYERS,
+}
+
 export const FACES = 6
 /** How long the revealed dice stay up before the next round rolls. */
 export const REVEAL_MS = 8_000

@@ -2,6 +2,7 @@
  * Word Imposter types shared by the server module and the Vue client:
  * settings, client actions, and the per-player view.
  */
+import type { GameMeta } from '@wsfg/core/contract'
 import { playerOrderSchema } from '@wsfg/core/kit'
 import { z } from 'zod'
 
@@ -10,6 +11,15 @@ type PlayerId = string
 export const GAME_ID = 'imposter'
 export const MIN_PLAYERS = 3
 export const MAX_PLAYERS = 12
+
+/** Spread into both the server and the client module. */
+export const meta: GameMeta = {
+  id: GAME_ID,
+  name: 'Word Imposter',
+  description: 'Everyone gets the secret word except the imposter. Give clues, find the faker.',
+  minPlayers: MIN_PLAYERS,
+  maxPlayers: MAX_PLAYERS,
+}
 /** Fixed at 1 for now; kept as a constant so more can be supported later. */
 export const IMPOSTER_COUNT = 1
 /** How long the vote reveal stays up before moving on. */

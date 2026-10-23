@@ -32,8 +32,7 @@ import {
 import {
   clientActionSchema,
   defaultSettings,
-  GAME_ID,
-  MAX_PLAYERS,
+  meta,
   MIN_PLAYERS,
   REVEAL_MS,
   settingsSchema,
@@ -493,11 +492,7 @@ function view(state: ImposterState, viewerId: PlayerId): ImposterView {
 // ---------------------------------------------------------------- module
 
 export const imposter = defineGame<ImposterState, ClientAction, ImposterTimer, ImposterView, ImposterSettings, PreparedWord>({
-  id: GAME_ID,
-  name: 'Word Imposter',
-  description: 'Everyone gets the secret word except the imposter. Give clues, find the faker.',
-  minPlayers: MIN_PLAYERS,
-  maxPlayers: MAX_PLAYERS,
+  ...meta,
   settingsSchema,
   defaultSettings,
   actionSchema: clientActionSchema,

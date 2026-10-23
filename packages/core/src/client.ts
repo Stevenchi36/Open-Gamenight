@@ -4,7 +4,7 @@
  */
 import type { Component } from 'vue'
 import type { RoomView } from './protocol.ts'
-import type { PlayerId } from './contract.ts'
+import type { GameMeta, PlayerId } from './contract.ts'
 
 /** Props the room shell passes to a game's PlayView. */
 export interface PlayViewProps<V = unknown, A = unknown> {
@@ -30,10 +30,7 @@ export interface GameAdminPage {
   component: () => Promise<Component>
 }
 
-export interface GameClientModule {
-  id: string
-  name: string
-  description: string
+export interface GameClientModule extends GameMeta {
   PlayView: () => Promise<Component>
   SettingsView: () => Promise<Component>
   /** The game's player-facing RULES.md (Markdown), lazy-loaded for the shell's "How to play" dialog. */

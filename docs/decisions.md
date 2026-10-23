@@ -12,6 +12,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Client manifest (`client.ts`) is separate from the server contract (`contract.ts`).** The browser bundle and `vue-tsc` never pull in Express or `node:sqlite` types.
 - **Games import only from `packages/core` and their own folder.** Keeps Imposter usable as the reference example for future contributors.
 - **Static game registry (`games/index.ts`), no runtime discovery.** Type-safe, tree-shakeable, and adding a game is one line.
+- **A game's id, name, description and player limits (`GameMeta`) are declared once, as `meta` in its `shared/`, and spread into both its server and client modules; a server test checks the two registries match.** They were typed out twice per game and could drift apart.
 - **Core protocol messages for room membership; one `action` envelope for game moves.** Core owns who is in the room; games own what happens in play, including game-level permission checks.
 - **Host can switch games in the lobby (settings + scores reset).** "Let's play something else" with the same people is the common family-night case.
 - **Each game ships its own Vue settings component (with shared field components).** Conditional settings are awkward to auto-generate; revisit at 3+ games.
