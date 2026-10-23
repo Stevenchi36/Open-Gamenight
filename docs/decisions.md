@@ -143,6 +143,16 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Core `ScoreBoard` has a `badge` slot for a per-player marker (Herd's pink cow).** Copying the scoreboard into a game to add one icon would fork it.
 - **Questions aren't secret, so the MCP tools may show them.** Knowing the question in advance doesn't help much: the game is about guessing what others will say.
 
+## Color Mix rules
+- **Color Mix is the fourth game (id `colormix`), with no library.** Random colours need no content, so it's a pure game like Liar's Dice.
+- **Colours mix like paint (Kubelka-Munk), not like light.** Players expect blue + yellow to make green; an RGB average makes grey, which feels wrong. The user chose paint.
+- **The mixing maths is vendored from spectral.js (MIT, v3.0.0) into `server/spectral.ts`, not added as a dependency.** The package is untyped UMD; a typed copy of the few functions used keeps the answer pure and pinned (a library update can't silently change answers).
+- **Closeness is OKLab distance, shown as a percentage (0.5 away or more is 0%).** OKLab is perceptual and simple; a percentage reads better at the table than a raw distance.
+- **Scoring is a setting: ranked by default (1 point per player you beat), or closest only.** The user offered both. Ranked keeps every guess worth something; "players you beat" handles ties and missing guesses without special cases.
+- **The game length is a number of rounds, unlimited by default, and the highest total wins.** Ranked points grow with the table's size, so a score limit would feel different by group size. The user chose rounds.
+- **Random colours are vivid (saturation 50-100%, lightness 25-70%), sometimes one white, at least 0.12 OKLab apart.** Fully random RGB gives many muddy, near-identical colours.
+- **Guesses can be changed until the reveal and sit behind `HoldToReveal`; who has guessed is public.** Same reasons as Herd's answers.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.

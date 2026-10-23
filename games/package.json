@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@wsfg/core": "workspace:*",
+    "@wsfg/game-colormix": "workspace:*",
     "@wsfg/game-herd": "workspace:*",
     "@wsfg/game-imposter": "workspace:*",
     "@wsfg/game-liarsdice": "workspace:*"

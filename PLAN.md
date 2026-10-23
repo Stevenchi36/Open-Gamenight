@@ -555,6 +555,63 @@ CREATE TABLE herd_questions (
 - **Admin** (`/api/admin/herd/*`, page `/admin/herd/questions`): browse/search, add, edit/move, delete, and AI generation (review, then save), like Imposter's words.
 - **MCP tools:** `herd_add_questions`, `herd_list_categories`, `herd_search_questions`, `herd_update_question`, `herd_remove_questions`, `herd_generate_questions` (only with `ANTHROPIC_API_KEY`), plus the core `herd_*_category` tools.
 
+## 7c. Color Mix (`games/colormix`)
+
+The fourth game: a few random paint colours are shown, and everyone picks the colour they'd make if mixed in equal parts. The closest guesses score. No library, no hidden roles: the only secrets are the guesses and the answer until the reveal.
+
+### Rules
+1. Each round shows **2-6 random colours** (setting). Everyone in the round picks one colour with a colour picker, in secret, and can change it until the reveal.
+2. **Reveal** when every connected round player has guessed, when the guess timer runs out, or when the host taps **Reveal now**.
+3. **The answer** is the colours mixed like paint in equal parts: Kubelka-Munk pigment mixing (spectral.js, vendored in `server/spectral.ts`), so blue + yellow makes green. Computed once at round start.
+4. **Closeness** is the OKLab distance between a guess and the answer (perceptual: equal distances look about equally different). Shown as a percentage, `round(100 × max(0, 1 − distance / 0.5))`.
+5. **Scoring** (setting):
+   - **Ranked** (default): you score 1 point for every round player who was further away than you. With N guessers the closest gets N−1 and the furthest 0; equal distances score the same; a player with no guess counts as furthest and scores 0.
+   - **Closest only:** the closest guess scores 1 point (everyone tied for closest scores).
+6. **Rounds** (setting, default unlimited). With a number, the game ends after that round: the highest total wins, ties win together. Unlimited: the host plays on until returning to the lobby.
+7. The host starts the next round; after the last one, **New game** resets the scores.
+
+### Settings (host, lobby only)
+| Setting | Default | Notes |
+|---|---|---|
+| Rounds | unlimited | `null` / 5 / 10 / 15 / 20 |
+| Colours to mix | 2 | 2-6, or `'random'` (2-6, new count each round) |
+| Scoring | ranked | `ranked` / `closest` |
+| Guess timer | off | 30 / 45 / 60 / 90 / 120 seconds; on expiry, reveal with the guesses in |
+
+### Colours
+Drawn with `ctx.rng`: hue anywhere, saturation 50-100%, lightness 25-70% (vivid paints, not mud), and 1 in 10 a white (at most one per round, so tints happen). Each colour is at least 0.12 OKLab away from the others in the round, so no two look alike. Colours travel as lower-case `#rrggbb`.
+
+### State machine
+```
+GUESSING -> RESULTS -> next_round -> GUESSING   (new_game after the last round)
+```
+- `GUESSING`: round players (everyone present at round start) `submit_guess`; resubmitting replaces the guess. Advances once every connected round player has guessed (a disconnected player who hasn't guessed sits the round out), on the timer, or on the host's `reveal_guesses`.
+- `RESULTS`: the answer, every guess ranked with closeness and points, the scoreboard, and winners after the last round. Host: **Next round** (`next_round`), **New game** (`new_game`) after the last round, or **Back to lobby**.
+- Late joiners wait for the next round. A round player leaving before the reveal drops their guess; in `RESULTS` the round stays as scored.
+
+### Actions
+| action | payload | Who |
+|---|---|---|
+| `submit_guess` | `{ color }` (`#rrggbb`, any case) | round player, `GUESSING` |
+| `reveal_guesses` | `{}` | host, `GUESSING` |
+| `next_round` | `{}` | host, `RESULTS`, game not over |
+| `new_game` | `{}` | host, `RESULTS` after the last round |
+
+### View (per player)
+```ts
+{
+  phase, round, totalRounds: number | null,
+  colors: string[],                         // the colours to mix
+  you: { status: 'playing' | 'waiting', guess: string | null },  // your own guess only
+  roundPlayers, guessed: PlayerId[],        // who has guessed, not what
+  deadline: number | null,                  // guess timer
+  scores,
+  target: string | null,                    // RESULTS only
+  result: { guesses: [{ playerId, color, distance, closeness, points }], pointsAwarded, winnerIds } | null,  // RESULTS only; closest first
+}
+```
+`secrets` declares: other players' guesses and the answer are hidden during `GUESSING` (variant checks: a viewer's view must not change when another player's guess changes, including to the viewer's own guess, or when the answer changes).
+
 ## 8. Vue client (`apps/client`)
 
 ### Setup
