@@ -1,9 +1,9 @@
 # ws-family-games
 
-A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice**, **Flock** (everyone answers the same question and scores by matching the most popular answer) and **Color Mix** (guess the colour a few paints make when mixed).
+A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice**, **Flock** (everyone answers the same question and scores by matching the most popular answer), **Color Mix** (guess the colour a few paints make when mixed) and **Tic-Tac-Toe** (2 players).
 
 - **Rooms with a 4-letter code.** Signed-in users create rooms; anyone joins with just a name. Phones that drop off Wi-Fi reconnect into their seat.
-- **The server decides everything.** Each phone only receives its own view of the game, so the imposter's device never gets the secret word. A leak test checks this for every game.
+- **The server decides everything.** Each phone only receives its own view of the game, so the imposter's device never gets the secret word. A leak test checks this for every game with hidden information.
 - **Admin panel:** user accounts (no public sign-up), per-game categories, the Imposter word library and the Flock question library, with optional Claude-powered generation under a daily token cap.
 - **Claude integration (MCP):** manage the word and question libraries from Claude Code or Claude Desktop on your Claude subscription; see [`docs/mcp.md`](docs/mcp.md).
 - **Built for more games.** The platform owns rooms, sockets, auth, timers and admin; a game is a small, pure module. See [Writing a game](#writing-a-game).
@@ -128,6 +128,7 @@ games/
   liarsdice/  Liar's Dice (no library)
   flock/      Flock: same shape as imposter/, with a question library
   colormix/   Color Mix (no library; paint mixing vendored from spectral.js)
+  tictactoe/  Tic-Tac-Toe (2 players, nothing hidden)
 docs/
   decisions.md   every design decision and why
   dev-testing.md checks, dev-players page (several players in one window)

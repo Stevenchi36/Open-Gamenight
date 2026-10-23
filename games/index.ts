@@ -7,5 +7,6 @@ import { colorMix } from '@wsfg/game-colormix/server'
 import { flock } from '@wsfg/game-flock/server'
 import { imposter } from '@wsfg/game-imposter/server'
 import { liarsDice } from '@wsfg/game-liarsdice/server'
+import { ticTacToe } from '@wsfg/game-tictactoe/server'
 
-export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix]
+export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe]

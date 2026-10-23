@@ -12,6 +12,7 @@
     "@wsfg/game-colormix": "workspace:*",
     "@wsfg/game-flock": "workspace:*",
     "@wsfg/game-imposter": "workspace:*",
-    "@wsfg/game-liarsdice": "workspace:*"
+    "@wsfg/game-liarsdice": "workspace:*",
+    "@wsfg/game-tictactoe": "workspace:*"
   }
 }

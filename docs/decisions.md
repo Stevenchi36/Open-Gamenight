@@ -157,6 +157,14 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Random colours are vivid (saturation 50-100%, lightness 25-70%), sometimes one white, at least 0.12 OKLab apart.** Fully random RGB gives many muddy, near-identical colours.
 - **Guesses can be changed until the reveal and sit behind `HoldToReveal`; who has guessed is public.** Same reasons as Herd's answers.
 
+## Tic-Tac-Toe rules
+- **Tic-Tac-Toe is the fifth game (id `tictactoe`), exactly 2 players, no settings.** The user asked for a simple 2-player game; the classic rules need no options.
+- **`secrets` is empty and there is no leak test.** Both players see the whole board; `runLeakTest` refuses a game with no secrets, and adding a fake one would test nothing.
+- **Marks are random for the first game, then swap every game (`nextTurnOrder` 'rotate'); X always moves first.** Moving first is an advantage, so it alternates.
+- **A disconnected player's turn is never skipped.** With one move per turn and two players, skipping hands the other player two marks in a row, which breaks the game; the other player can wait or leave.
+- **A player leaving mid-game ends it with no points (`abandoned`).** A win by forfeit would reward the one left for a game that wasn't played out; the room holds 2, so a newcomer joins for the next game.
+- **Wins score 1 point, draws score nothing; scores carry across games.** Between two players the win count is the score that matters.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.

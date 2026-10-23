@@ -613,6 +613,49 @@ GUESSING -> RESULTS -> next_round -> GUESSING   (new_game after the last round)
 ```
 `secrets` declares: other players' guesses and the answer are hidden during `GUESSING` (variant checks: a viewer's view must not change when another player's guess changes, including to the viewer's own guess, or when the answer changes).
 
+## 7d. Tic-Tac-Toe (`games/tictactoe`)
+
+The fifth game, and the first for exactly 2 players. No library, no settings and no hidden information.
+
+### Rules
+1. Two players, **X** and **O**, take turns placing their mark in an empty cell of a 3×3 grid. X goes first.
+2. Three of your marks in a row, column or diagonal wins the game and scores **1 point**. A full board with no line is a draw (no points). Scores carry across games.
+3. The first game's marks are random; each new game the players swap marks, so the first move alternates.
+4. The host starts the next game.
+
+### Settings
+None.
+
+### State machine
+```
+PLAYING -> RESULTS -> new_game -> PLAYING
+```
+- `PLAYING`: `turn` is the player to move; they `place` a mark. A disconnected player keeps their turn (no skip): the other player waits or leaves.
+- `RESULTS`: the final board with the winning line, the outcome, and the scoreboard. Host: **New game** (`new_game`, needs 2 players) or **Back to lobby**.
+- A player leaving during `PLAYING` ends the game with outcome `abandoned` and no points (a notice says why). The room holds 2, so a replacement can join and play from the next game.
+
+### Actions
+| action | payload | Who |
+|---|---|---|
+| `place` | `{ cell }` (0-8, row by row) | the player to move, empty cell, `PLAYING` |
+| `new_game` | `{}` | host, `RESULTS`, 2 players present |
+
+### View (per player)
+```ts
+{
+  phase, game,
+  you: { mark: 'X' | 'O' | null },        // null: not in this game
+  marks: { X: PlayerId, O: PlayerId },
+  board: ('X' | 'O' | null)[],            // 9 cells, row by row
+  turn: PlayerId | null,                  // PLAYING only
+  outcome: 'win' | 'draw' | 'abandoned' | null,  // RESULTS only
+  winnerId: PlayerId | null,
+  line: number[] | null,                  // the winning three cells
+  scores,
+}
+```
+`secrets` is empty: everything is on the board, so there is nothing for the leak test to check.
+
 ## 8. Vue client (`apps/client`)
 
 ### Setup
