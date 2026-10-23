@@ -67,6 +67,8 @@ describe('colours', () => {
     expect(closeness(0.25)).toBe(50)
     expect(closeness(0.5)).toBe(0)
     expect(closeness(0.9)).toBe(0)
+    expect(closeness(0.07531)).toBe(84.94)
+    expect(closeness(0.07469)).toBe(85.06)
     expect(distanceBetween('#000000', '#ffffff')).toBeCloseTo(1, 3)
   })
 })

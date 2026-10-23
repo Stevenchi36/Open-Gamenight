@@ -25,7 +25,7 @@
             <v-chip v-if="guess.points" size="x-small" color="success" class="ml-1">+{{ guess.points }}</v-chip>
           </v-list-item-title>
           <template #append>
-            <span class="text-body-1">{{ guess.closeness }}%</span>
+            <span class="text-body-1">{{ guess.closeness.toFixed(2) }}%</span>
           </template>
         </v-list-item>
         <v-list-item v-for="id in noGuess" :key="id">

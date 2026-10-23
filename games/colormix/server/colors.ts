@@ -49,7 +49,7 @@ export function distanceBetween(a: string, b: string): number {
   return deltaE(hexToOklab(a), hexToOklab(b))
 }
 
-/** 0-100: 100 is exact, 0 is CLOSENESS_ZERO_AT or further. */
+/** 0-100 to 2 decimals (whole numbers tied too often): 100 is exact, 0 is CLOSENESS_ZERO_AT or further. */
 export function closeness(distance: number): number {
-  return Math.round(100 * Math.max(0, 1 - distance / CLOSENESS_ZERO_AT))
+  return Math.round(10_000 * Math.max(0, 1 - distance / CLOSENESS_ZERO_AT)) / 100
 }

@@ -74,7 +74,7 @@ export interface ScoredGuess {
   color: string
   /** OKLab distance from the answer: 0 is exact. */
   distance: number
-  /** 0-100, for display. */
+  /** 0-100 to 2 decimals, for display. */
   closeness: number
   points: number
 }
