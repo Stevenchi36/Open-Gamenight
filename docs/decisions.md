@@ -157,6 +157,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **The game length is a number of rounds, unlimited by default, and the highest total wins.** Ranked points grow with the table's size, so a score limit would feel different by group size. The user chose rounds.
 - **Difficulty sets the colours to mix: easy 2, medium 3, hard 4, or all difficulties (random each round).** Replaced a free 2-6 count: the user found 6 too many, and named levels read better than numbers.
 - **Random colours are vivid (saturation 50-100%, lightness 25-70%), sometimes one white, at least 0.12 OKLab apart.** Fully random RGB gives many muddy, near-identical colours.
+- **The colours to mix show as one strip of flush vertical swatches, like a paint chip.** The user found small, spaced-out circles harder to compare.
 - **Guesses can be changed until the reveal and sit behind `HoldToReveal`; who has guessed is public.** Same reasons as Herd's answers.
 
 ## Tic-Tac-Toe rules

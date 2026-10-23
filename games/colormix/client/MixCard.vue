@@ -1,13 +1,13 @@
 <template>
   <StatusCard :compact="compact" :prominent="!compact" color="primary" overline="Mix these in equal parts">
-    <div class="d-flex flex-wrap align-center justify-center ga-2 my-2">
-      <template v-for="(color, i) in colors" :key="i">
-        <span v-if="i > 0" class="text-h6 text-medium-emphasis">+</span>
-        <ColorDot :color="color" :size="dotSize" />
-      </template>
+    <div class="d-flex align-center justify-center ga-3 my-2" :style="{ '--swatch-h': `${height}px` }">
+      <!-- flush strips, like a paint chip, so the colours sit side by side as they'll be compared -->
+      <div class="palette">
+        <span v-for="(color, i) in colors" :key="i" class="strip" :style="{ background: color }" role="img" :aria-label="color" />
+      </div>
       <span class="text-h6 text-medium-emphasis">=</span>
-      <ColorDot v-if="target" :color="target" :size="dotSize + 16" />
-      <span v-else class="mystery text-h5" :style="{ width: `${dotSize + 16}px`, height: `${dotSize + 16}px` }">?</span>
+      <span v-if="target" class="answer" :style="{ background: target }" role="img" :aria-label="target" />
+      <span v-else class="answer mystery text-h5">?</span>
     </div>
     <CountdownTimer v-if="deadline" :deadline="deadline" :server-now="serverNow" />
   </StatusCard>
@@ -16,7 +16,6 @@
 <script setup lang="ts">
 import { CountdownTimer, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
-import ColorDot from './ColorDot.vue'
 
 const props = defineProps<{
   colors: string[]
@@ -25,16 +24,36 @@ const props = defineProps<{
   serverNow: () => number
   compact?: boolean
 }>()
-// six colours still fit one row on a phone
-const dotSize = computed(() => (props.colors.length > 4 ? 32 : 44))
+const height = computed(() => (props.compact ? 64 : 96))
 </script>
 
 <style scoped>
-.mystery {
+.palette {
+  display: flex;
+  min-width: 0;
+  height: var(--swatch-h);
+  border-radius: 8px;
+  overflow: hidden;
+  /* keeps white and near-background colours visible in both themes */
+  box-shadow: 0 0 0 1px rgba(128, 128, 128, 0.5);
+}
+/* shrinks rather than overflowing a narrow phone */
+.strip {
+  flex: 0 1 calc(var(--swatch-h) / 2);
+  min-width: 0;
+}
+.answer {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  flex: none;
+  width: var(--swatch-h);
+  height: var(--swatch-h);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(128, 128, 128, 0.5);
+}
+.mystery {
+  box-shadow: none;
   border: 2px dashed currentColor;
   opacity: 0.6;
 }
