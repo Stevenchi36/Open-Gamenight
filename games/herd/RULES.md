@@ -16,7 +16,7 @@
 
 ## The pink cow
 
-If exactly one player is the odd one out (the only answer nobody matched), they take the **pink cow** 🐮 from whoever has it. It only moves on when someone else is the only odd one out. With a score limit, **you can't win while you hold the pink cow**, however many points you have.
+If exactly one player is the odd one out (the only answer nobody matched), they take the **pink cow** 🐮 from whoever has it. It only moves on when someone else is the only odd one out. With a score limit, **you can't win while you hold the pink cow**, however many points you have. If it passes to someone else in the same round you reach the limit, you win.
 
 ## Winning
 
