@@ -24,7 +24,7 @@ Run out of dice and you're out. The last player with dice wins the match and sco
 
 ## Ones are wild
 
-When **Wild ones** is on (the default), ones count as every face: if the bid is on fives, every one on the table counts as a five too. That makes ones about twice as common as any other single face, so bids on ones are the one place the count can drop:
+When **Wild ones** is on (the default), ones count as every face: if the bid is on fives, every one on the table counts as a five too. So any other face counts about twice as often as ones do (its own dice plus the wild ones), which is why a bid on ones may have a lower count:
 
 - The first bid of a round can't be on ones.
 - Switching **to** ones: the count can drop to half, rounded up. After "5 fours", "3 ones" is allowed.
