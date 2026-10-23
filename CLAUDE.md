@@ -35,5 +35,6 @@ Multiplayer party-game platform (pnpm workspace, TypeScript, Node 26). Word Impo
 - Done means `pnpm test`, `pnpm typecheck` and `pnpm lint` all pass, plus `pnpm --filter @wsfg/client build` when client or `games/*/client` code changed.
 - Write multi-line file content with the Write/Edit tools; Git Bash heredocs on this Windows machine have silently truncated files.
 - Create a new file before writing the import that references it. Vite's dev server caches a failed import, doesn't notice new files in `games/*`, and only recovers when `pnpm dev` restarts.
+- After changing a type that `.vue` files use in `defineProps<...>()` from another file (e.g. `PlayViewProps` in `packages/core/src/client.ts`), restart `pnpm dev`. Vue compiles the prop list from those types and the dev server doesn't recompile the components, so a new prop arrives as `undefined` until then. Production builds are unaffected.
 - Commit after each self-contained change. Line endings are LF (`.gitattributes`).
 - Dev data lives in `data/` (gitignored). The dev server migrates on start, so schema changes apply to the developer's real `data/games.db` as soon as `pnpm dev` reloads: verify migrations against existing rows, not only fresh databases.
