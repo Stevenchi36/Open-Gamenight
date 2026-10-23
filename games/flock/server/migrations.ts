@@ -2,7 +2,8 @@ import type { Migration } from '@wsfg/core/contract'
 import { DEFAULT_QUESTIONS } from './default-questions.ts'
 
 /**
- * herd_* tables in games.db. Never edit an applied migration; add a new one.
+ * flock_* tables in games.db. Never edit an applied migration; add a new one: 001 and 002
+ * still say herd_ and 'herd' because they ran before the game id changed (003 renames them).
  * Core migrations (including the shared `categories` table) always run first.
  */
 export const migrations: Migration[] = [
@@ -27,6 +28,17 @@ export const migrations: Migration[] = [
     // categories (matched ignoring case) and questions, and only gains what's missing.
     id: '002_default_questions',
     sql: seedSql(),
+  },
+  {
+    // The game id changed from herd to flock (renamedFrom). The core already moved existing
+    // categories; the UPDATE catches the ones 002 just seeded on a fresh database.
+    id: '003_rename_from_herd',
+    sql: `
+      ALTER TABLE herd_questions RENAME TO flock_questions;
+      DROP INDEX IF EXISTS herd_questions_category;
+      CREATE INDEX IF NOT EXISTS flock_questions_category ON flock_questions (category_id, times_used);
+      UPDATE categories SET game_id = 'flock' WHERE game_id = 'herd';
+    `,
   },
 ]
 

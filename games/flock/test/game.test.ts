@@ -1,14 +1,14 @@
 import { assertValidGame } from '@wsfg/core/contract'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_QUESTION_LIST } from '../server/default-questions.ts'
-import { herd } from '../server/game.ts'
+import { flock } from '../server/game.ts'
 import { act, answerAll, groupWith, newGame, PLAYERS } from './helpers.ts'
 
 const QUESTION_TEXT = 'Name a breakfast cereal'
 
 describe('module', () => {
   it('passes core registry checks', () => {
-    expect(() => assertValidGame(herd)).not.toThrow()
+    expect(() => assertValidGame(flock)).not.toThrow()
   })
 })
 

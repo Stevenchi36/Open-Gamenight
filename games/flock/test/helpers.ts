@@ -1,14 +1,14 @@
 import { createSim, type GameSim } from '@wsfg/core/testing'
-import { herd, type HerdState, type HerdTimer, type PreparedQuestion } from '../server/game.ts'
-import { defaultSettings, type ClientAction, type HerdSettings, type HerdView } from '../shared/index.ts'
+import { flock, type FlockState, type FlockTimer, type PreparedQuestion } from '../server/game.ts'
+import { defaultSettings, type ClientAction, type FlockSettings, type FlockView } from '../shared/index.ts'
 
-export type Sim = GameSim<HerdState, ClientAction, HerdTimer, HerdView, HerdSettings, PreparedQuestion>
+export type Sim = GameSim<FlockState, ClientAction, FlockTimer, FlockView, FlockSettings, PreparedQuestion>
 
 export const PLAYERS = ['p1', 'p2', 'p3', 'p4']
 export const QUESTION: PreparedQuestion = { id: 7, category: 'Food & Drink', text: 'Name a breakfast cereal' }
 
 interface Options {
-  settings?: Partial<HerdSettings>
+  settings?: Partial<FlockSettings>
   players?: string[]
   /** null: no prepareRound output, so the starter list is used. */
   prepare?: PreparedQuestion | null
@@ -17,7 +17,7 @@ interface Options {
 
 export function newGame(options: Options = {}): Sim {
   const prepared = options.prepare === undefined ? QUESTION : options.prepare
-  return createSim(herd, {
+  return createSim(flock, {
     players: (options.players ?? PLAYERS).map((id) => ({ id, name: id.toUpperCase() })),
     settings: { ...defaultSettings, ...options.settings },
     seed: options.seed ?? 1,

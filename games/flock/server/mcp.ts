@@ -1,7 +1,7 @@
 /**
- * MCP tools for the question library, registered as herd_<name> by apps/mcp.
+ * MCP tools for the question library, registered as flock_<name> by apps/mcp.
  * Driven from Claude Code/Desktop, Claude writes the questions itself, so adding
- * them needs no API key. herd_generate_questions exists only when the AI
+ * them needs no API key. flock_generate_questions exists only when the AI
  * service does (ANTHROPIC_API_KEY set) and saves directly, within the daily cap.
  */
 import type { McpToolDef, ServerServices } from '@wsfg/core/contract'
@@ -65,7 +65,7 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
     },
     {
       name: 'list_categories',
-      description: `List question categories (including empty ones) with their ids, total and unused question counts. Categories with fewer than ${LOW_STOCK_THRESHOLD} unused questions are running low. Manage them with herd_create_category, herd_rename_category and herd_delete_category.`,
+      description: `List question categories (including empty ones) with their ids, total and unused question counts. Categories with fewer than ${LOW_STOCK_THRESHOLD} unused questions are running low. Manage them with flock_create_category, flock_rename_category and flock_delete_category.`,
       inputSchema: z.object({}),
       handler: async () => listCategories(db).map((c) => ({ ...c, runningLow: c.unused < LOW_STOCK_THRESHOLD })),
     },
@@ -82,7 +82,7 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
       name: 'update_question',
       description:
         'Edit one question: move it to another category or change its text. Same rules as add_questions. ' +
-        'Use it to empty a category before herd_delete_category.',
+        'Use it to empty a category before flock_delete_category.',
       inputSchema: updateSchema,
       handler: async (args) => {
         const { id, categoryId, category, question } = updateSchema.parse(args)

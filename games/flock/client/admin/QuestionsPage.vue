@@ -3,7 +3,7 @@
     <div class="d-flex align-center flex-wrap ga-2 mb-4">
       <h1 class="text-h5">Question library</h1>
       <v-spacer />
-      <v-btn variant="text" prepend-icon="mdi-shape-outline" :to="{ name: 'admin-categories', params: { gameId: 'herd' } }">
+      <v-btn variant="text" prepend-icon="mdi-shape-outline" :to="{ name: 'admin-categories', params: { gameId: 'flock' } }">
         Categories
       </v-btn>
       <v-btn variant="tonal" prepend-icon="mdi-plus" :disabled="categories.length === 0" @click="openAdd">Add question</v-btn>
@@ -185,7 +185,7 @@ interface Candidate {
   keep: boolean
 }
 
-const BASE = '/api/admin/herd'
+const BASE = '/api/admin/flock'
 const headers = [
   { title: 'Question', key: 'question', sortable: false },
   { title: 'Category', key: 'category', sortable: false },

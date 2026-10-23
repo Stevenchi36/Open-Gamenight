@@ -44,11 +44,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { ANSWER_TIMERS, SCORE_LIMITS, type HerdSettings } from '../shared/index.ts'
+import { ANSWER_TIMERS, SCORE_LIMITS, type FlockSettings } from '../shared/index.ts'
 
-const props = defineProps<{ settings: HerdSettings; update: (s: HerdSettings) => void; isHost: boolean }>()
+const props = defineProps<{ settings: FlockSettings; update: (s: FlockSettings) => void; isHost: boolean }>()
 
-function set<K extends keyof HerdSettings>(key: K, value: HerdSettings[K]) {
+function set<K extends keyof FlockSettings>(key: K, value: FlockSettings[K]) {
   props.update({ ...props.settings, [key]: value })
 }
 
@@ -69,7 +69,7 @@ const library = ref<{ category: string; total: number }[]>([])
 const builtin = ref<string[]>([])
 onMounted(async () => {
   try {
-    const res = await fetch('/api/games/herd/categories')
+    const res = await fetch('/api/games/flock/categories')
     if (res.ok) {
       const data = (await res.json()) as { library: { category: string; total: number }[]; builtin: string[] }
       library.value = data.library

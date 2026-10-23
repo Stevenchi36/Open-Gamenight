@@ -126,7 +126,7 @@ games/
   client.ts   client-side game registry
   imposter/   Word Imposter: shared/ (types), server/ (rules, library, admin, MCP), client/ (views)
   liarsdice/  Liar's Dice (no library)
-  herd/       Flock: same shape as imposter/, with a question library
+  flock/      Flock: same shape as imposter/, with a question library
   colormix/   Color Mix (no library; paint mixing vendored from spectral.js)
 docs/
   decisions.md   every design decision and why

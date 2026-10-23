@@ -1,5 +1,5 @@
 /**
- * /api/admin/herd/* (mounted by the core behind requireAdmin + Origin check).
+ * /api/admin/flock/* (mounted by the core behind requireAdmin + Origin check).
  * Generation returns candidates only; the admin reviews them and saves via POST /questions.
  */
 import { AiError, type AdminUser, type ServerServices } from '@wsfg/core/contract'

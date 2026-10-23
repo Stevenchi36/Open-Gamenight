@@ -128,6 +128,7 @@ interface GameModule<S, A, T, V, Settings> {
 
   // Optional integrations, given core services:
   migrations?: Migration[]                          // tables in games.db, prefixed with `<id>_`
+  renamedFrom?: string[]                            // former ids: their recorded migrations, categories and AI usage move to this id
   adminRouter?(services: ServerServices): Router    // mounted at /api/admin/<id>, already behind requireAdmin + Origin check
   publicRouter?(services: ServerServices): Router   // read-only player data (e.g. lobby category list) at /api/games/<id>; core allows GET only
   mcpTools?(services: ServerServices): McpToolDef[] // registered as `<id>_<tool>`
@@ -481,9 +482,9 @@ BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
 ### Hold-to-reveal
 Your dice sit behind `HoldToReveal`, like Imposter's role card: phones lie on a shared table.
 
-## 7b. Flock (`games/herd`)
+## 7b. Flock (`games/flock`)
 
-The third game: everyone answers the same question and tries to give the answer most people give. The first game with free-text answers that are compared with each other, and the second with a library (questions), managed like Imposter's words. Players see the name Flock; the id `herd` (folder, tables, routes, MCP tools) is internal and stays.
+The third game: everyone answers the same question and tries to give the answer most people give. The first game with free-text answers that are compared with each other, and the second with a library (questions), managed like Imposter's words. Its id was `herd` until the rename from Herd Mentality; `renamedFrom: ['herd']` and migration `003_rename_from_herd` moved existing data over.
 
 ### Rules
 1. Each round shows one **question** ("Name a breakfast cereal") and its category. Everyone in the round types **one answer** in secret. Answers can be changed until the reveal.
@@ -541,7 +542,7 @@ ANSWERING -> (REVIEW) -> RESULTS -> next_round -> ANSWERING   (new_game after a 
 
 ### Question library
 ```sql
-CREATE TABLE herd_questions (
+CREATE TABLE flock_questions (
   id INTEGER PRIMARY KEY,
   category_id INTEGER NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
   question TEXT NOT NULL, source TEXT NOT NULL DEFAULT 'claude',  -- claude | builtin | manual
@@ -549,11 +550,11 @@ CREATE TABLE herd_questions (
   UNIQUE (category_id, question COLLATE NOCASE)
 );
 ```
-- Question: trimmed, 5-120 chars. Categories are the core `categories` rows with `game_id = 'herd'`.
+- Question: trimmed, 5-120 chars. Categories are the core `categories` rows with `game_id = 'flock'`.
 - Migration `002_default_questions` seeds a starter set (source `builtin`); the same frozen list is the in-code fallback when the library has nothing to pick.
 - `prepareRound` picks the least-used question (random among ties), optionally in the chosen category, skipping ones used in this room, and marks it used; otherwise a built-in question plus a host notice.
-- **Admin** (`/api/admin/herd/*`, page `/admin/herd/questions`): browse/search, add, edit/move, delete, and AI generation (review, then save), like Imposter's words.
-- **MCP tools:** `herd_add_questions`, `herd_list_categories`, `herd_search_questions`, `herd_update_question`, `herd_remove_questions`, `herd_generate_questions` (only with `ANTHROPIC_API_KEY`), plus the core `herd_*_category` tools.
+- **Admin** (`/api/admin/flock/*`, page `/admin/flock/questions`): browse/search, add, edit/move, delete, and AI generation (review, then save), like Imposter's words.
+- **MCP tools:** `flock_add_questions`, `flock_list_categories`, `flock_search_questions`, `flock_update_question`, `flock_remove_questions`, `flock_generate_questions` (only with `ANTHROPIC_API_KEY`), plus the core `flock_*_category` tools.
 
 ## 7c. Color Mix (`games/colormix`)
 

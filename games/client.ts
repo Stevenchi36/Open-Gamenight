@@ -4,8 +4,8 @@
  */
 import type { GameClientModule } from '@wsfg/core/client'
 import { colorMixClient } from '@wsfg/game-colormix/client'
-import { herdClient } from '@wsfg/game-herd/client'
+import { flockClient } from '@wsfg/game-flock/client'
 import { imposterClient } from '@wsfg/game-imposter/client'
 import { liarsDiceClient } from '@wsfg/game-liarsdice/client'
 
-export const clientGames: readonly GameClientModule[] = [imposterClient, liarsDiceClient, herdClient, colorMixClient]
+export const clientGames: readonly GameClientModule[] = [imposterClient, liarsDiceClient, flockClient, colorMixClient]

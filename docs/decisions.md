@@ -129,8 +129,8 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **No bid timer in v1.** The disconnect grace stops a stalled turn; a timer can come later if tables want one.
 
 ## Flock rules
-- **Flock is the third game (id `herd`).** It's the simplest library-driven game after Imposter and the first to compare free-text answers, so it tests the categories table and library pattern with a second game.
-- **Renamed from Herd Mentality to Flock, and its pink cow to the black sheep, before open-sourcing.** Herd Mentality is a commercial game by Big Potato Games and the name is very likely trademarked, and the pink cow is its signature piece. Mechanics are free to use; names and branding aren't. The internal id `herd` stays: players never see it, and changing it would mean renaming tables and migration history.
+- **Flock is the third game (id `flock`, formerly `herd`).** It's the simplest library-driven game after Imposter and the first to compare free-text answers, so it tests the categories table and library pattern with a second game.
+- **Renamed from Herd Mentality to Flock, and its pink cow to the black sheep, before open-sourcing.** Herd Mentality is a commercial game by Big Potato Games and the name is very likely trademarked, and the pink cow is its signature piece. Mechanics are free to use; names and branding aren't. The id moved from `herd` to `flock` too, so code, tables, routes and MCP tools match the name; `renamedFrom` and migration `003_rename_from_herd` carry existing libraries over.
 - **Score limit defaults to unlimited (options 5-20).** Family tables often play "a few questions" and stop; a limit is there for a proper race.
 - **The flock is a strictly biggest group of at least 2; a tie for biggest scores nobody.** That's the original party game's rule, and it makes a split table a real loss rather than a shared win.
 - **Black sheep on by default: exactly one lone answer becomes the black sheep, who can't win.** The odd-one-out twist keeps lone answers interesting; with no score limit it's just a badge of shame.

@@ -4,8 +4,8 @@
  */
 import type { AnyGameModule } from '@wsfg/core/contract'
 import { colorMix } from '@wsfg/game-colormix/server'
-import { herd } from '@wsfg/game-herd/server'
+import { flock } from '@wsfg/game-flock/server'
 import { imposter } from '@wsfg/game-imposter/server'
 import { liarsDice } from '@wsfg/game-liarsdice/server'
 
-export const games: readonly AnyGameModule[] = [imposter, liarsDice, herd, colorMix]
+export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix]

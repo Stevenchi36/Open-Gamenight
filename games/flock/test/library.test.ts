@@ -3,7 +3,7 @@ import { CATEGORIES_MIGRATION, createCategoryService } from '@wsfg/core/categori
 import { AiError, type ServerServices } from '@wsfg/core/contract'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { DEFAULT_QUESTION_LIST, DEFAULT_QUESTIONS } from '../server/default-questions.ts'
-import { herd } from '../server/index.ts'
+import { flock } from '../server/index.ts'
 import {
   addQuestions,
   categoryUsage,
@@ -17,7 +17,7 @@ import {
 } from '../server/library.ts'
 import { migrations } from '../server/migrations.ts'
 import { mcpTools } from '../server/mcp.ts'
-import { defaultSettings, type HerdSettings } from '../shared/index.ts'
+import { defaultSettings, type FlockSettings } from '../shared/index.ts'
 
 let db: DatabaseSync
 let services: ServerServices
@@ -33,14 +33,28 @@ function freshDb({ seed = false } = {}) {
   return d
 }
 
+/** Core tables and the game's migrations up to, not including, `id`: the schema as it was then. */
+function dbBefore(id: string) {
+  const d = new DatabaseSync(':memory:')
+  d.exec('PRAGMA foreign_keys = ON')
+  d.exec(CATEGORIES_MIGRATION.sql)
+  for (const m of migrations.slice(0, migrations.findIndex((m) => m.id === id))) d.exec(m.sql)
+  return d
+}
+
+/** The game's migrations from `id` on. */
+function runFrom(d: DatabaseSync, id: string) {
+  for (const m of migrations.slice(migrations.findIndex((m) => m.id === id))) d.exec(m.sql)
+}
+
 function useDb(d: DatabaseSync) {
   db = d
   services = {
-    gameId: 'herd',
+    gameId: 'flock',
     db,
     ai: null,
     logger: { info() {}, warn() {}, error() {} },
-    categories: createCategoryService(db, 'herd'),
+    categories: createCategoryService(db, 'flock'),
   }
 }
 
@@ -58,13 +72,17 @@ describe('migration 002: default questions', () => {
     useDb(freshDb({ seed: true }))
     expect(listQuestions(db, { limit: 200 }).total).toBe(DEFAULT_QUESTION_LIST.length)
     expect(listCategories(db).map((c) => c.category).sort()).toEqual(Object.keys(DEFAULT_QUESTIONS).sort())
-    const sources = db.prepare('SELECT DISTINCT source FROM herd_questions').all()
+    const sources = db.prepare('SELECT DISTINCT source FROM flock_questions').all()
     expect(sources).toEqual([{ source: 'builtin' }])
   })
 
   it('keeps an existing library and only adds what is missing', () => {
-    addQuestions(services, [{ category: 'animals', question: 'Name a pet' }], 'manual')
-    db.exec(migrations.find((m) => m.id === SEED_ID)!.sql)
+    // 002 ran when the game was still `herd`: replay it against a herd-era library, then the rename.
+    const d = dbBefore(SEED_ID)
+    d.exec("INSERT INTO categories (game_id, name) VALUES ('herd', 'animals')")
+    d.exec("INSERT INTO herd_questions (category_id, question, source) SELECT id, 'Name a pet', 'manual' FROM categories")
+    runFrom(d, SEED_ID)
+    useDb(d)
     // the existing lower-case category is reused, not duplicated
     expect(listCategories(db).filter((c) => c.category.toLowerCase() === 'animals')).toHaveLength(1)
     expect(listQuestions(db, { limit: 200 }).total).toBe(DEFAULT_QUESTION_LIST.length + 1)
@@ -76,9 +94,26 @@ describe('migration 002: default questions', () => {
   })
 
   it('leaves Imposter categories alone', () => {
-    db.exec("INSERT INTO categories (game_id, name) VALUES ('imposter', 'Animals')")
-    db.exec(migrations.find((m) => m.id === SEED_ID)!.sql)
-    expect(db.prepare("SELECT COUNT(*) AS n FROM categories WHERE name = 'Animals'").get()).toEqual({ n: 2 })
+    const d = dbBefore(SEED_ID)
+    d.exec("INSERT INTO categories (game_id, name) VALUES ('imposter', 'Animals')")
+    runFrom(d, SEED_ID)
+    expect(d.prepare("SELECT game_id FROM categories WHERE name = 'Animals' ORDER BY game_id").all()).toEqual([
+      { game_id: 'flock' },
+      { game_id: 'imposter' },
+    ])
+  })
+})
+
+describe('migration 003: rename from herd', () => {
+  it('moves a herd library to flock_questions, keeping usage counts', () => {
+    const d = dbBefore('003_rename_from_herd')
+    d.exec("UPDATE herd_questions SET times_used = 4 WHERE question = 'Name a breakfast cereal'")
+    runFrom(d, '003_rename_from_herd')
+    useDb(d)
+    expect(listQuestions(db, { limit: 200 }).total).toBe(DEFAULT_QUESTION_LIST.length)
+    expect(d.prepare("SELECT times_used FROM flock_questions WHERE question = 'Name a breakfast cereal'").get()).toEqual({ times_used: 4 })
+    expect(d.prepare("SELECT COUNT(*) AS n FROM categories WHERE game_id = 'herd'").get()).toEqual({ n: 0 })
+    expect(d.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'herd%'").all()).toEqual([])
   })
 })
 
@@ -164,8 +199,8 @@ describe('pickQuestion', () => {
 
 describe('prepareRound', () => {
   const players = [{ id: 'p1', name: 'A', connected: true, isLoggedIn: true }]
-  const prepare = (settings: Partial<HerdSettings>, request: Parameters<NonNullable<typeof herd.prepareRound>>[0]) =>
-    herd.prepareRound!(request, { settings: { ...defaultSettings, ...settings }, players, services })
+  const prepare = (settings: Partial<FlockSettings>, request: Parameters<NonNullable<typeof flock.prepareRound>>[0]) =>
+    flock.prepareRound!(request, { settings: { ...defaultSettings, ...settings }, players, services })
   const state = (usedQuestionIds: number[]) => ({ usedQuestionIds }) as never
 
   it('returns nothing for actions that do not start a round', async () => {

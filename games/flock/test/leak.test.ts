@@ -1,7 +1,7 @@
 import { runLeakTest, type Move } from '@wsfg/core/testing'
 import { describe, expect, it } from 'vitest'
-import { buildGroups, herd } from '../server/game.ts'
-import { defaultSettings, type ClientAction, type HerdSettings } from '../shared/index.ts'
+import { buildGroups, flock } from '../server/game.ts'
+import { defaultSettings, type ClientAction, type FlockSettings } from '../shared/index.ts'
 import { QUESTION, type Sim } from './helpers.ts'
 
 const players = ['p1', 'p2', 'p3', 'p4', 'p5'].map((id) => ({ id }))
@@ -25,7 +25,7 @@ function moves(sim: Sim): Move<ClientAction>[] {
   return out
 }
 
-const configs: Array<[string, Partial<HerdSettings>]> = [
+const configs: Array<[string, Partial<FlockSettings>]> = [
   ['defaults (check matches, black sheep, unlimited)', {}],
   ['no check, score limit 2, timer', { checkMatches: false, scoreLimit: 2, answerTimerSeconds: 30 }],
   ['no black sheep, score limit 3', { blackSheep: false, scoreLimit: 3 }],
@@ -33,7 +33,7 @@ const configs: Array<[string, Partial<HerdSettings>]> = [
 
 describe('flock secret-leak test', () => {
   it.each(configs)('%s', (_name, settings) => {
-    const result = runLeakTest(herd, {
+    const result = runLeakTest(flock, {
       players,
       latePlayers: [{ id: 'late1' }, { id: 'late2' }],
       settings: { ...defaultSettings, ...settings },

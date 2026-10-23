@@ -7,15 +7,17 @@ import { defineGame } from '@wsfg/core/contract'
 import express from 'express'
 import { adminRouter } from './admin.ts'
 import { DEFAULT_CATEGORIES } from './default-questions.ts'
-import { herd as game, type HerdState, type HerdTimer, type PreparedQuestion } from './game.ts'
+import { flock as game, type FlockState, type FlockTimer, type PreparedQuestion } from './game.ts'
 import { categoryUsage, countQuestions, pickQuestion, playableCategories } from './library.ts'
 import { mcpTools } from './mcp.ts'
 import { migrations } from './migrations.ts'
-import type { ClientAction, HerdSettings, HerdView } from '../shared/index.ts'
+import type { ClientAction, FlockSettings, FlockView } from '../shared/index.ts'
 
-export const herd = defineGame<HerdState, ClientAction, HerdTimer, HerdView, HerdSettings, PreparedQuestion>({
+export const flock = defineGame<FlockState, ClientAction, FlockTimer, FlockView, FlockSettings, PreparedQuestion>({
   ...game,
   migrations,
+  // the id was herd before the game was renamed from Herd Mentality
+  renamedFrom: ['herd'],
   mcpTools,
   adminRouter,
   categories: { usage: (services) => categoryUsage(services.db) },
@@ -51,4 +53,4 @@ export const herd = defineGame<HerdState, ClientAction, HerdTimer, HerdView, Her
   },
 })
 
-export type { HerdState, HerdTimer, PreparedQuestion, Question } from './game.ts'
+export type { FlockState, FlockTimer, PreparedQuestion, Question } from './game.ts'

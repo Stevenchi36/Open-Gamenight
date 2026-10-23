@@ -25,8 +25,8 @@ import {
   settingsSchema,
   type AnswerGroup,
   type ClientAction,
-  type HerdSettings,
-  type HerdView,
+  type FlockSettings,
+  type FlockView,
   type Phase,
   type RoundResult,
 } from '../shared/index.ts'
@@ -51,9 +51,9 @@ interface Answer {
   key: string
 }
 
-export interface HerdState {
+export interface FlockState {
   /** Snapshot at round start; settings only change in the lobby. */
-  settings: HerdSettings
+  settings: FlockSettings
   phase: Phase
   round: number
   question: Question
@@ -74,22 +74,22 @@ export interface HerdState {
 }
 
 /** Scheduled by the game itself and handled by onTimer; `round` makes a stale timer a no-op. */
-export type HerdTimer = { type: 'answer_timeout'; round: number }
+export type FlockTimer = { type: 'answer_timeout'; round: number }
 
-type Ctx = BaseCtx<HerdSettings>
-type Step = Transition<HerdState, HerdTimer>
-type Fx = Effect<HerdTimer>[]
+type Ctx = BaseCtx<FlockSettings>
+type Step = Transition<FlockState, FlockTimer>
+type Fx = Effect<FlockTimer>[]
 
-const CANCEL_TIMER: Effect<HerdTimer> = { type: 'cancel', key: 'answer_timer' }
+const CANCEL_TIMER: Effect<FlockTimer> = { type: 'cancel', key: 'answer_timer' }
 
 // ---------------------------------------------------------------- groups
 
-function groupOf(state: HerdState, key: string): string {
+function groupOf(state: FlockState, key: string): string {
   return state.merged[key] ?? key
 }
 
 /** Answers grouped by key (after the host's merges), biggest group first. */
-export function buildGroups(state: HerdState): AnswerGroup[] {
+export function buildGroups(state: FlockState): AnswerGroup[] {
   const groups: AnswerGroup[] = []
   for (const playerId of state.roundPlayers) {
     const answer = state.answers[playerId]
@@ -163,7 +163,7 @@ function chooseQuestion(
 }
 
 /** A new round. `fresh` (new_game): scores and the black sheep start over. */
-function startRound(prev: HerdState | null, ctx: Ctx, prepared: PreparedQuestion | undefined, fresh = false): Step {
+function startRound(prev: FlockState | null, ctx: Ctx, prepared: PreparedQuestion | undefined, fresh = false): Step {
   const ids = ctx.players.map((p) => p.id)
   const chosen = chooseQuestion(ctx, prepared, prev?.usedBuiltin ?? [], prev?.usedQuestionIds ?? [])
   const { answerTimerSeconds } = ctx.settings
@@ -171,7 +171,7 @@ function startRound(prev: HerdState | null, ctx: Ctx, prepared: PreparedQuestion
   const round = (prev?.round ?? 0) + 1
   const blackSheepId = !fresh && prev?.blackSheepId && ids.includes(prev.blackSheepId) ? prev.blackSheepId : null
 
-  const state: HerdState = {
+  const state: FlockState = {
     settings: ctx.settings,
     phase: 'ANSWERING',
     round,
@@ -193,20 +193,20 @@ function startRound(prev: HerdState | null, ctx: Ctx, prepared: PreparedQuestion
 }
 
 /** Answers are revealed once every connected round player has answered. */
-function maybeReveal(state: HerdState, ctx: Ctx): Step {
+function maybeReveal(state: FlockState, ctx: Ctx): Step {
   if (state.phase !== 'ANSWERING') return { state }
   const waitingOn = state.roundPlayers.filter((id) => isConnected(ctx, id))
   if (waitingOn.length > 0 && waitingOn.every((id) => id in state.answers)) return reveal(state)
   return { state }
 }
 
-function reveal(state: HerdState): Step {
-  const next: HerdState = { ...state, phase: 'REVIEW', deadline: null, merged: {} }
+function reveal(state: FlockState): Step {
+  const next: FlockState = { ...state, phase: 'REVIEW', deadline: null, merged: {} }
   if (state.settings.checkMatches) return { state: next, effects: [CANCEL_TIMER] }
   return scoreRound(next)
 }
 
-function scoreRound(state: HerdState): Step {
+function scoreRound(state: FlockState): Step {
   const groups = buildGroups(state)
   const flockId = flockOf(groups)
   const points: Scores = {}
@@ -234,7 +234,7 @@ function scoreRound(state: HerdState): Step {
 
 // ---------------------------------------------------------------- reducer
 
-function reduce(state: HerdState, action: ClientAction, ctx: ReduceCtx<HerdSettings, PreparedQuestion>): Step | GameError {
+function reduce(state: FlockState, action: ClientAction, ctx: ReduceCtx<FlockSettings, PreparedQuestion>): Step | GameError {
   const actor = ctx.actorId
   const isHost = actor === ctx.hostId
 
@@ -295,14 +295,14 @@ function reduce(state: HerdState, action: ClientAction, ctx: ReduceCtx<HerdSetti
 }
 
 /** A stale timer (earlier round, or answers already revealed) is a no-op. */
-function onTimer(state: HerdState, action: HerdTimer, _ctx: TimerCtx<HerdSettings, PreparedQuestion>): Step {
+function onTimer(state: FlockState, action: FlockTimer, _ctx: TimerCtx<FlockSettings, PreparedQuestion>): Step {
   if (action.round !== state.round || state.phase !== 'ANSWERING') return { state }
   return reveal(state)
 }
 
 // ---------------------------------------------------------------- view
 
-function view(state: HerdState, viewerId: PlayerId): HerdView {
+function view(state: FlockState, viewerId: PlayerId): FlockView {
   const revealed = state.phase !== 'ANSWERING'
   const groups = revealed ? buildGroups(state) : []
   return {
@@ -326,7 +326,7 @@ function view(state: HerdState, viewerId: PlayerId): HerdView {
 
 // ---------------------------------------------------------------- module
 
-export const herd = defineGame<HerdState, ClientAction, HerdTimer, HerdView, HerdSettings, PreparedQuestion>({
+export const flock = defineGame<FlockState, ClientAction, FlockTimer, FlockView, FlockSettings, PreparedQuestion>({
   ...meta,
   settingsSchema,
   defaultSettings,
@@ -340,7 +340,7 @@ export const herd = defineGame<HerdState, ClientAction, HerdTimer, HerdView, Her
   onPlayerDisconnected: (state, _playerId, ctx) => maybeReveal(state, ctx),
 
   onPlayerRemoved(state, playerId, ctx) {
-    const next: HerdState = {
+    const next: FlockState = {
       ...state,
       scores: withoutPlayer(state.scores, playerId),
       blackSheepId: state.blackSheepId === playerId ? null : state.blackSheepId,

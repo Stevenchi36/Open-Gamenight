@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 type PlayerId = string
 
-export const GAME_ID = 'herd'
+export const GAME_ID = 'flock'
 export const MIN_PLAYERS = 3
 export const MAX_PLAYERS = 12
 
@@ -42,9 +42,9 @@ export const settingsSchema = z.object({
   answerTimerSeconds: z.number().int().min(10).max(300).nullable(),
 })
 
-export type HerdSettings = z.infer<typeof settingsSchema>
+export type FlockSettings = z.infer<typeof settingsSchema>
 
-export const defaultSettings: HerdSettings = {
+export const defaultSettings: FlockSettings = {
   scoreLimit: null,
   blackSheep: true,
   checkMatches: true,
@@ -91,7 +91,7 @@ export interface RoundResult {
   winnerIds: PlayerId[]
 }
 
-export interface HerdView {
+export interface FlockView {
   phase: Phase
   round: number
   question: { text: string; category: string }

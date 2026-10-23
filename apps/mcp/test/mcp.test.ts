@@ -50,14 +50,14 @@ describe('MCP server', () => {
   it('registers namespaced game tools', async () => {
     const { tools } = await client.listTools()
     expect(tools.map((t) => t.name).sort()).toEqual([
-      'herd_add_questions',
-      'herd_create_category',
-      'herd_delete_category',
-      'herd_list_categories',
-      'herd_remove_questions',
-      'herd_rename_category',
-      'herd_search_questions',
-      'herd_update_question',
+      'flock_add_questions',
+      'flock_create_category',
+      'flock_delete_category',
+      'flock_list_categories',
+      'flock_remove_questions',
+      'flock_rename_category',
+      'flock_search_questions',
+      'flock_update_question',
       'imposter_add_words',
       'imposter_create_category',
       'imposter_delete_category',

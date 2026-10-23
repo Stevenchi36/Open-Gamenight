@@ -1,8 +1,8 @@
 import { defineGameClient } from '@wsfg/core/client'
-import { meta, type HerdSettings, type HerdView } from '../shared/index.ts'
+import { meta, type FlockSettings, type FlockView } from '../shared/index.ts'
 import { needsAction } from './attention.ts'
 
-export const herdClient = defineGameClient<HerdView, HerdSettings>({
+export const flockClient = defineGameClient<FlockView, FlockSettings>({
   ...meta,
   PlayView: () => import('./PlayView.vue'),
   SettingsView: () => import('./SettingsView.vue'),

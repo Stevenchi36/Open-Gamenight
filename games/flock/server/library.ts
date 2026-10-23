@@ -1,5 +1,5 @@
 /**
- * Question library service over herd_questions (+ the shared categories table).
+ * Question library service over flock_questions (+ the shared categories table).
  * Shared by prepareRound, the MCP tools and the admin routes, so every path
  * validates the same way. Synchronous: node:sqlite is synchronous and the
  * queries are tiny.
@@ -41,7 +41,7 @@ export interface CategoryStats {
 export const LOW_STOCK_THRESHOLD = 5
 export const MAX_PAGE_SIZE = 200
 
-const FROM = `FROM herd_questions q JOIN categories c ON c.id = q.category_id AND c.game_id = '${GAME_ID}'`
+const FROM = `FROM flock_questions q JOIN categories c ON c.id = q.category_id AND c.game_id = '${GAME_ID}'`
 const SELECT_QUESTION = `SELECT q.id, q.category_id, c.name AS category, q.question, q.source,
   q.times_used, q.last_used_at, q.created_at ${FROM}`
 
@@ -81,7 +81,7 @@ export function listCategories(db: DatabaseSync): CategoryStats[] {
   return db
     .prepare(
       `SELECT c.id, c.name AS category, COUNT(q.id) AS total, COALESCE(SUM(q.times_used = 0), 0) AS unused
-       FROM categories c LEFT JOIN herd_questions q ON q.category_id = c.id
+       FROM categories c LEFT JOIN flock_questions q ON q.category_id = c.id
        WHERE c.game_id = '${GAME_ID}'
        GROUP BY c.id ORDER BY c.name COLLATE NOCASE`,
     )
@@ -93,7 +93,7 @@ export function playableCategories(db: DatabaseSync): { category: string; total:
   return db
     .prepare(
       `SELECT c.name AS category, COUNT(*) AS total
-       FROM categories c JOIN herd_questions q ON q.category_id = c.id
+       FROM categories c JOIN flock_questions q ON q.category_id = c.id
        WHERE c.game_id = '${GAME_ID}'
        GROUP BY c.id ORDER BY c.name COLLATE NOCASE`,
     )
@@ -102,7 +102,7 @@ export function playableCategories(db: DatabaseSync): { category: string; total:
 
 /** Questions per category id (for the core Categories admin page). */
 export function categoryUsage(db: DatabaseSync): Record<number, number> {
-  const rows = db.prepare('SELECT category_id AS id, COUNT(*) AS n FROM herd_questions GROUP BY category_id').all() as {
+  const rows = db.prepare('SELECT category_id AS id, COUNT(*) AS n FROM flock_questions GROUP BY category_id').all() as {
     id: number
     n: number
   }[]
@@ -124,7 +124,7 @@ export interface AddResult {
  */
 export function addQuestions(lib: Library, inputs: QuestionInput[], source: QuestionSource = 'manual'): AddResult {
   const { db, categories } = lib
-  const insert = db.prepare('INSERT INTO herd_questions (category_id, question, source) VALUES (?, ?, ?) ON CONFLICT DO NOTHING')
+  const insert = db.prepare('INSERT INTO flock_questions (category_id, question, source) VALUES (?, ?, ?) ON CONFLICT DO NOTHING')
   const result: AddResult = { inserted: 0, skipped: [], createdCategories: [], insertedByCategory: {} }
   db.exec('BEGIN IMMEDIATE')
   try {
@@ -164,16 +164,16 @@ export function updateQuestion(lib: Library, id: number, patch: { categoryId?: n
   const checked = validateQuestion({ category: category.name, question: patch.question ?? current.question })
   if (!checked.ok) return checked
   const clash = db
-    .prepare('SELECT 1 FROM herd_questions WHERE category_id = ? AND question = ? COLLATE NOCASE AND id != ?')
+    .prepare('SELECT 1 FROM flock_questions WHERE category_id = ? AND question = ? COLLATE NOCASE AND id != ?')
     .get(category.id, checked.value.question, id)
   if (clash) return { ok: false, error: `That question is already in ${category.name}` }
-  db.prepare('UPDATE herd_questions SET category_id = ?, question = ? WHERE id = ?').run(category.id, checked.value.question, id)
+  db.prepare('UPDATE flock_questions SET category_id = ?, question = ? WHERE id = ?').run(category.id, checked.value.question, id)
   return { ok: true, value: db.prepare(`${SELECT_QUESTION} WHERE q.id = ?`).get(id) as unknown as QuestionRow }
 }
 
 export function removeQuestions(db: DatabaseSync, ids: number[]): number {
   if (ids.length === 0) return 0
-  const stmt = db.prepare('DELETE FROM herd_questions WHERE id = ?')
+  const stmt = db.prepare('DELETE FROM flock_questions WHERE id = ?')
   let removed = 0
   db.exec('BEGIN IMMEDIATE')
   try {
@@ -205,12 +205,12 @@ export function pickQuestion(db: DatabaseSync, options: { category?: string | nu
     | QuestionRow
     | undefined
   if (!row) return null
-  db.prepare("UPDATE herd_questions SET times_used = times_used + 1, last_used_at = datetime('now') WHERE id = ?").run(row.id)
+  db.prepare("UPDATE flock_questions SET times_used = times_used + 1, last_used_at = datetime('now') WHERE id = ?").run(row.id)
   return { ...row, times_used: row.times_used + 1 }
 }
 
 export function countQuestions(db: DatabaseSync): number {
-  return (db.prepare('SELECT COUNT(*) AS n FROM herd_questions').get() as { n: number }).n
+  return (db.prepare('SELECT COUNT(*) AS n FROM flock_questions').get() as { n: number }).n
 }
 
 // ---------------------------------------------------------------- generation
