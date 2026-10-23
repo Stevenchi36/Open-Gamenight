@@ -42,19 +42,22 @@ function holeClass(column: Disc[], col: number, row: number) {
 </script>
 
 <style scoped>
+/* Columns touch and each pads its holes by 3px, so holes sit 6px apart every way, 3px from the edge plus the board's own 3px. */
 .dl-board {
   display: grid;
-  gap: 4px;
-  padding: 6px;
+  padding: 3px;
   border-radius: 12px;
   background: rgb(var(--v-theme-primary));
 }
 .dl-column {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 2px;
+  gap: 6px;
+  padding: 3px;
+  border: 0;
   border-radius: 8px;
+  background: none;
+  color: inherit;
   cursor: default;
 }
 .dl-column--playable {
@@ -62,7 +65,7 @@ function holeClass(column: Disc[], col: number, row: number) {
 }
 .dl-column--playable:hover,
 .dl-column--playable:focus-visible {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
   outline: none;
 }
 .dl-hole {
@@ -86,9 +89,10 @@ function holeClass(column: Disc[], col: number, row: number) {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
 }
+/* At most 3px out, half the gap, so rings on neighbouring discs just meet. */
 .dl-hole--win {
   box-shadow:
-    0 0 0 3px rgb(var(--v-theme-surface)),
-    0 0 0 5px rgb(var(--v-theme-on-surface));
+    0 0 0 1px rgb(var(--v-theme-surface)),
+    0 0 0 3px rgb(var(--v-theme-on-surface));
 }
 </style>
