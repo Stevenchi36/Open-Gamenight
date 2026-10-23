@@ -165,6 +165,13 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **A player leaving mid-game ends it with no points (`abandoned`).** A win by forfeit would reward the one left for a game that wasn't played out; the room holds 2, so a newcomer joins for the next game.
 - **Wins score 1 point, draws score nothing; scores carry across games.** Between two players the win count is the score that matters.
 
+## Drop Line rules
+- **Drop Line is the sixth game (id `dropline`), a drop-discs-and-make-a-line game for exactly 2 players.** The user asked for one; the name avoids the trademarked brand of the best-known version and has no number in it because the line length is a setting.
+- **Line length 3-6 (default 4) and a small / standard / large board per length, from a fixed table.** Free column and row counts would allow boards that play badly (too cramped to block, or nearly always drawn); 6 is the longest line that fits a board of about 11 columns, the most a phone can show with tappable columns.
+- **Red and blue discs, red first.** Two colours that stay distinct in light and dark themes, and not the best-known version's red and yellow.
+- **Lines longer than the setting count as wins, and the whole line lights up.** Dropping a disc can join two shorter lines into one longer than required; refusing that win would be a strange rule.
+- **Disconnects, leavers, colour swapping and scoring work as in Tic-Tac-Toe.** Same two-player structure, same reasons.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.

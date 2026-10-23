@@ -1,6 +1,6 @@
 # ws-family-games
 
-A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice**, **Flock** (everyone answers the same question and scores by matching the most popular answer), **Color Mix** (guess the colour a few paints make when mixed) and **Tic-Tac-Toe** (2 players).
+A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice**, **Flock** (everyone answers the same question and scores by matching the most popular answer), **Color Mix** (guess the colour a few paints make when mixed), and two 2-player games: **Tic-Tac-Toe** and **Drop Line** (drop discs to make a line of 3 to 6).
 
 - **Rooms with a 4-letter code.** Signed-in users create rooms; anyone joins with just a name. Phones that drop off Wi-Fi reconnect into their seat.
 - **The server decides everything.** Each phone only receives its own view of the game, so the imposter's device never gets the secret word. A leak test checks this for every game with hidden information.
@@ -129,6 +129,7 @@ games/
   flock/      Flock: same shape as imposter/, with a question library
   colormix/   Color Mix (no library; paint mixing vendored from spectral.js)
   tictactoe/  Tic-Tac-Toe (2 players, nothing hidden)
+  dropline/   Drop Line (2 players, nothing hidden; line length and board size settings)
 docs/
   decisions.md   every design decision and why
   dev-testing.md checks, dev-players page (several players in one window)
