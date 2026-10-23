@@ -9,6 +9,7 @@
         <v-list-item-title>
           {{ row.name }}
           <v-chip v-if="row.gained" size="x-small" color="success" class="ml-1">+{{ row.gained }}</v-chip>
+          <slot name="badge" :id="row.id" />
         </v-list-item-title>
         <template #append>
           <span class="text-h6">{{ row.score }}</span>
@@ -24,6 +25,8 @@ import type { RoomView } from '../protocol.ts'
 import { nameOf } from './helpers.ts'
 
 const props = defineProps<{ scores: Record<string, number>; room: RoomView; gained?: Record<string, number> }>()
+// badge: a game's marker after a player's name (e.g. Herd's pink cow)
+defineSlots<{ badge?(props: { id: string }): unknown }>()
 const rows = computed(() =>
   Object.entries(props.scores)
     .map(([id, score]) => ({ id, score, name: nameOf(props.room, id), gained: props.gained?.[id] ?? 0 }))
