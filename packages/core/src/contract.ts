@@ -206,7 +206,7 @@ export interface GameMeta {
 }
 
 /**
- * S: state. A: player actions. T: timer actions (`never` if the game schedules none).
+ * S: state, plain JSON data only (createSim checks). A: player actions. T: timer actions (`never` if the game schedules none).
  * V: per-player view. Settings: lobby settings. P: prepareRound output.
  */
 export interface GameModule<S, A, T, V, Settings, P = undefined> extends GameMeta {

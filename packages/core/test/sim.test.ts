@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createSim } from '../src/testing/sim.ts'
+import { assertPlainData, createSim } from '../src/testing/sim.ts'
 import { makeOracle, players, ROUND_MS } from './fixtures/oracle.ts'
 
 const game = makeOracle()
@@ -65,6 +65,15 @@ describe('GameSim', () => {
     sim.act('p1', { type: 'reveal' })
     expect(sim.over).toBe(true)
     expect(sim.act('p1', { type: 'reveal' })).toEqual({ ok: false, error: 'game is over' })
+  })
+
+  it('rejects game state that is not plain JSON data', () => {
+    expect(() => assertPlainData({ a: [1, 'x', null, { b: true }], c: undefined }, 'state')).not.toThrow()
+    expect(() => assertPlainData({ seen: new Set(['p1']) }, 'state')).toThrow('state.seen is a Set')
+    expect(() => assertPlainData({ at: new Date(0) }, 'state')).toThrow('state.at is a Date')
+    expect(() => assertPlainData({ n: [Number.NaN] }, 'state')).toThrow('state.n[0] is NaN')
+    expect(() => assertPlainData({ list: [undefined] }, 'state')).toThrow('state.list[0] is undefined')
+    expect(() => assertPlainData({ f: () => 1 }, 'state')).toThrow('state.f is a function')
   })
 
   it('passes host to the next player when the host is removed', () => {

@@ -169,6 +169,7 @@ export class GameSim<S, A, T, V, Settings, P = undefined> {
   }
 
   private apply(result: Transition<S, T>): void {
+    assertPlainData(result.state, 'state')
     this.state = result.state
     for (const effect of result.effects ?? []) {
       switch (effect.type) {
@@ -220,6 +221,36 @@ export class GameSim<S, A, T, V, Settings, P = undefined> {
       rng: this.rng,
     }
   }
+}
+
+/**
+ * Throws unless `value` survives a JSON round trip unchanged: plain objects, arrays,
+ * strings, finite numbers, booleans and null. Game state must stay like this so rooms
+ * can be persisted later; a Map, Set, Date or class instance would quietly rule that out.
+ * An `undefined` object property is allowed, since it reads back the same.
+ */
+export function assertPlainData(value: unknown, path: string): void {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new Error(`GameSim: ${path} is ${value}, which JSON can't hold`)
+    return
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item, i) => {
+      if (item === undefined) throw new Error(`GameSim: ${path}[${i}] is undefined, which JSON turns into null`)
+      assertPlainData(item, `${path}[${i}]`)
+    })
+    return
+  }
+  if (typeof value === 'object') {
+    const proto = Object.getPrototypeOf(value)
+    if (proto !== Object.prototype && proto !== null) {
+      throw new Error(`GameSim: ${path} is a ${proto?.constructor?.name ?? 'class instance'}; game state must be plain JSON data`)
+    }
+    for (const [key, item] of Object.entries(value)) if (item !== undefined) assertPlainData(item, `${path}.${key}`)
+    return
+  }
+  throw new Error(`GameSim: ${path} is a ${typeof value}; game state must be plain JSON data`)
 }
 
 export function createSim<S, A, T, V, Settings, P = undefined>(

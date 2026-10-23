@@ -24,7 +24,7 @@ export interface RunningGame {
   module: AnyGameModule
   state: unknown
   rng: Rng
-  /** Recorded so a round can be replayed when debugging. */
+  /** Logged at start, so a bug report can be matched to the game's random draws. */
   seed: number
   timers: Map<string, TimerHandle>
 }
@@ -57,6 +57,7 @@ export class GameRunner {
     const result = this.guard(room, 'init', () => module.init({ ...this.ctx(room, game), prepared }))
     room.game = game
     room.phase = 'playing'
+    this.deps.logger.info('game started', { room: room.code, game: module.id, players: room.players.length, seed })
     this.apply(room, game, result)
   }
 
