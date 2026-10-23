@@ -146,11 +146,12 @@ interface GameClientModule {
   description: string
   PlayView: () => Promise<Component>       // props: { view, send, me, room }
   SettingsView: () => Promise<Component>   // props: { settings, update, isHost } (custom per game)
+  rules: () => Promise<string>             // games/<id>/RULES.md via `?raw`; the room's "How to play" dialog renders it
   adminPages?: { path: string; title: string; component: () => Promise<Component> }[]  // mounted under /admin/<id>/
   needsAction?(view, me, room): boolean   // pure; true shows the shell's pulsing "your move" screen-edge glow
 }
 ```
-The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Play views build on `@wsfg/core/ui`: helpers (`nameOf`, `isConnected`, `isHost`, `useCountdown`) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `ProgressCount`, `TurnOrder`, `CountdownTimer`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`). The "your move" glow is the shell's, driven by the module's `needsAction`. Auto-generating settings forms from zod is deferred until there are 3+ games.
+The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Play views build on `@wsfg/core/ui`: helpers (`nameOf`, `isConnected`, `isHost`, `useCountdown`) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `ProgressCount`, `TurnOrder`, `CountdownTimer`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`). The "your move" glow is the shell's, driven by the module's `needsAction`. Each game's player-facing rules live in `games/<id>/RULES.md`: plain Markdown that the shell's **How to play** button (room header, in the lobby and during play) renders, and that people and Claude can read directly. A game's section of this plan is its spec; `RULES.md` is the short version for players. Auto-generating settings forms from zod is deferred until there are 3+ games.
 
 ## 3. Core room behaviour
 

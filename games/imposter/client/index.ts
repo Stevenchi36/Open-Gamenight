@@ -8,6 +8,7 @@ export const imposterClient: GameClientModule = {
   description: 'Everyone gets the secret word except the imposter. Give clues, find the faker.',
   PlayView: () => import('./PlayView.vue'),
   SettingsView: () => import('./SettingsView.vue'),
+  rules: () => import('../RULES.md?raw').then((m) => m.default),
   adminPages: [{ path: 'words', title: 'Word library', component: () => import('./admin/WordsPage.vue') }],
   needsAction,
 }

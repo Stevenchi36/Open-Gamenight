@@ -36,6 +36,8 @@ export interface GameClientModule {
   description: string
   PlayView: () => Promise<Component>
   SettingsView: () => Promise<Component>
+  /** The game's player-facing RULES.md (Markdown), lazy-loaded for the shell's "How to play" dialog. */
+  rules: () => Promise<string>
   adminPages?: GameAdminPage[]
   /**
    * Whether the game is waiting on this viewer; the shell then shows the "your move" cue.

@@ -7,6 +7,7 @@
           <div class="text-h5 room-code font-weight-bold">{{ room.code }}</div>
         </div>
         <v-spacer />
+        <RulesDialog v-if="gameModule" :game="gameModule" />
         <v-btn variant="tonal" prepend-icon="mdi-link-variant" @click="copyLink">Invite</v-btn>
         <v-btn v-if="isHost && room.phase === 'playing'" variant="tonal" prepend-icon="mdi-arrow-left" @click="confirmLobby = true">
           Lobby
@@ -67,6 +68,7 @@ import { computed, defineAsyncComponent, onMounted, ref, shallowRef, watch, type
 import { useRouter } from 'vue-router'
 import AttentionGlow from '../components/AttentionGlow.vue'
 import LobbyView from '../components/LobbyView.vue'
+import RulesDialog from '../components/RulesDialog.vue'
 import { joinRoom, lastName, leaveRoom, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
 
 const props = defineProps<{ code: string }>()

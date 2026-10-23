@@ -140,7 +140,7 @@ A game is a workspace package under `games/<id>/` that implements the contract i
    - `view(state, playerId)` is the only game data that leaves the server. Shape it per player.
    - `actionSchema` and `settingsSchema` are zod schemas; the core validates every action and settings change with them.
    - `secrets` declares what each player may not see, and when. The core's leak test plays random games and checks every view against it.
-2. **Views (client).** Export a `GameClientModule` from `games/<id>/client/` with a lazy `PlayView` (props: `view`, `send`, `me`, `room`, `serverNow`) and a `SettingsView` (props: `settings`, `update`, `isHost`). Settings forms can use the shell's `SettingSlider`, `SettingSelect` and `SettingToggle` components without importing them.
+2. **Views (client).** Export a `GameClientModule` from `games/<id>/client/` with a lazy `PlayView` (props: `view`, `send`, `me`, `room`, `serverNow`) a `SettingsView` (props: `settings`, `update`, `isHost`), and `rules` loading the game's `games/<id>/RULES.md` (player-facing rules, shown by the room's **How to play** button). Settings forms can use the shell's `SettingSlider`, `SettingSelect` and `SettingToggle` components without importing them.
 3. **Register it:** one entry in `games/index.ts`, one in `games/client.ts`, and the package as a dependency in `games/package.json`.
 4. **Test it.** Drive the rules with `createSim` from `@wsfg/core/testing` (virtual clock, joins, disconnects) and run `runLeakTest` with the moves your game allows. See `games/imposter/test/`.
 5. **Optional integrations**, all handed core services instead of reaching into the server:
