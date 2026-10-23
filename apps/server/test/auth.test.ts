@@ -159,7 +159,8 @@ describe('core and game admin routes', () => {
   it('serves /api/config publicly without secrets', async () => {
     const body = (await (await t.fetch('/api/config')).json()) as { games: { id: string }[] }
     expect(body).toMatchObject({ appName: 'Family Games', primaryColor: '#6750A4', aiEnabled: false })
-    expect(body.games.map((g) => g.id)).toEqual(['imposter', 'probe'])
+    // Sorted by name, not registry order (imposter is registered first, as "Word Imposter").
+    expect(body.games.map((g) => g.id)).toEqual(['probe', 'imposter'])
     expect(JSON.stringify(body)).not.toContain(t.booted.config.BETTER_AUTH_SECRET)
   })
 

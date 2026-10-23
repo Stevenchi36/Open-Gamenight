@@ -487,7 +487,7 @@ export class RoomManager {
       phase: room.phase,
       hostId: room.hostId,
       game: { id: game.id, name: game.name, settings: room.settings },
-      availableGames: this.games.map((g) => ({
+      availableGames: [...this.games].sort((a, b) => a.name.localeCompare(b.name)).map((g) => ({
         id: g.id,
         name: g.name,
         description: g.description,
