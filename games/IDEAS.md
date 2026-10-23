@@ -22,6 +22,13 @@ Candidates for future games, not yet filtered. Each entry has a one-line pitch, 
 - **Wits & Wagers** (trivia with numeric answers): everyone guesses a number ("How tall is the Eiffel Tower?"), then bets on which guess is closest. Someone who knows nothing can still win by betting well.
   - Needs: an AI-generated question library.
   - Secrets: guesses until everyone has submitted.
+- **Wordle Battle** (speed race, 2–12 players): everyone races to solve the same hidden word, Wordle-style. Your score is your solve time plus a time penalty for each guess, so fewer guesses still pays off. Each player sees every opponent's board as colours only (correct / misplaced / not in word) plus their attempt count.
+  - Not limited to 5 letters: the word's length varies per round, maybe with min/max length settings for the host. The board takes its width from the word.
+  - The word's category is shown as a hint, using the core `categories` table with this game's own categories.
+  - Library: a `<gameId>_words` table referencing `categories`, with MCP tools for adding and managing words (like the `imposter_*` tools), and maybe AI generation for admins.
+  - Reuses: the categories admin page, `useCountdown`/`serverNow` for timing, `ScoreBoard`.
+  - Secrets: the target word; every player's guessed letters (opponents get only the colours). Leak-test both.
+  - Open questions: how to validate a guess when lengths vary (a dictionary per length, or accept any letters); duplicate-letter colouring (use Wordle's rule); max guesses (fixed, or scaled with word length); what happens to players who don't solve it (a cap or time limit, then a penalty score).
 
 ## Card games with hidden hands
 
