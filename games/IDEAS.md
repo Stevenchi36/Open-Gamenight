@@ -7,9 +7,6 @@ Candidates for future games, not yet filtered. Each entry has a one-line pitch, 
 - **Just One** (co-op): one player guesses a secret word; the others each secretly write a one-word clue, and duplicate clues cancel before the guesser sees them.
   - Reuses: an Imposter-style word library and categories, `SubmitField`.
   - Secrets: the guesser's word; clues until duplicates are removed.
-- **Herd Mentality**: everyone answers a prompt ("Name a breakfast cereal"); you score if your answer matches the most common one.
-  - Needs: a prompt library; answer matching (normalise case and spaces, maybe let the host merge near-misses).
-  - Secrets: answers until everyone has submitted.
 - **Who's Most Likely To…**: show a prompt, everyone votes for a player, reveal the results.
   - Reuses: `PlayerPicker`, `tallyVotes`, `VoteBreakdown`; needs an AI-generated prompt library. The smallest possible game.
 - **Fibbage / Balderdash**: show an obscure fact with a blank; everyone writes a fake answer, then votes for the real one. Score for finding the truth and for each player your fake fooled.

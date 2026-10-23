@@ -1,11 +1,11 @@
 # ws-family-games
 
-A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word.
+A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice** and **Herd Mentality** (everyone answers the same question and scores by matching the most popular answer).
 
 - **Rooms with a 4-letter code.** Signed-in users create rooms; anyone joins with just a name. Phones that drop off Wi-Fi reconnect into their seat.
 - **The server decides everything.** Each phone only receives its own view of the game, so the imposter's device never gets the secret word. A leak test checks this for every game.
-- **Admin panel:** user accounts (no public sign-up), per-game categories, and the Imposter word library, with optional Claude-powered word generation under a daily token cap.
-- **Claude integration (MCP):** manage the word library from Claude Code or Claude Desktop on your Claude subscription; see [`docs/mcp.md`](docs/mcp.md).
+- **Admin panel:** user accounts (no public sign-up), per-game categories, the Imposter word library and the Herd Mentality question library, with optional Claude-powered generation under a daily token cap.
+- **Claude integration (MCP):** manage the word and question libraries from Claude Code or Claude Desktop on your Claude subscription; see [`docs/mcp.md`](docs/mcp.md).
 - **Built for more games.** The platform owns rooms, sockets, auth, timers and admin; a game is a small, pure module. See [Writing a game](#writing-a-game).
 
 Stack: TypeScript everywhere, Express 5 + `ws`, Vue 3 + Vuetify 4, Better Auth, SQLite via Node's built-in `node:sqlite`, pnpm workspaces, Vitest.
@@ -106,10 +106,11 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 - Public sign-up is closed. Admins create accounts in **Admin → Users** (temporary password, role, ban, reset password). Forgotten passwords are reset there too.
 - An account is only needed to **create** rooms. Guests join with a code and a name; the host role can pass to a guest (manually, or automatically after the host has been away for about 2 minutes).
 - **Admin → Word Imposter** has **Categories** (add, rename, delete empty ones) and the **Word library** (browse, add, edit or move words, delete, and generate-then-review when `ANTHROPIC_API_KEY` is set). Categories running low on unused words are flagged.
+- **Admin → Herd Mentality** has **Categories** and the **Question library**, the same way.
 
 ## Managing words with Claude
 
-Register the MCP server once and ask Claude Code things like *"add 20 words to every imposter category that's running low"*. Claude writes the words on your Claude subscription; no API key is involved. It also works against a deployed server over SSH. Setup, the tool list and troubleshooting are in [`docs/mcp.md`](docs/mcp.md).
+Register the MCP server once and ask Claude Code things like *"add 20 words to every imposter category that's running low"* or *"add 30 herd questions about films"*. Claude writes the words on your Claude subscription; no API key is involved. It also works against a deployed server over SSH. Setup, the tool list and troubleshooting are in [`docs/mcp.md`](docs/mcp.md).
 
 ## Project layout
 
@@ -124,6 +125,8 @@ games/
   index.ts    server-side game registry
   client.ts   client-side game registry
   imposter/   Word Imposter: shared/ (types), server/ (rules, library, admin, MCP), client/ (views)
+  liarsdice/  Liar's Dice (no library)
+  herd/       Herd Mentality: same shape as imposter/, with a question library
 docs/
   decisions.md   every design decision and why
   dev-testing.md checks, dev-players page (several players in one window)

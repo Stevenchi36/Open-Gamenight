@@ -50,6 +50,14 @@ describe('MCP server', () => {
   it('registers namespaced game tools', async () => {
     const { tools } = await client.listTools()
     expect(tools.map((t) => t.name).sort()).toEqual([
+      'herd_add_questions',
+      'herd_create_category',
+      'herd_delete_category',
+      'herd_list_categories',
+      'herd_remove_questions',
+      'herd_rename_category',
+      'herd_search_questions',
+      'herd_update_question',
       'imposter_add_words',
       'imposter_create_category',
       'imposter_delete_category',
@@ -110,7 +118,7 @@ describe('MCP server', () => {
     const result = await client.callTool({ name: 'imposter_remove_words', arguments: { ids: 'all' } }).catch((e) => e)
     expect(result instanceof Error || (result as { isError?: boolean }).isError).toBeTruthy()
     const { tools } = await client.listTools()
-    expect(tools.length).toBe(8)
+    expect(tools.length).toBe(16)
   })
 
   it('manages categories: create, rename, refuse to delete while in use, move words out, delete', async () => {

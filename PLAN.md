@@ -481,6 +481,80 @@ BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
 ### Hold-to-reveal
 Your dice sit behind `HoldToReveal`, like Imposter's role card: phones lie on a shared table.
 
+## 7b. Herd Mentality (`games/herd`)
+
+The third game: everyone answers the same question and tries to give the answer most people give. The first game with free-text answers that are compared with each other, and the second with a library (questions), managed like Imposter's words.
+
+### Rules
+1. Each round shows one **question** ("Name a breakfast cereal") and its category. Everyone in the round types **one answer** in secret. Answers can be changed until the reveal.
+2. **Reveal** when every connected player has answered, when the answer timer runs out, or when the host taps **Reveal now**. Answers are grouped automatically: the same answer after normalising (case, accents, punctuation, extra spaces, a leading "the"/"a"/"an", a plural "s").
+3. **Check matches** (setting, default on). Everyone sees the groups; the host merges near-misses ("Coco Pops" and "Cocoa Pops") or splits a merge again, then taps **Score it**. Off: scoring follows the automatic groups straight away.
+4. **Scoring.** If one group is strictly bigger than every other and has at least 2 players, that is **the herd**: each of its players scores 1 point. A tie for biggest, or all answers different, scores nobody.
+5. **Pink cow** (setting, default on). If exactly one player is alone in their group (the odd one out), they take the pink cow from whoever has it. With a score limit, the pink cow's holder can't win. The holder leaving clears it.
+6. **Score limit** (setting, default unlimited). With a limit, the game ends after a round where a player has at least that many points and doesn't hold the pink cow; everyone who qualifies at once wins together. Unlimited: rounds go on until the host returns to the lobby.
+7. The host starts the next round (new question); after a win, **New game** resets scores and the pink cow.
+
+### Settings (host, lobby only)
+| Setting | Default | Notes |
+|---|---|---|
+| Score limit | unlimited | `null` / 5 / 8 / 10 / 12 / 15 / 20 |
+| Pink cow | on | |
+| Check matches | on | host merges near-misses before scoring |
+| Category | Any | categories from the library that have questions, plus "Any" |
+| Answer timer | off | 30 / 45 / 60 / 90 / 120 seconds; on expiry, reveal with the answers in |
+
+### State machine
+```
+ANSWERING -> (REVIEW) -> RESULTS -> next_round -> ANSWERING   (new_game after a win)
+```
+- `ANSWERING`: round players (everyone present at round start) `submit_answer`; resubmitting replaces your answer. Advances once every connected round player has answered (a disconnected player who hasn't answered sits the round out), on the timer, or on the host's `reveal_answers`.
+- `REVIEW` (Check matches on): answers are public, grouped. Host-only `merge_groups { from, into }`, `split_group { group }`, `score_round`.
+- `RESULTS`: herd, points, pink cow, scoreboard, winners when the limit is reached. Host: **Next question** (`next_round`), or **New game** (`new_game`) after a win, or **Back to lobby**.
+- Late joiners wait for the next round. A round player leaving drops their answer; the pink cow goes with them.
+
+### Actions
+| action | payload | Who |
+|---|---|---|
+| `submit_answer` | `{ text }` (1-40 chars after trimming) | round player, `ANSWERING` |
+| `reveal_answers` | `{}` | host, `ANSWERING` |
+| `merge_groups` | `{ from, into }` (group ids) | host, `REVIEW` |
+| `split_group` | `{ group }` (back to automatic groups) | host, `REVIEW` |
+| `score_round` | `{}` | host, `REVIEW` |
+| `next_round` | `{}` | host, `RESULTS`, no winner yet |
+| `new_game` | `{}` | host, `RESULTS` after a win |
+
+### View (per player)
+```ts
+{
+  phase, round,
+  question: { text, category },
+  you: { status: 'playing' | 'waiting', answer: string | null },  // your own answer only
+  roundPlayers, answered: PlayerId[],     // who has answered, not what
+  deadline: number | null,                // answer timer
+  scores, pinkCowId: PlayerId | null,
+  groups: [{ id, label, answers: [{ playerId, text }] }],  // [] during ANSWERING; biggest first
+  herdId: string | null,                  // REVIEW (current leader) and RESULTS
+  result: { pointsAwarded, pinkCowFrom, pinkCowTo, winnerIds } | null,  // RESULTS only
+}
+```
+`secrets` declares: other players' answers are hidden during `ANSWERING` (variant check: a viewer's view must not change when another player's answer changes, including to the viewer's own answer).
+
+### Question library
+```sql
+CREATE TABLE herd_questions (
+  id INTEGER PRIMARY KEY,
+  category_id INTEGER NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
+  question TEXT NOT NULL, source TEXT NOT NULL DEFAULT 'claude',  -- claude | builtin | manual
+  times_used INTEGER NOT NULL DEFAULT 0, last_used_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE (category_id, question COLLATE NOCASE)
+);
+```
+- Question: trimmed, 5-120 chars. Categories are the core `categories` rows with `game_id = 'herd'`.
+- Migration `002_default_questions` seeds a starter set (source `builtin`); the same frozen list is the in-code fallback when the library has nothing to pick.
+- `prepareRound` picks the least-used question (random among ties), optionally in the chosen category, skipping ones used in this room, and marks it used; otherwise a built-in question plus a host notice.
+- **Admin** (`/api/admin/herd/*`, page `/admin/herd/questions`): browse/search, add, edit/move, delete, and AI generation (review, then save), like Imposter's words.
+- **MCP tools:** `herd_add_questions`, `herd_list_categories`, `herd_search_questions`, `herd_update_question`, `herd_remove_questions`, `herd_generate_questions` (only with `ANTHROPIC_API_KEY`), plus the core `herd_*_category` tools.
+
 ## 8. Vue client (`apps/client`)
 
 ### Setup

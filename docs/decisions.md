@@ -127,6 +127,21 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **REVEAL stays up for 8s, then the next round rolls; a summary of the last challenge stays visible while bidding.** Counting dice takes longer than reading an Imposter vote, and the summary keeps "what just happened" readable after the timer.
 - **No bid timer in v1.** The disconnect grace stops a stalled turn; a timer can come later if tables want one.
 
+## Herd Mentality rules
+- **Herd Mentality is the third game (id `herd`).** It's the simplest library-driven game after Imposter and the first to compare free-text answers, so it tests the categories table and library pattern with a second game.
+- **Score limit defaults to unlimited (options 5-20).** Family tables often play "a few questions" and stop; a limit is there for a proper race.
+- **The herd is a strictly biggest group of at least 2; a tie for biggest scores nobody.** That's the board game's rule, and it makes a split table a real loss rather than a shared win.
+- **Pink cow on by default: exactly one lone answer takes it, and its holder can't win.** It's the board game's signature twist; with no score limit it's just a badge of shame.
+- **Players who reach the limit in the same round win together.** The whole herd scores at once, so simultaneous wins are common; a tie-break round would be arbitrary.
+- **Answers are matched after normalising (case, accents, punctuation, spaces, leading "the"/"a"/"an", a plural "s" on words of 4+ letters not ending in ss/us/is); the host merges the rest.** Automatic fuzzy matching would merge answers the table thinks are different ("Mars" bars vs Mars); the host's eye is the source of truth, like Imposter's judge.
+- **The host checks matches by default (setting), and is a player too.** Near-misses are common with typed answers; a family table trusts the host, and the groups are on everyone's screen while they do it.
+- **Answers can be changed until the reveal, and who has answered is public.** Like Imposter's votes: changing your mind is harmless, and the table wants to see who it's waiting for.
+- **A disconnected player who hasn't answered doesn't hold up the reveal and sits the round out.** The game never stalls on a dropped phone.
+- **One frozen starter list serves as the seed migration (`002_default_questions`) and the in-code fallback.** Imposter needed two lists because its seed outgrew the fallback; here one list keeps a fresh install and an empty library playing the same questions.
+- **Your sent answer sits behind `HoldToReveal`.** Phones lie on the table, and a neighbour copying your answer would join your herd.
+- **Core `ScoreBoard` has a `badge` slot for a per-player marker (Herd's pink cow).** Copying the scoreboard into a game to add one icon would fork it.
+- **Questions aren't secret, so the MCP tools may show them.** Knowing the question in advance doesn't help much: the game is about guessing what others will say.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.

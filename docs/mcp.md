@@ -158,6 +158,20 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 - A word that's already in the same category (ignoring case) is skipped.
 - Categories are shared rows (`categories` table), managed with the `*_category` tools or in the admin panel (Admin → Word Imposter → Categories). A category that still has words can't be deleted; move or delete its words first.
 
+Herd Mentality's question library works the same way, with its own categories:
+
+| Tool | What it does |
+|---|---|
+| `herd_list_categories` | All question categories with ids, total and unused counts, plus `runningLow` (fewer than 5 unused). |
+| `herd_search_questions` | Search by `categoryId` or `category` (name) and/or `query` (substring of the question), up to `limit` (max 200). Returns question ids. |
+| `herd_add_questions` | Add `{ questions: [{ category, question }] }`, up to 200 per call. Missing categories are created; duplicates (same category + question, ignoring case) and invalid entries are skipped with a reason. Saved with source `claude`. |
+| `herd_update_question` | Edit one question `{ id, categoryId? \| category?, question? }`: move it or fix its text. |
+| `herd_remove_questions` | Remove by `{ ids: [...] }` (ids from `search_questions`). |
+| `herd_create_category` / `herd_rename_category` / `herd_delete_category` | Same as the imposter ones. |
+| `herd_generate_questions` | **Only with `ANTHROPIC_API_KEY`.** Generates `{ count, category? }` with the server-side API and saves directly. |
+
+**Rules for a question:** 5-120 characters, category under 40. A good question has many possible answers but a few obvious favourites, answered in a word or short phrase ("Name a breakfast cereal", "What is the best pizza topping?"), not trivia with one right answer. Questions aren't secret, so Claude may list them.
+
 ## Example prompts
 
 - "List the imposter categories and tell me which are running low."
@@ -169,6 +183,8 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 - "Rename the imposter category Food to Food & Drink."
 - "Merge the imposter categories Snacks and Food: move every Snacks word into Food, then delete Snacks."
 - "Find imposter words whose category doesn't really fit them and move them somewhere better."
+- "Add 30 herd questions in a new Music category."
+- "Look through the herd questions and remove any that are really trivia with one right answer."
 
 **Claude keeps new words secret.** After adding or generating words, Claude reports only how many it added and to which categories, so you can still play. Ask "show me the words" if you want to see them. (They are still in the tool call itself; Claude Code shows it collapsed, so don't expand it if you're playing.)
 
