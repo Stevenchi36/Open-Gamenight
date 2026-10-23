@@ -16,8 +16,6 @@ import type { ClientAction, FlockSettings, FlockView } from '../shared/index.ts'
 export const flock = defineGame<FlockState, ClientAction, FlockTimer, FlockView, FlockSettings, PreparedQuestion>({
   ...game,
   migrations,
-  // the id was herd before the game was renamed from Herd Mentality
-  renamedFrom: ['herd'],
   mcpTools,
   adminRouter,
   categories: { usage: (services) => categoryUsage(services.db) },

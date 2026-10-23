@@ -21,7 +21,7 @@ Multiplayer party-game platform (pnpm workspace, TypeScript, Node 26). Word Impo
 
 - Node runs the server's TypeScript directly (type stripping), with no build step. So: relative imports carry the `.ts` extension, and code uses erasable syntax only (plain classes with declared fields, union types for enumerations, `import type` for types). Workspace packages export their `.ts` source.
 - SQLite is `node:sqlite` (`DatabaseSync`): synchronous, with no transaction helper. Wrap multi-statement writes in `transaction()` from `apps/server/src/db.ts`, or `BEGIN IMMEDIATE`/`COMMIT`/`ROLLBACK` in game code. Match constraint errors on the primary code (`errcode & 0xff === 19`) plus the message; extended codes vary (`ON DELETE RESTRICT` reports 1811).
-- Migrations are append-only: add a new numbered migration and leave applied ones exactly as they are. Core migrations run before every game's.
+- Migrations are append-only: add a new numbered migration and leave applied ones exactly as they are (the one exception, squashing after a game id rename, is in `docs/decisions.md`). Core migrations run before every game's.
 - The MCP process and everything it imports write logs to stderr (the shared logger, `console.error`), because stdout is the protocol.
 - AI calls go through `services.ai` (one strict tool, `tool_choice: auto`, validated output); the model and caps come from env.
 - Comments explain *why*; keep them brief and match the surrounding density.

@@ -2,15 +2,16 @@ import type { Migration } from '@wsfg/core/contract'
 import { DEFAULT_QUESTIONS } from './default-questions.ts'
 
 /**
- * flock_* tables in games.db. Never edit an applied migration; add a new one: 001 and 002
- * still say herd_ and 'herd' because they ran before the game id changed (003 renames them).
+ * flock_* tables in games.db. Never edit an applied migration; add a new one.
+ * (One exception, in docs/decisions.md: these were squashed after the herd -> flock rename,
+ * once every database had applied them, so their ids are unchanged.)
  * Core migrations (including the shared `categories` table) always run first.
  */
 export const migrations: Migration[] = [
   {
     id: '001_questions',
     sql: `
-      CREATE TABLE IF NOT EXISTS herd_questions (
+      CREATE TABLE IF NOT EXISTS flock_questions (
         id           INTEGER PRIMARY KEY,
         category_id  INTEGER NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
         question     TEXT NOT NULL,
@@ -20,7 +21,7 @@ export const migrations: Migration[] = [
         created_at   TEXT NOT NULL DEFAULT (datetime('now')),
         UNIQUE (category_id, question COLLATE NOCASE)
       );
-      CREATE INDEX IF NOT EXISTS herd_questions_category ON herd_questions (category_id, times_used);
+      CREATE INDEX IF NOT EXISTS flock_questions_category ON flock_questions (category_id, times_used);
     `,
   },
   {
@@ -29,17 +30,6 @@ export const migrations: Migration[] = [
     id: '002_default_questions',
     sql: seedSql(),
   },
-  {
-    // The game id changed from herd to flock (renamedFrom). The core already moved existing
-    // categories; the UPDATE catches the ones 002 just seeded on a fresh database.
-    id: '003_rename_from_herd',
-    sql: `
-      ALTER TABLE herd_questions RENAME TO flock_questions;
-      DROP INDEX IF EXISTS herd_questions_category;
-      CREATE INDEX IF NOT EXISTS flock_questions_category ON flock_questions (category_id, times_used);
-      UPDATE categories SET game_id = 'flock' WHERE game_id = 'herd';
-    `,
-  },
 ]
 
 function text(s: string): string {
@@ -47,15 +37,15 @@ function text(s: string): string {
 }
 
 function seedSql(): string {
-  const categories = Object.keys(DEFAULT_QUESTIONS).map((name) => `('herd', ${text(name)})`)
+  const categories = Object.keys(DEFAULT_QUESTIONS).map((name) => `('flock', ${text(name)})`)
   const questions = Object.entries(DEFAULT_QUESTIONS).flatMap(([category, list]) =>
     list.map((question) => `(${text(category)}, ${text(question)})`),
   )
   return `
     INSERT OR IGNORE INTO categories (game_id, name) VALUES ${categories.join(',\n')};
-    INSERT OR IGNORE INTO herd_questions (category_id, question, source)
+    INSERT OR IGNORE INTO flock_questions (category_id, question, source)
       SELECT c.id, d.column2, 'builtin'
       FROM (VALUES ${questions.join(',\n')}) d
-      JOIN categories c ON c.game_id = 'herd' AND c.name = d.column1 COLLATE NOCASE;
+      JOIN categories c ON c.game_id = 'flock' AND c.name = d.column1 COLLATE NOCASE;
   `
 }

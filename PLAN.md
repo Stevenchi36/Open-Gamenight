@@ -484,7 +484,7 @@ Your dice sit behind `HoldToReveal`, like Imposter's role card: phones lie on a 
 
 ## 7b. Flock (`games/flock`)
 
-The third game: everyone answers the same question and tries to give the answer most people give. The first game with free-text answers that are compared with each other, and the second with a library (questions), managed like Imposter's words. Its id was `herd` until the rename from Herd Mentality; `renamedFrom: ['herd']` and migration `003_rename_from_herd` moved existing data over.
+The third game: everyone answers the same question and tries to give the answer most people give. The first game with free-text answers that are compared with each other, and the second with a library (questions), managed like Imposter's words. Its id was `herd` until the rename from Herd Mentality; `renamedFrom: ['herd']` and a rename migration moved existing data over, and the migrations were later squashed onto `flock`.
 
 ### Rules
 1. Each round shows one **question** ("Name a breakfast cereal") and its category. Everyone in the round types **one answer** in secret. Answers can be changed until the reveal.

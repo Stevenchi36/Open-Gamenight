@@ -33,20 +33,6 @@ function freshDb({ seed = false } = {}) {
   return d
 }
 
-/** Core tables and the game's migrations up to, not including, `id`: the schema as it was then. */
-function dbBefore(id: string) {
-  const d = new DatabaseSync(':memory:')
-  d.exec('PRAGMA foreign_keys = ON')
-  d.exec(CATEGORIES_MIGRATION.sql)
-  for (const m of migrations.slice(0, migrations.findIndex((m) => m.id === id))) d.exec(m.sql)
-  return d
-}
-
-/** The game's migrations from `id` on. */
-function runFrom(d: DatabaseSync, id: string) {
-  for (const m of migrations.slice(migrations.findIndex((m) => m.id === id))) d.exec(m.sql)
-}
-
 function useDb(d: DatabaseSync) {
   db = d
   services = {
@@ -77,12 +63,8 @@ describe('migration 002: default questions', () => {
   })
 
   it('keeps an existing library and only adds what is missing', () => {
-    // 002 ran when the game was still `herd`: replay it against a herd-era library, then the rename.
-    const d = dbBefore(SEED_ID)
-    d.exec("INSERT INTO categories (game_id, name) VALUES ('herd', 'animals')")
-    d.exec("INSERT INTO herd_questions (category_id, question, source) SELECT id, 'Name a pet', 'manual' FROM categories")
-    runFrom(d, SEED_ID)
-    useDb(d)
+    addQuestions(services, [{ category: 'animals', question: 'Name a pet' }])
+    db.exec(migrations.find((m) => m.id === SEED_ID)!.sql)
     // the existing lower-case category is reused, not duplicated
     expect(listCategories(db).filter((c) => c.category.toLowerCase() === 'animals')).toHaveLength(1)
     expect(listQuestions(db, { limit: 200 }).total).toBe(DEFAULT_QUESTION_LIST.length + 1)
@@ -94,26 +76,12 @@ describe('migration 002: default questions', () => {
   })
 
   it('leaves Imposter categories alone', () => {
-    const d = dbBefore(SEED_ID)
-    d.exec("INSERT INTO categories (game_id, name) VALUES ('imposter', 'Animals')")
-    runFrom(d, SEED_ID)
-    expect(d.prepare("SELECT game_id FROM categories WHERE name = 'Animals' ORDER BY game_id").all()).toEqual([
+    db.exec("INSERT INTO categories (game_id, name) VALUES ('imposter', 'Animals')")
+    db.exec(migrations.find((m) => m.id === SEED_ID)!.sql)
+    expect(db.prepare("SELECT game_id FROM categories WHERE name = 'Animals' ORDER BY game_id").all()).toEqual([
       { game_id: 'flock' },
       { game_id: 'imposter' },
     ])
-  })
-})
-
-describe('migration 003: rename from herd', () => {
-  it('moves a herd library to flock_questions, keeping usage counts', () => {
-    const d = dbBefore('003_rename_from_herd')
-    d.exec("UPDATE herd_questions SET times_used = 4 WHERE question = 'Name a breakfast cereal'")
-    runFrom(d, '003_rename_from_herd')
-    useDb(d)
-    expect(listQuestions(db, { limit: 200 }).total).toBe(DEFAULT_QUESTION_LIST.length)
-    expect(d.prepare("SELECT times_used FROM flock_questions WHERE question = 'Name a breakfast cereal'").get()).toEqual({ times_used: 4 })
-    expect(d.prepare("SELECT COUNT(*) AS n FROM categories WHERE game_id = 'herd'").get()).toEqual({ n: 0 })
-    expect(d.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'herd%'").all()).toEqual([])
   })
 })
 
