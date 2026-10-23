@@ -69,6 +69,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **No email in v1; admins reset passwords.** Nothing to send email with yet; admin reset covers a small user base.
 - **An admin password reset signs the user out everywhere (an `after` hook in `auth.ts`).** Better Auth's admin `set-user-password` keeps sessions, so resetting a compromised account wouldn't lock out whoever has it.
 - **Game admin routes are mounted by core under `/api/admin/<gameId>` behind `requireAdmin` + Origin check.** Games get admin features without being able to forget auth.
+- **Admins see open rooms at `/admin/rooms` (names, status, who opened it; no tokens or game state) and can join or close them.** Joining is the normal join flow and takes a seat like any player, so an admin can't watch secret views unseen; closing tells everyone "An admin closed this room." and frees the code and the creator's room slot.
 
 ## Data and AI
 - **Two SQLite files: `auth.db` and one shared `games.db` with per-game prefixed tables and migrations.** MCP never touches accounts; one game DB avoids multiplying files, backups and WAL handling.

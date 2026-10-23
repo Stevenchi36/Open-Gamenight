@@ -12,16 +12,20 @@ import type { AiCore } from '../ai.ts'
 import type { Auth } from '../auth.ts'
 import type { Config } from '../config.ts'
 import { originCheck, rateLimit, RateLimiter, requireAdmin, sessionUser } from '../middleware.ts'
+import type { RoomManager } from '../rooms.ts'
+
+export type AdminRooms = Pick<RoomManager, 'list' | 'close'>
 
 export interface AdminRouterDeps {
   config: Config
   auth: Auth
   games: readonly AnyGameModule[]
   ai: AiCore | null
+  rooms: AdminRooms
   servicesFor: (game: AnyGameModule) => ServerServices
 }
 
-export function createAdminRouter({ config, auth, games, ai, servicesFor }: AdminRouterDeps): Router {
+export function createAdminRouter({ config, auth, games, ai, rooms, servicesFor }: AdminRouterDeps): Router {
   const router = express.Router()
   router.use(originCheck(config))
   router.use(requireAdmin(auth))
@@ -38,6 +42,18 @@ export function createAdminRouter({ config, auth, games, ai, servicesFor }: Admi
   /** Today's AI spend against the daily output-token cap. */
   router.get('/ai/usage', (_req, res) => {
     res.json(ai ? { enabled: true, ...ai.usageToday() } : { enabled: false })
+  })
+
+  /** Open rooms. Joining one is the normal join flow; closing sends everyone out. */
+  router.get('/rooms', (_req, res) => {
+    res.json({ rooms: rooms.list() })
+  })
+  router.post('/rooms/:code/close', async (req, res) => {
+    if (!(await rooms.close(req.params.code))) {
+      res.status(404).json({ error: 'not_found', message: 'That room has already closed' })
+      return
+    }
+    res.json({ closed: true })
   })
 
   router.use('/categories', createCategoriesRouter(games, servicesFor))

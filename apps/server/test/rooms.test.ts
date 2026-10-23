@@ -389,6 +389,38 @@ describe('cleanup', () => {
     expect(b.rooms.rooms.size).toBe(0)
   })
 
+  it('lists open rooms for admins without tokens or game state', async () => {
+    const { rooms, host, room } = await roomWith(2)
+    await rooms.disconnected(host)
+    expect(rooms.list()).toEqual([
+      {
+        code: room.code,
+        gameId: 'imposter',
+        gameName: imposter.name,
+        phase: 'lobby',
+        creatorName: 'User u1',
+        createdAt: room.createdAt,
+        lastActivity: room.lastActivity,
+        players: [
+          { name: 'Host', connected: false, isHost: true, isLoggedIn: true },
+          { name: 'Guest1', connected: true, isHost: false, isLoggedIn: false },
+        ],
+      },
+    ])
+  })
+
+  it('an admin close sends everyone out and frees the code', async () => {
+    const { rooms, host, guests, code, room } = await roomWith(3)
+    expect(await rooms.close(code)).toBe(true)
+    expect(rooms.rooms.size).toBe(0)
+    expect(room.closed).toBe(true)
+    for (const c of [host, ...guests]) {
+      expect(c.last('notice')).toMatchObject({ kind: 'removed', message: 'An admin closed this room.' })
+      expect(c.room).toBeNull()
+    }
+    expect(await rooms.close(code)).toBe(false)
+  })
+
   it('shutdown sends the restart notice to everyone connected', async () => {
     const { rooms, host, guests } = await roomWith(3)
     rooms.shutdown()

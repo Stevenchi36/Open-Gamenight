@@ -3,6 +3,7 @@ import { games } from '@wsfg/games/server'
 import express from 'express'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { z } from 'zod'
+import { FakeConn, user } from './helpers/rooms.ts'
 import { startTestServer, type TestServer } from './helpers/server.ts'
 
 const imposter = games[0]!
@@ -109,11 +110,27 @@ describe('accounts', () => {
 })
 
 describe('core and game admin routes', () => {
-  it.each(['/api/admin/status', '/api/admin/probe/ping'])('%s: guest 401, user 403, admin 200', async (path) => {
+  it.each(['/api/admin/status', '/api/admin/rooms', '/api/admin/probe/ping'])('%s: guest 401, user 403, admin 200', async (path) => {
     expect((await t.fetch(path)).status).toBe(401)
     expect((await t.fetch(path, { cookie: userCookie })).status).toBe(403)
     const res = await t.fetch(path, { cookie: adminCookie })
     expect(res.status).toBe(200)
+  })
+
+  it('lists open rooms and lets only an admin close one', async () => {
+    const host = new FakeConn(user('u1'))
+    await t.rooms.handle(host, { type: 'create_room', name: 'Host' })
+    const code = host.last('joined')!.code
+    const list = (await (await t.fetch('/api/admin/rooms', { cookie: adminCookie })).json()) as { rooms: { code: string }[] }
+    expect(list.rooms.map((r) => r.code)).toEqual([code])
+
+    const close = (cookie: string) => t.fetch(`/api/admin/rooms/${code}/close`, { method: 'POST', cookie })
+    expect((await close(userCookie)).status).toBe(403)
+    expect(t.rooms.rooms.has(code)).toBe(true)
+    expect((await close(adminCookie)).status).toBe(200)
+    expect(t.rooms.rooms.has(code)).toBe(false)
+    expect(host.last('notice')).toMatchObject({ kind: 'removed' })
+    expect((await close(adminCookie)).status).toBe(404)
   })
 
   it('game routers cannot escape their prefix', async () => {

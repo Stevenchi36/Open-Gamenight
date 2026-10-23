@@ -55,6 +55,9 @@ export interface Room {
   code: string
   /** Who created it; the room counts against their MAX_ROOMS_PER_USER until it closes. */
   creatorUserId: string
+  /** Account name at creation, for the admin rooms list. */
+  creatorName: string
+  createdAt: number
   hostId: string
   /** Join order. */
   players: Player[]
@@ -68,6 +71,18 @@ export interface Room {
   lastConnected: number
   queue: Promise<void>
   closed: boolean
+}
+
+/** One open room as the admin rooms page sees it: names and status only, no tokens or game state. */
+export interface RoomSummary {
+  code: string
+  gameId: string
+  gameName: string
+  phase: Room['phase']
+  creatorName: string
+  createdAt: number
+  lastActivity: number
+  players: { name: string; connected: boolean; isHost: boolean; isLoggedIn: boolean }[]
 }
 
 export interface RoomManagerDeps {
@@ -158,6 +173,36 @@ export class RoomManager {
     }
   }
 
+  /** Open rooms for the admin page, newest first. */
+  list(): RoomSummary[] {
+    return [...this.rooms.values()]
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .map((room) => ({
+        code: room.code,
+        gameId: room.gameId,
+        gameName: this.gameOf(room).name,
+        phase: room.phase,
+        creatorName: room.creatorName,
+        createdAt: room.createdAt,
+        lastActivity: room.lastActivity,
+        players: room.players.map((p) => ({
+          name: p.name,
+          connected: p.conn !== null,
+          isHost: p.id === room.hostId,
+          isLoggedIn: p.userId !== null,
+        })),
+      }))
+  }
+
+  /** An admin closes a room: everyone connected is told and sent out. False if there is no such room. */
+  async close(code: string): Promise<boolean> {
+    const room = this.rooms.get(code)
+    if (!room || room.closed) return false
+    // On the queue, so it can't cut into an action or timer that's already running.
+    await this.enqueue(room, () => this.closeRoom(room, 'An admin closed this room.'))
+    return true
+  }
+
   /** SIGTERM: tell everyone, then the transport closes the sockets. */
   shutdown(): void {
     for (const room of this.rooms.values()) {
@@ -185,6 +230,8 @@ export class RoomManager {
     const room: Room = {
       code: this.newCode(),
       creatorUserId: conn.user.id,
+      creatorName: conn.user.name,
+      createdAt: now,
       hostId: '',
       players: [],
       gameId: game.id,

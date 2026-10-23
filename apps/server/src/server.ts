@@ -32,13 +32,13 @@ export interface RunningServer {
 export async function startServer(config: Config, options: StartOptions = {}): Promise<RunningServer> {
   const booted = await boot(config, options)
   const { logger, auth, games } = booted
-  const server = createServer(createApp(booted))
   const rooms = new RoomManager({
     games,
     config,
     logger: logger.child('rooms'),
     servicesFor: (game) => createServices(booted, game),
   })
+  const server = createServer(createApp({ ...booted, rooms }))
   const buildId = readBuildId(config.clientDistDir)
   const ws = attachWebSocket(server, { config, auth, rooms, logger: logger.child('ws'), buildId, ...options.ws })
 

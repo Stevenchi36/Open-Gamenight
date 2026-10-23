@@ -11,6 +11,7 @@ The repo starts **empty** (greenfield): nothing is installed yet. Decisions and 
 ```
 Browser (Vue SPA) ──HTTPS──> Express ──┬── /api/auth/*              Better Auth (sessions, admin plugin)
         │                              ├── /api/admin/users ...     core admin (Better Auth admin plugin)
+        │                              ├── /api/admin/rooms ...     core admin (open rooms: list, close)
         │                              ├── /api/admin/<gameId>/*    game-contributed admin routes (guarded by core)
         └────────WSS──────────>  ws ───┴── room runner              core rooms + game reducers
                                                  │
@@ -732,6 +733,7 @@ PLAYING -> RESULTS -> new_game -> PLAYING
 | `/room/:code` | public | Core room shell: lobby (players, game picker, game `SettingsView`, Start) or the game's `PlayView` |
 | `/admin` | admin | Admin shell with nav |
 | `/admin/users` | admin | List, create (email, name, password, role), set role, ban/unban, reset password |
+| `/admin/rooms` | admin | Open rooms (code, game, status, players, who opened it), refreshed every 10s; Join (normal join, takes a seat) and Close (everyone is sent out with a notice) |
 | `/admin/<gameId>/*` | admin | Pages contributed by games, e.g. `/admin/imposter/words` |
 
 Router guards redirect non-admins from `/admin/*` (UX only).

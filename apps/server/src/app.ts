@@ -14,7 +14,7 @@ import type { Auth } from './auth.ts'
 import type { Config } from './config.ts'
 import type { AppLogger } from './logger.ts'
 import { originCheck, rateLimit, RateLimiter, realIp } from './middleware.ts'
-import { createAdminRouter } from './routes/admin.ts'
+import { createAdminRouter, type AdminRooms } from './routes/admin.ts'
 
 /**
  * The build id Vite stamped into the built client's index.html (`<meta name="wsfg-build">`),
@@ -33,6 +33,8 @@ export interface AppDeps {
   games: readonly AnyGameModule[]
   logger: AppLogger
   ai: AiCore | null
+  /** For the admin rooms page. */
+  rooms: AdminRooms
 }
 
 /**
@@ -97,7 +99,7 @@ export function createApp(deps: AppDeps): Express {
 
   app.use(
     '/api/admin',
-    createAdminRouter({ config, auth, games, ai: deps.ai, servicesFor: (game) => createServices(deps, game, { admin: true }) }),
+    createAdminRouter({ config, auth, games, ai: deps.ai, rooms: deps.rooms, servicesFor: (game) => createServices(deps, game, { admin: true }) }),
   )
 
   app.use('/api/games', createPublicGameRouter(deps))

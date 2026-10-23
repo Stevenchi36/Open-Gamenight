@@ -6,6 +6,7 @@
           <v-list nav density="comfortable">
             <v-list-subheader>Admin</v-list-subheader>
             <v-list-item prepend-icon="mdi-view-dashboard-outline" title="Overview" :to="{ name: 'admin' }" exact />
+            <v-list-item prepend-icon="mdi-door-open" title="Rooms" :to="{ name: 'admin-rooms' }" />
             <v-list-item prepend-icon="mdi-account-multiple-outline" title="Users" :to="{ name: 'admin-users' }" />
             <template v-for="game in gamesWithPages" :key="game.id">
               <v-list-subheader>{{ game.name }}</v-list-subheader>
