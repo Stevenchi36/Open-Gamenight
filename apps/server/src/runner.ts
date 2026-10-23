@@ -1,5 +1,5 @@
 /**
- * Runs a game inside a room: awaits prepareRound, applies init/reduce/hooks,
+ * Runs a game inside a room: awaits prepareRound, applies init/reduce/onTimer/hooks,
  * executes effects (timers, notices, gameOver), and builds per-player views.
  * Raw game state never leaves this file; clients only get view() output.
  * Every call here happens on the room's queue (see RoomManager.enqueue).
@@ -10,6 +10,7 @@ import {
   type AnyGameModule,
   type Effect,
   type PlayerInfo,
+  type PrepareRequest,
   type ServerServices,
   type Transition,
 } from '@wsfg/core/contract'
@@ -50,44 +51,40 @@ export class GameRunner {
   }
 
   async start(room: Room, module: AnyGameModule): Promise<void> {
-    const prepared = module.prepareRound
-      ? await module.prepareRound(
-          { trigger: 'init' },
-          { settings: room.settings, players: this.deps.playerInfos(room), services: this.deps.servicesFor(module) },
-        )
-      : undefined
     const seed = randomInt(2 ** 31)
     const game: RunningGame = { module, state: undefined, rng: createRng(seed), seed, timers: new Map() }
+    const prepared = await this.prepare(room, game, { trigger: 'init' })
     const result = this.guard(room, 'init', () => module.init({ ...this.ctx(room, game), prepared }))
     room.game = game
     room.phase = 'playing'
     this.apply(room, game, result)
   }
 
-  /** A player action from the `action` envelope. actorId null = a scheduled effect firing. */
-  async action(room: Room, actorId: string | null, rawAction: unknown): Promise<void> {
+  /** A player action from the `action` envelope. */
+  async action(room: Room, actorId: string, rawAction: unknown): Promise<void> {
     const game = room.game
     if (!game) return
-    let action = rawAction
-    if (actorId !== null) {
-      const parsed = game.module.actionSchema.safeParse(rawAction)
-      if (!parsed.success) throw new RoomError('validation', 'That move is not valid')
-      action = parsed.data
-    }
-    const prepared = game.module.prepareRound
-      ? await game.module.prepareRound(
-          { trigger: 'action', state: game.state, action, actorId },
-          { settings: room.settings, players: this.deps.playerInfos(room), services: this.deps.servicesFor(game.module) },
-        )
-      : undefined
+    const parsed = game.module.actionSchema.safeParse(rawAction)
+    if (!parsed.success) throw new RoomError('validation', 'That move is not valid')
+    const action = parsed.data
+    const prepared = await this.prepare(room, game, { trigger: 'action', state: game.state, action, actorId })
     if (room.game !== game) return // the game ended while prepareRound was running
     const result = this.guard(room, 'reduce', () =>
       game.module.reduce(game.state, action, { ...this.ctx(room, game), actorId, prepared }),
     )
-    if (isGameError(result)) {
-      if (actorId === null) return // a stale or rejected timer action is simply dropped
-      throw new RoomError('game', result.error)
-    }
+    if (isGameError(result)) throw new RoomError('game', result.error)
+    this.apply(room, game, result)
+  }
+
+  /** A scheduled timer action that is due. */
+  private async timer(room: Room, game: RunningGame, action: unknown): Promise<void> {
+    const onTimer = game.module.onTimer
+    if (!onTimer) throw new Error(`game ${game.module.id} scheduled a timer but has no onTimer`)
+    const prepared = await this.prepare(room, game, { trigger: 'timer', state: game.state, action })
+    if (room.game !== game) return
+    const result = this.guard(room, 'onTimer', () =>
+      onTimer.call(game.module, game.state, action, { ...this.ctx(room, game), prepared }),
+    )
     this.apply(room, game, result)
   }
 
@@ -140,7 +137,7 @@ export class GameRunner {
               // this may have cancelled or replaced the key, and then it must not run.
               if (room.game !== game || game.timers.get(effect.key) !== timer) return
               game.timers.delete(effect.key)
-              await this.action(room, null, effect.action)
+              await this.timer(room, game, effect.action)
             })
             .catch((error) => this.deps.logger.error('scheduled action failed', { error: errorText(error) }))
         }, effect.at - this.deps.clock.now())
@@ -167,6 +164,16 @@ export class GameRunner {
         this.deps.endGame(room)
         return
     }
+  }
+
+  private prepare(room: Room, game: RunningGame, request: PrepareRequest<unknown, unknown, unknown>): Promise<unknown> {
+    const { module } = game
+    if (!module.prepareRound) return Promise.resolve(undefined)
+    return module.prepareRound(request, {
+      settings: room.settings,
+      players: this.deps.playerInfos(room),
+      services: this.deps.servicesFor(module),
+    })
   }
 
   private ctx(room: Room, game: RunningGame) {

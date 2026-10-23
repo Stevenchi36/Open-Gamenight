@@ -4,7 +4,7 @@ import { createSim, type GameSim } from '../src/testing/sim.ts'
 import { makeOracle, players, type OracleAction } from './fixtures/oracle.ts'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const oracleMoves = (sim: GameSim<any, OracleAction, any, any, any>): Move<OracleAction>[] => [
+const oracleMoves = (sim: GameSim<any, OracleAction, any, any, any, any>): Move<OracleAction>[] => [
   ...sim.players.flatMap((p) =>
     ['pear', 'plum', 'banana'].map((word) => ({ actorId: p.id, action: { type: 'guess' as const, word } })),
   ),

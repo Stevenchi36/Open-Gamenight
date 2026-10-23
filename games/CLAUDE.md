@@ -6,7 +6,7 @@ Each folder here is one game. `imposter/` is the reference implementation: when 
 
 A game is a description the core runs, not a class to extend. The core already owns the room lifecycle for every game: create/join/reconnect/leave, lobby, settings sync, start and back-to-lobby, host handover, kicks, timers, notices, per-player views, and on the client the home page, lobby, room shell and "your move" glow. A game supplies only what differs:
 
-- **Server:** a `GameModule` object built with `defineGame` (`packages/core/src/contract.ts`): `init`/`reduce`/`view`, settings and action schemas, player limits, `secrets`, and optional lifecycle hooks and integrations (migrations, `prepareRound`, admin/public routers, MCP tools, categories).
+- **Server:** a `GameModule` object built with `defineGame` (`packages/core/src/contract.ts`): `init`/`reduce`/`onTimer`/`view`, settings and player-action schema (timer actions are a separate type, handled by `onTimer`), player limits, `secrets`, and optional lifecycle hooks and integrations (migrations, `prepareRound`, admin/public routers, MCP tools, categories).
 - **Rules:** `RULES.md` in the game folder: short, player-facing Markdown (goal, a round, scoring, settings, tips). The room's **How to play** dialog shows it, so keep it in step with the game's `PLAN.md` section whenever rules or settings change. Read it for a quick picture of how a game plays.
 - **Client:** a `GameClientModule` (`packages/core/src/client.ts`): lazy `PlayView` and `SettingsView`, `rules` (loads `../RULES.md?raw`), optional `adminPages`, and `needsAction(view, me, room)` so the shell's glow knows when the game is waiting on this player.
 

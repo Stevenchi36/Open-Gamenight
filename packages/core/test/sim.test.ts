@@ -28,12 +28,12 @@ describe('GameSim', () => {
     expect(sim.act(guesser, { type: 'guess', word: 'pear' })).toEqual({ ok: true })
   })
 
-  it('treats players as unable to send system-only actions', () => {
+  it('rejects timer actions sent by a player', () => {
     const sim = newSim()
-    expect(sim.act('p1', { type: 'time_up' })).toEqual({ ok: false, error: 'Not allowed' })
+    expect(sim.act('p1', { type: 'time_up' })).toMatchObject({ ok: false, error: expect.stringMatching(/^validation/) })
   })
 
-  it('fires timers on advance, with actorId null', () => {
+  it('fires timers on advance, through onTimer', () => {
     const sim = newSim()
     sim.advance(ROUND_MS - 1)
     expect(sim.state.phase).toBe('guessing')

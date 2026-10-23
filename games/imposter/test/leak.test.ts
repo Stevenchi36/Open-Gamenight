@@ -1,16 +1,16 @@
 import { runLeakTest, type Move } from '@wsfg/core/testing'
 import { describe, expect, it } from 'vitest'
-import { imposter, type ImposterAction } from '../server/game.ts'
-import { defaultSettings, type ImposterSettings } from '../shared/index.ts'
+import { imposter } from '../server/game.ts'
+import { defaultSettings, type ClientAction, type ImposterSettings } from '../shared/index.ts'
 import type { Sim } from './helpers.ts'
 
 const players = ['p1', 'p2', 'p3', 'p4', 'p5'].map((id) => ({ id }))
 
 /** Every plausible move, valid or not; the harness picks one at random per step. */
-function moves(sim: Sim): Move<ImposterAction>[] {
+function moves(sim: Sim): Move<ClientAction>[] {
   const ids = sim.players.map((p) => p.id)
   const word = sim.state.secret.word
-  const out: Move<ImposterAction>[] = []
+  const out: Move<ClientAction>[] = []
   for (const actorId of ids) {
     for (const clue of [word, word.toUpperCase(), 'cold', 'bird', `c${sim.state.turnIndex}`]) {
       out.push({ actorId, action: { type: 'submit_clue', word: clue } })

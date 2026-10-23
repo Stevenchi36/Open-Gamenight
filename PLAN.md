@@ -104,17 +104,19 @@ Games are registered by a **static import list** in `games/index.ts`, not discov
 
 ### Server side
 ```ts
-interface GameModule<S, A, V, Settings> {
+// A: player actions. T: timer actions the game schedules for itself (clients can never send them).
+interface GameModule<S, A, T, V, Settings> {
   id: string                      // 'imposter'; used for namespacing routes, tables, MCP tools
   name: string
   minPlayers: number
   maxPlayers: number
   settingsSchema: ZodType<Settings>   // validated by core on update_settings
   defaultSettings: Settings
-  actionSchema: ZodType<A>            // validated by core before reduce()
+  actionSchema: ZodType<A>            // player actions only; validated by core before reduce()
 
-  init(ctx: InitCtx<Settings>): { state: S; effects?: Effect<A>[] }
-  reduce(state: S, action: A, ctx: ReduceCtx): { state: S; effects?: Effect<A>[] } | GameError
+  init(ctx: InitCtx<Settings>): { state: S; effects?: Effect<T>[] }
+  reduce(state: S, action: A, ctx: ReduceCtx): { state: S; effects?: Effect<T>[] } | GameError
+  onTimer?(state: S, action: T, ctx: TimerCtx): { state: S; effects?: Effect<T>[] }
   view(state: S, viewerId: PlayerId): V      // per-player snapshot; the ONLY thing sent to clients
 
   // Player lifecycle hooks the core calls (also pure):
@@ -133,8 +135,8 @@ interface GameModule<S, A, V, Settings> {
                                                     // before init/next-round, so reduce() itself stays pure
 }
 ```
-- `InitCtx` / `ReduceCtx` carry `players`, `settings`, `actorId`, `now`, `rng` (seeded), and data prepared by `prepareRound`. Games never call `Math.random`, `Date.now`, `setTimeout`, or the DB from `reduce`/`view`.
-- **Effects** are plain data the runner executes: `{ type: 'schedule', at, action, key }`, `{ type: 'cancel', key }`, `{ type: 'notice', to, message }`, `{ type: 'gameOver' }` (back to the lobby). Timers (clue timer, disconnect grace) are scheduled actions, so they are testable and replayable.
+- `InitCtx` / `ReduceCtx` / `TimerCtx` carry `players`, `settings`, `now`, `rng` (seeded), and data prepared by `prepareRound`; `ReduceCtx` adds `actorId` (always a player). Games never call `Math.random`, `Date.now`, `setTimeout`, or the DB from `reduce`/`onTimer`/`view`.
+- **Effects** are plain data the runner executes: `{ type: 'schedule', at, action, key }`, `{ type: 'cancel', key }`, `{ type: 'notice', to, message }`, `{ type: 'gameOver' }` (back to the lobby). Timers (clue timer, disconnect grace) are scheduled timer actions, delivered to `onTimer`, so they are testable. A cancelled or rescheduled key never fires, even if its time had already come.
 - Permission checks for game actions (current player only, judge only, host only for game moves) live in the reducer, because only the game knows who the judge is. `ReduceCtx` tells the reducer who the host is.
 - `@wsfg/core/kit` holds pure reducer helpers every game can use: `isPresent`/`isConnected`, `pickConnected` (host first), `nextTurnOrder` + `playerOrderSchema`, `carryScores`/`addPoints`/`withoutPlayer`, `tallyVotes`/`dropBallots`, the `secretBallots` leak spec, and `DISCONNECT_GRACE_MS`.
 

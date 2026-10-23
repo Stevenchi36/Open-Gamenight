@@ -1,5 +1,5 @@
 /**
- * Word Imposter: pure init / reduce / view, plus the secrets spec checked by
+ * Word Imposter: pure init / reduce / onTimer / view, plus the secrets spec checked by
  * the core leak test. No I/O here; the word arrives through ctx.prepared
  * (from prepareRound) or is picked from the built-in list with ctx.rng.
  *
@@ -13,6 +13,7 @@ import {
   type GameError,
   type PlayerId,
   type ReduceCtx,
+  type TimerCtx,
   type Transition,
 } from '@wsfg/core/contract'
 import {
@@ -28,7 +29,6 @@ import {
   tallyVotes,
   withoutPlayer,
 } from '@wsfg/core/kit'
-import type { ZodType } from 'zod'
 import {
   clientActionSchema,
   defaultSettings,
@@ -100,25 +100,23 @@ export interface ImposterState {
   usedWordIds: number[]
 }
 
-/** Dispatched by scheduled effects only (actorId null). round/turnIndex make stale timers no-ops. */
-export type SystemAction =
+/** Scheduled by the game itself and handled by onTimer; clients can't send these. round/turnIndex make stale timers no-ops. */
+export type ImposterTimer =
   | { type: 'turn_timeout'; round: number; turnIndex: number }
   | { type: 'turn_skip'; round: number; turnIndex: number }
   | { type: 'reveal_done'; round: number }
   | { type: 'guess_timeout'; round: number }
 
-export type ImposterAction = ClientAction | SystemAction
-
 type Ctx = BaseCtx<ImposterSettings>
-type Step = Transition<ImposterState, ImposterAction>
-type Fx = Effect<ImposterAction>[]
+type Step = Transition<ImposterState, ImposterTimer>
+type Fx = Effect<ImposterTimer>[]
 
 const TIMER_KEYS = ['turn_timer', 'turn_skip', 'reveal', 'guess_timeout'] as const
 const REVEALED: readonly Phase[] = ['REVEAL', 'GUESS_CHECK', 'RESULTS']
 
 // ---------------------------------------------------------------- helpers
 
-const cancel = (key: (typeof TIMER_KEYS)[number]): Effect<ImposterAction> => ({ type: 'cancel', key })
+const cancel = (key: (typeof TIMER_KEYS)[number]): Effect<ImposterTimer> => ({ type: 'cancel', key })
 
 function totalTurns(state: ImposterState): number {
   return state.turnOrder.length * state.settings.rotations
@@ -221,7 +219,7 @@ function enterTurn(state: ImposterState, ctx: Ctx, effects: Fx = []): Step {
   return { state: { ...state, phase: 'CLUES', turnIndex: index, turnDeadline: deadline }, effects }
 }
 
-function scheduleTurnSkip(state: ImposterState, ctx: Ctx, turnIndex: number): Effect<ImposterAction> {
+function scheduleTurnSkip(state: ImposterState, ctx: Ctx, turnIndex: number): Effect<ImposterTimer> {
   return {
     type: 'schedule',
     key: 'turn_skip',
@@ -277,7 +275,7 @@ function revealDone(state: ImposterState, ctx: Ctx): Step {
   return { state: next, effects }
 }
 
-function scheduleGuessTimeout(state: ImposterState, ctx: Ctx): Effect<ImposterAction> {
+function scheduleGuessTimeout(state: ImposterState, ctx: Ctx): Effect<ImposterTimer> {
   return {
     type: 'schedule',
     key: 'guess_timeout',
@@ -345,15 +343,15 @@ function voidRound(state: ImposterState): Step {
 
 // ---------------------------------------------------------------- reducer
 
-function reduce(state: ImposterState, action: ImposterAction, ctx: ReduceCtx<ImposterSettings, PreparedWord>): Step | GameError {
+function reduce(state: ImposterState, action: ClientAction, ctx: ReduceCtx<ImposterSettings, PreparedWord>): Step | GameError {
   const actor = ctx.actorId
-  const isHost = actor !== null && actor === ctx.hostId
+  const isHost = actor === ctx.hostId
 
   switch (action.type) {
     case 'submit_clue': {
       if (state.phase !== 'CLUES') return gameError('It is not the clue phase')
       if (state.settings.clueMode !== 'typed') return gameError('Clues are spoken out loud in this game')
-      if (actor === null || actor !== currentPlayer(state)) return gameError("It's not your turn")
+      if (actor !== currentPlayer(state)) return gameError("It's not your turn")
       const format = validateClueFormat(action.word)
       if (!format.ok) return gameError(format.error)
       const word = format.value
@@ -370,7 +368,7 @@ function reduce(state: ImposterState, action: ImposterAction, ctx: ReduceCtx<Imp
     case 'end_turn': {
       if (state.phase !== 'CLUES') return gameError('It is not the clue phase')
       if (state.settings.clueMode !== 'spoken') return gameError('Type your clue instead')
-      if (actor === null || (actor !== currentPlayer(state) && !isHost)) return gameError("It's not your turn")
+      if (actor !== currentPlayer(state) && !isHost) return gameError("It's not your turn")
       return advanceTurn(state, ctx)
     }
 
@@ -381,7 +379,7 @@ function reduce(state: ImposterState, action: ImposterAction, ctx: ReduceCtx<Imp
 
     case 'cast_vote': {
       if (state.phase !== 'VOTING') return gameError('It is not time to vote')
-      if (actor === null || !state.roundPlayers.includes(actor)) return gameError('You are not in this round')
+      if (!state.roundPlayers.includes(actor)) return gameError('You are not in this round')
       if (action.targetId === actor) return gameError("You can't vote for yourself")
       if (!state.roundPlayers.includes(action.targetId)) return gameError('That player is not in this round')
       return maybeFinishVoting({ ...state, ballots: { ...state.ballots, [actor]: action.targetId } }, ctx)
@@ -405,7 +403,7 @@ function reduce(state: ImposterState, action: ImposterAction, ctx: ReduceCtx<Imp
 
     case 'judge_guess':
       if (state.phase !== 'GUESS_CHECK') return gameError('There is no guess to judge')
-      if (actor === null || actor !== state.outcome?.judgeId) return gameError('Only the judge can decide')
+      if (actor !== state.outcome?.judgeId) return gameError('Only the judge can decide')
       if (state.settings.clueMode === 'typed' && state.outcome.guess === null) return gameError('Wait for the guess')
       return finishRound(state, action.correct)
 
@@ -419,27 +417,23 @@ function reduce(state: ImposterState, action: ImposterAction, ctx: ReduceCtx<Imp
       if (state.phase !== 'RESULTS') return gameError('The round is not over yet')
       if (ctx.players.length < MIN_PLAYERS) return gameError(`Need at least ${MIN_PLAYERS} players`)
       return startRound(state, ctx, ctx.prepared, action.shuffle ?? false)
-
-    // ---- scheduled (actorId null only); stale timers are no-ops
-    case 'turn_timeout':
-    case 'turn_skip':
-    case 'reveal_done':
-    case 'guess_timeout': {
-      if (actor !== null) return gameError('Not allowed')
-      if (action.round !== state.round) return { state }
-      if (action.type === 'turn_timeout' || action.type === 'turn_skip') {
-        if (state.phase !== 'CLUES' || action.turnIndex !== state.turnIndex) return { state }
-        if (action.type === 'turn_timeout' && state.settings.clueMode !== 'typed') return { state }
-        const current = currentPlayer(state)
-        if (action.type === 'turn_skip' && current !== null && isConnected(ctx, current)) return { state }
-        return advanceTurn(state, ctx)
-      }
-      if (action.type === 'reveal_done') return state.phase === 'REVEAL' ? revealDone(state, ctx) : { state }
-      // A typed guess already in stands: the judge can still rule on it.
-      if (state.phase !== 'GUESS_CHECK' || isConnected(ctx, state.imposterId) || state.outcome?.guess) return { state }
-      return finishRound(state, false)
-    }
   }
+}
+
+/** Stale timers are no-ops. */
+function onTimer(state: ImposterState, action: ImposterTimer, ctx: TimerCtx<ImposterSettings, PreparedWord>): Step {
+  if (action.round !== state.round) return { state }
+  if (action.type === 'turn_timeout' || action.type === 'turn_skip') {
+    if (state.phase !== 'CLUES' || action.turnIndex !== state.turnIndex) return { state }
+    if (action.type === 'turn_timeout' && state.settings.clueMode !== 'typed') return { state }
+    const current = currentPlayer(state)
+    if (action.type === 'turn_skip' && current !== null && isConnected(ctx, current)) return { state }
+    return advanceTurn(state, ctx)
+  }
+  if (action.type === 'reveal_done') return state.phase === 'REVEAL' ? revealDone(state, ctx) : { state }
+  // A typed guess already in stands: the judge can still rule on it.
+  if (state.phase !== 'GUESS_CHECK' || isConnected(ctx, state.imposterId) || state.outcome?.guess) return { state }
+  return finishRound(state, false)
 }
 
 // ---------------------------------------------------------------- view
@@ -498,7 +492,7 @@ function view(state: ImposterState, viewerId: PlayerId): ImposterView {
 
 // ---------------------------------------------------------------- module
 
-export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, ImposterSettings, PreparedWord>({
+export const imposter = defineGame<ImposterState, ClientAction, ImposterTimer, ImposterView, ImposterSettings, PreparedWord>({
   id: GAME_ID,
   name: 'Word Imposter',
   description: 'Everyone gets the secret word except the imposter. Give clues, find the faker.',
@@ -506,11 +500,11 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
   maxPlayers: MAX_PLAYERS,
   settingsSchema,
   defaultSettings,
-  // Clients can only send ClientActions; SystemActions come from scheduled effects.
-  actionSchema: clientActionSchema as ZodType<ImposterAction>,
+  actionSchema: clientActionSchema,
 
   init: (ctx) => startRound(null, ctx, ctx.prepared),
   reduce,
+  onTimer,
   view,
 
   onPlayerDisconnected(state, playerId, ctx) {

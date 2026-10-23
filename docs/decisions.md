@@ -5,6 +5,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 ## Platform
 - **Generic platform, Imposter as the first game.** More games are expected; rooms, auth and sockets shouldn't be rewritten per game.
 - **Game contract is a pure reducer (`init` / `reduce` / `view`) with effects for timers.** Testable with seeded `rng`/`now`, and the core can guarantee secrecy by only ever sending `view()` output.
+- **Player actions (`A`, `reduce`) and timer actions (`T`, `onTimer`) are separate types and handlers.** With one action type, `actionSchema` had to be cast and every timer case had to re-check `actorId === null`; now `actorId` is always a player, clients can't name a timer action, and the compiler keeps the two apart.
 - **Core sends only `view()` output, never raw state.** Secret-hiding is enforced in one place for every game, not remembered per game.
 - **Generic leak test in core.** Makes "games can't leak secrets" a platform guarantee checked in CI.
 - **Secrets are checked two ways: forbidden values and indistinguishable variants.** A string search catches a leaked word but not a leaked association like "this player id is the imposter"; comparing a viewer's view across states that differ only in the secret catches both.

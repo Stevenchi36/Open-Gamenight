@@ -17,7 +17,8 @@ export interface OracleState {
 export type OracleAction =
   | { type: 'guess'; word: string }
   | { type: 'reveal' }
-  | { type: 'time_up' }
+
+export type OracleTimer = { type: 'time_up' }
 
 export interface OracleView {
   phase: OracleState['phase']
@@ -33,7 +34,7 @@ export const ROUND_MS = 60_000
 
 export function makeOracle(options: { leak?: 'word' | 'oracle' } = {}) {
   const { leak } = options
-  return defineGame<OracleState, OracleAction, OracleView, { rounds: number }, { word: string }>({
+  return defineGame<OracleState, OracleAction, OracleTimer, OracleView, { rounds: number }, { word: string }>({
     id: 'oracle',
     name: 'Oracle',
     description: 'Test game',
@@ -44,7 +45,6 @@ export function makeOracle(options: { leak?: 'word' | 'oracle' } = {}) {
     actionSchema: z.discriminatedUnion('type', [
       z.object({ type: z.literal('guess'), word: z.string().trim().min(1).max(24) }),
       z.object({ type: z.literal('reveal') }),
-      z.object({ type: z.literal('time_up') }),
     ]),
 
     init(ctx) {
@@ -59,7 +59,7 @@ export function makeOracle(options: { leak?: 'word' | 'oracle' } = {}) {
       switch (action.type) {
         case 'guess': {
           if (state.phase !== 'guessing') return gameError('Round is over')
-          if (ctx.actorId === null || ctx.actorId === state.oracleId) return gameError('The oracle cannot guess')
+          if (ctx.actorId === state.oracleId) return gameError('The oracle cannot guess')
           // Guesses that equal the word are not recorded as text (that would leak it).
           if (action.word.toLowerCase() === state.word.toLowerCase()) {
             return {
@@ -73,13 +73,14 @@ export function makeOracle(options: { leak?: 'word' | 'oracle' } = {}) {
           if (ctx.actorId !== ctx.hostId) return gameError('Host only')
           if (state.phase === 'done') return { state, effects: [{ type: 'gameOver' }] }
           return { state: { ...state, phase: 'done' }, effects: [{ type: 'cancel', key: 'round' }] }
-        case 'time_up':
-          if (ctx.actorId !== null) return gameError('Not allowed')
-          if (state.phase !== 'guessing') return { state }
-          return {
-            state: { ...state, phase: 'done' },
-            effects: [{ type: 'notice', to: 'all', message: 'Time is up' }],
-          }
+      }
+    },
+
+    onTimer(state) {
+      if (state.phase !== 'guessing') return { state }
+      return {
+        state: { ...state, phase: 'done' },
+        effects: [{ type: 'notice', to: 'all', message: 'Time is up' }],
       }
     },
 

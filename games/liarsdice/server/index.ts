@@ -3,4 +3,4 @@
  * admin pages), so this is just the pure game from game.ts.
  */
 export { liarsDice } from './game.ts'
-export type { LiarsDiceAction, LiarsDiceState } from './game.ts'
+export type { LiarsDiceState, LiarsDiceTimer } from './game.ts'

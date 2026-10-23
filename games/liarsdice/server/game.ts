@@ -1,5 +1,5 @@
 /**
- * Liar's Dice: pure init / reduce / view, plus the secrets spec checked by
+ * Liar's Dice: pure init / reduce / onTimer / view, plus the secrets spec checked by
  * the core leak test. Dice come from ctx.rng; there is no I/O at all.
  *
  * BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
@@ -12,10 +12,10 @@ import {
   type GameError,
   type PlayerId,
   type ReduceCtx,
+  type TimerCtx,
   type Transition,
 } from '@wsfg/core/contract'
 import { addPoints, carryScores, DISCONNECT_GRACE_MS, isConnected, nextTurnOrder, withoutPlayer } from '@wsfg/core/kit'
-import type { ZodType } from 'zod'
 import {
   clientActionSchema,
   countFace,
@@ -60,22 +60,20 @@ export interface LiarsDiceState {
   scores: Record<PlayerId, number>
 }
 
-/** Dispatched by scheduled effects only (actorId null). */
-export type SystemAction =
+/** Scheduled by the game itself and handled by onTimer; clients can't send these. */
+export type LiarsDiceTimer =
   | { type: 'turn_skip'; round: number; turnSeq: number }
   | { type: 'reveal_done'; round: number }
 
-export type LiarsDiceAction = ClientAction | SystemAction
-
 type Ctx = BaseCtx<LiarsDiceSettings>
-type Step = Transition<LiarsDiceState, LiarsDiceAction>
-type Fx = Effect<LiarsDiceAction>[]
+type Step = Transition<LiarsDiceState, LiarsDiceTimer>
+type Fx = Effect<LiarsDiceTimer>[]
 
 const TIMER_KEYS = ['turn_skip', 'reveal'] as const
 
 // ---------------------------------------------------------------- helpers
 
-const cancel = (key: (typeof TIMER_KEYS)[number]): Effect<LiarsDiceAction> => ({ type: 'cancel', key })
+const cancel = (key: (typeof TIMER_KEYS)[number]): Effect<LiarsDiceTimer> => ({ type: 'cancel', key })
 
 function active(state: LiarsDiceState): PlayerId[] {
   return state.seats.filter((id) => (state.diceCount[id] ?? 0) > 0)
@@ -139,7 +137,7 @@ function enterTurn(state: LiarsDiceState, playerId: PlayerId, ctx: Ctx, effects:
   return { state: next, effects }
 }
 
-function scheduleTurnSkip(state: LiarsDiceState, ctx: Ctx): Effect<LiarsDiceAction> {
+function scheduleTurnSkip(state: LiarsDiceState, ctx: Ctx): Effect<LiarsDiceTimer> {
   return {
     type: 'schedule',
     key: 'turn_skip',
@@ -193,13 +191,13 @@ function finishMatch(state: LiarsDiceState, winnerId: PlayerId | null, effects: 
 
 // ---------------------------------------------------------------- reducer
 
-function reduce(state: LiarsDiceState, action: LiarsDiceAction, ctx: ReduceCtx<LiarsDiceSettings>): Step | GameError {
+function reduce(state: LiarsDiceState, action: ClientAction, ctx: ReduceCtx<LiarsDiceSettings>): Step | GameError {
   const actor = ctx.actorId
 
   switch (action.type) {
     case 'bid': {
       if (state.phase !== 'BIDDING') return gameError('It is not time to bid')
-      if (actor === null || actor !== state.turn) return gameError("It's not your turn")
+      if (actor !== state.turn) return gameError("It's not your turn")
       const total = totalDice(state)
       if (action.quantity > total) return gameError(`There are only ${total} dice in play`)
       const prev = state.bids.at(-1) ?? null
@@ -213,7 +211,7 @@ function reduce(state: LiarsDiceState, action: LiarsDiceAction, ctx: ReduceCtx<L
     case 'call':
     case 'spot_on': {
       if (state.phase !== 'BIDDING') return gameError('It is not time to call')
-      if (actor === null || actor !== state.turn) return gameError("It's not your turn")
+      if (actor !== state.turn) return gameError("It's not your turn")
       if (action.type === 'spot_on' && !state.settings.spotOn) return gameError('Spot on is off in this game')
       const bid = state.bids.at(-1)
       if (!bid) return gameError('There is no bid to call yet')
@@ -222,20 +220,22 @@ function reduce(state: LiarsDiceState, action: LiarsDiceAction, ctx: ReduceCtx<L
     }
 
     case 'new_match':
-      if (actor === null || actor !== ctx.hostId) return gameError('Only the host can start a new match')
+      if (actor !== ctx.hostId) return gameError('Only the host can start a new match')
       if (state.phase !== 'RESULTS') return gameError('The match is not over yet')
       if (ctx.players.length < MIN_PLAYERS) return gameError(`Need at least ${MIN_PLAYERS} players`)
       return startMatch(state, ctx)
+  }
+}
 
-    // ---- scheduled (actorId null only); stale timers are no-ops
+/** Stale timers are no-ops. */
+function onTimer(state: LiarsDiceState, action: LiarsDiceTimer, ctx: TimerCtx<LiarsDiceSettings>): Step {
+  switch (action.type) {
     case 'turn_skip':
-      if (actor !== null) return gameError('Not allowed')
       if (state.phase !== 'BIDDING' || action.round !== state.round || action.turnSeq !== state.turnSeq) return { state }
       if (state.turn === null || isConnected(ctx, state.turn)) return { state }
       return enterTurn(state, nextActiveAfter(state, state.turn) ?? state.turn, ctx)
 
     case 'reveal_done':
-      if (actor !== null) return gameError('Not allowed')
       if (state.phase !== 'REVEAL' || action.round !== state.round) return { state }
       return revealDone(state, ctx)
   }
@@ -266,7 +266,7 @@ function view(state: LiarsDiceState, viewerId: PlayerId): LiarsDiceView {
 
 // ---------------------------------------------------------------- module
 
-export const liarsDice = defineGame<LiarsDiceState, LiarsDiceAction, LiarsDiceView, LiarsDiceSettings>({
+export const liarsDice = defineGame<LiarsDiceState, ClientAction, LiarsDiceTimer, LiarsDiceView, LiarsDiceSettings>({
   id: GAME_ID,
   name: "Liar's Dice",
   description: 'Roll in secret, bid on what everyone holds, and call out the liars.',
@@ -274,11 +274,11 @@ export const liarsDice = defineGame<LiarsDiceState, LiarsDiceAction, LiarsDiceVi
   maxPlayers: MAX_PLAYERS,
   settingsSchema,
   defaultSettings,
-  // Clients can only send ClientActions; SystemActions come from scheduled effects.
-  actionSchema: clientActionSchema as ZodType<LiarsDiceAction>,
+  actionSchema: clientActionSchema,
 
   init: (ctx) => startMatch(null, ctx),
   reduce,
+  onTimer,
   view,
 
   onPlayerDisconnected(state, playerId, ctx) {

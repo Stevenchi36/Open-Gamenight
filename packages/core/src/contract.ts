@@ -2,7 +2,11 @@
  * The server-side game contract. A game is a pure reducer plus optional
  * integrations; the core owns rooms, sockets, timers and I/O.
  *
- * Purity rules for init / reduce / view / lifecycle hooks:
+ * Two kinds of action: player actions (type A, parsed with actionSchema, handled
+ * by reduce) and timer actions (type T, scheduled by the game itself through
+ * effects, handled by onTimer). Clients can never send a timer action.
+ *
+ * Purity rules for init / reduce / onTimer / view / lifecycle hooks:
  * - no I/O, no Math.random, no Date.now, no setTimeout
  * - use ctx.rng, ctx.now, and data from prepareRound instead
  * - return new state; timers and notices are returned as effects
@@ -40,9 +44,14 @@ export interface InitCtx<Settings, P = undefined> extends BaseCtx<Settings> {
 }
 
 export interface ReduceCtx<Settings, P = undefined> extends BaseCtx<Settings> {
-  /** Who sent the action. `null` means the core itself (a scheduled effect firing). */
-  actorId: PlayerId | null
+  /** The player who sent the action. */
+  actorId: PlayerId
   /** Output of prepareRound({ trigger: 'action', ... }) for this action, if any. */
+  prepared: P | undefined
+}
+
+export interface TimerCtx<Settings, P = undefined> extends BaseCtx<Settings> {
+  /** Output of prepareRound({ trigger: 'timer', ... }) for this action, if any. */
   prepared: P | undefined
 }
 
@@ -51,20 +60,24 @@ export type HookCtx<Settings> = BaseCtx<Settings>
 /** Recipients for a notice. 'host' resolves to the current host when sent. */
 export type NoticeTarget = PlayerId | PlayerId[] | 'all' | 'host'
 
-export type Effect<A> =
-  /** Dispatch `action` (with actorId null) at time `at`. Re-scheduling a key replaces it. */
-  | { type: 'schedule'; key: string; at: number; action: A }
+/** `T` is the game's timer action type. */
+export type Effect<T> =
+  /**
+   * Pass `action` to onTimer at time `at`. Re-scheduling a key replaces it; a cancelled
+   * or replaced timer never fires, even if its time has already come.
+   */
+  | { type: 'schedule'; key: string; at: number; action: T }
   | { type: 'cancel'; key: string }
   | { type: 'notice'; to: NoticeTarget; message: string }
   /** End the game and return the room to the lobby. */
   | { type: 'gameOver' }
 
-export interface Transition<S, A> {
+export interface Transition<S, T> {
   state: S
-  effects?: Effect<A>[]
+  effects?: Effect<T>[]
 }
 
-/** Returned by reduce() to reject an action; sent to the actor as error { code: 'game' }. */
+/** Returned by reduce() to reject a player action; sent to the actor as error { code: 'game' }. */
 export interface GameError {
   error: string
 }
@@ -174,11 +187,16 @@ export interface McpToolDef<Args = unknown> {
   handler(args: Args): Promise<unknown>
 }
 
-export type PrepareRequest<S, A> =
+export type PrepareRequest<S, A, T> =
   | { trigger: 'init' }
-  | { trigger: 'action'; state: S; action: A; actorId: PlayerId | null }
+  | { trigger: 'action'; state: S; action: A; actorId: PlayerId }
+  | { trigger: 'timer'; state: S; action: T }
 
-export interface GameModule<S, A, V, Settings, P = undefined> {
+/**
+ * S: state. A: player actions. T: timer actions (`never` if the game schedules none).
+ * V: per-player view. Settings: lobby settings. P: prepareRound output.
+ */
+export interface GameModule<S, A, T, V, Settings, P = undefined> {
   /** Lowercase letters and digits, starting with a letter. Used for routes, tables and MCP tools. */
   id: string
   name: string
@@ -187,16 +205,22 @@ export interface GameModule<S, A, V, Settings, P = undefined> {
   maxPlayers: number
   settingsSchema: ZodType<Settings>
   defaultSettings: Settings
+  /** Player actions only; timer actions never come from a client. */
   actionSchema: ZodType<A>
 
-  init(ctx: InitCtx<Settings, P>): Transition<S, A>
-  reduce(state: S, action: A, ctx: ReduceCtx<Settings, P>): Transition<S, A> | GameError
+  init(ctx: InitCtx<Settings, P>): Transition<S, T>
+  reduce(state: S, action: A, ctx: ReduceCtx<Settings, P>): Transition<S, T> | GameError
+  /**
+   * A scheduled timer action is due. Required if the game schedules any. Return
+   * `{ state }` unchanged when the action no longer applies.
+   */
+  onTimer?(state: S, action: T, ctx: TimerCtx<Settings, P>): Transition<S, T>
   /** Per-player snapshot; the only game data that leaves the server. Must be JSON-serializable. */
   view(state: S, viewerId: PlayerId): V
 
-  onPlayerDisconnected?(state: S, playerId: PlayerId, ctx: HookCtx<Settings>): Transition<S, A>
-  onPlayerReconnected?(state: S, playerId: PlayerId, ctx: HookCtx<Settings>): Transition<S, A>
-  onPlayerRemoved?(state: S, playerId: PlayerId, ctx: HookCtx<Settings>): Transition<S, A>
+  onPlayerDisconnected?(state: S, playerId: PlayerId, ctx: HookCtx<Settings>): Transition<S, T>
+  onPlayerReconnected?(state: S, playerId: PlayerId, ctx: HookCtx<Settings>): Transition<S, T>
+  onPlayerRemoved?(state: S, playerId: PlayerId, ctx: HookCtx<Settings>): Transition<S, T>
 
   secrets?: SecretSpec<S>
 
@@ -216,23 +240,23 @@ export interface GameModule<S, A, V, Settings, P = undefined> {
    */
   categories?: { usage(services: ServerServices): Record<number, number> }
   /**
-   * Async I/O step the runner awaits before init and before every action
-   * (including scheduled ones). Return undefined when the action needs nothing.
-   * Its result reaches init/reduce as ctx.prepared, so they stay pure.
+   * Async I/O step the runner awaits before init and before every player and
+   * timer action. Return undefined when the action needs nothing.
+   * Its result reaches init/reduce/onTimer as ctx.prepared, so they stay pure.
    */
   prepareRound?(
-    request: PrepareRequest<S, A>,
+    request: PrepareRequest<S, A, T>,
     ctx: { settings: Settings; players: readonly PlayerInfo[]; services: ServerServices },
   ): Promise<P | undefined>
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AnyGameModule = GameModule<any, any, any, any, any>
+export type AnyGameModule = GameModule<any, any, any, any, any, any>
 
 /** Identity helper so a game module's type parameters are inferred. */
-export function defineGame<S, A, V, Settings, P = undefined>(
-  game: GameModule<S, A, V, Settings, P>,
-): GameModule<S, A, V, Settings, P> {
+export function defineGame<S, A, T, V, Settings, P = undefined>(
+  game: GameModule<S, A, T, V, Settings, P>,
+): GameModule<S, A, T, V, Settings, P> {
   return game
 }
 

@@ -18,8 +18,8 @@ export interface Leak {
 }
 
 /** Check one state for every viewer. */
-export function findLeaks<S, A, V, Settings, P>(
-  game: GameModule<S, A, V, Settings, P>,
+export function findLeaks<S, A, T, V, Settings, P>(
+  game: GameModule<S, A, T, V, Settings, P>,
   state: S,
   viewerIds: readonly PlayerId[],
 ): Leak[] {
@@ -66,7 +66,7 @@ export interface Move<A> {
   action: A
 }
 
-export interface LeakTestOptions<S, A, V, Settings, P> extends Omit<SimOptions<S, A, Settings, P>, 'seed'> {
+export interface LeakTestOptions<S, A, T, V, Settings, P> extends Omit<SimOptions<S, A, T, Settings, P>, 'seed'> {
   /** One random playthrough per seed. Defaults to seeds 1..25. */
   seeds?: number[]
   /** Steps per playthrough. Defaults to 200. */
@@ -76,7 +76,7 @@ export interface LeakTestOptions<S, A, V, Settings, P> extends Omit<SimOptions<S
    * Invalid moves are fine (rejected ones are skipped), but include the moves
    * that progress the game so every phase is reached.
    */
-  moves(sim: GameSim<S, A, V, Settings, P>): Move<A>[]
+  moves(sim: GameSim<S, A, T, V, Settings, P>): Move<A>[]
   /** Per-step chance of toggling a random player's connection. Defaults to 0.1. */
   disconnectChance?: number
   /** Per-step chance of firing the next pending timer instead of a move. Defaults to 0.2. */
@@ -96,9 +96,9 @@ export interface LeakTestResult {
   phasesSeen: string[]
 }
 
-export function runLeakTest<S, A, V, Settings, P>(
-  game: GameModule<S, A, V, Settings, P>,
-  options: LeakTestOptions<S, A, V, Settings, P>,
+export function runLeakTest<S, A, T, V, Settings, P>(
+  game: GameModule<S, A, T, V, Settings, P>,
+  options: LeakTestOptions<S, A, T, V, Settings, P>,
 ): LeakTestResult {
   const {
     seeds = Array.from({ length: 25 }, (_, i) => i + 1),

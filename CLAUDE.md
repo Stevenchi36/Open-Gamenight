@@ -10,7 +10,7 @@ Multiplayer party-game platform (pnpm workspace, TypeScript, Node 26). Word Impo
 
 ## Invariants
 
-- **Pure games.** A game's `init`/`reduce`/`view`/lifecycle hooks are pure: randomness from `ctx.rng`, time from `ctx.now`, timers as `schedule`/`cancel` effects, I/O only in `prepareRound`. That purity is what makes `createSim` tests and replay work.
+- **Pure games.** A game's `init`/`reduce`/`onTimer`/`view`/lifecycle hooks are pure: randomness from `ctx.rng`, time from `ctx.now`, timers as `schedule`/`cancel` effects, I/O only in `prepareRound`. That purity is what makes `createSim` tests and replay work.
 - **Only `view()` leaves the server.** Per-player views are the secrecy boundary. Every game declares `secrets`, and its leak test (`runLeakTest`) must stay green. A new field in a view is a new thing to check against `secrets`.
 - **Game boundary.** Within the repo, games import only from `@wsfg/core/*` and their own folder; server services arrive through `ServerServices`. Game tables are prefixed `<gameId>_`. The one shared table is core `categories`: games read/join it filtered by their own `game_id`, reference it by foreign key, and write through `services.categories`.
 - **Server-side auth.** Every admin and game-admin route sits behind `requireAdmin` + the Origin check (the core mounts them); `create_room` needs a session. Client guards are UX only. IP-based limits use `clientIp()`.

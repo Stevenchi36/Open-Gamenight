@@ -1,16 +1,16 @@
 import { runLeakTest, type Move } from '@wsfg/core/testing'
 import { describe, expect, it } from 'vitest'
-import { liarsDice, type LiarsDiceAction } from '../server/game.ts'
-import { defaultSettings, FACES, minQuantity, type LiarsDiceSettings } from '../shared/index.ts'
+import { liarsDice } from '../server/game.ts'
+import { defaultSettings, FACES, minQuantity, type ClientAction, type LiarsDiceSettings } from '../shared/index.ts'
 import type { Sim } from './helpers.ts'
 
 const players = ['p1', 'p2', 'p3', 'p4'].map((id) => ({ id }))
 
 /** Every plausible move: each player tries the smallest raise on every face and the calls; the host a new match. */
-function moves(sim: Sim): Move<LiarsDiceAction>[] {
+function moves(sim: Sim): Move<ClientAction>[] {
   const { bids, settings } = sim.state
   const prev = bids.at(-1) ?? null
-  const out: Move<LiarsDiceAction>[] = []
+  const out: Move<ClientAction>[] = []
   for (const { id: actorId } of sim.players) {
     for (let face = 1; face <= FACES; face++) {
       const quantity = minQuantity(prev, face, settings.wildOnes)

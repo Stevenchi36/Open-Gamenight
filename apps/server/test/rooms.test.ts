@@ -1,4 +1,4 @@
-import { defineGame, gameError } from '@wsfg/core/contract'
+import { defineGame } from '@wsfg/core/contract'
 import { games as registry } from '@wsfg/games/server'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
@@ -8,10 +8,11 @@ import { createManager, FakeConn, user } from './helpers/rooms.ts'
 const imposter = registry[0]!
 
 type CoinState = { flips: number; dings: number; sides: number }
-type CoinAction = { type: 'flip' } | { type: 'stop' } | { type: 'end' } | { type: 'ding' } | { type: 'boom' }
+type CoinAction = { type: 'flip' } | { type: 'stop' } | { type: 'end' } | { type: 'boom' }
+type CoinTimer = { type: 'ding' }
 
 /** Tiny second game: tests game switching, timers and gameOver. */
-const coin = defineGame<CoinState, CoinAction, CoinState, { sides: number }>({
+const coin = defineGame<CoinState, CoinAction, CoinTimer, CoinState, { sides: number }>({
   id: 'coin',
   name: 'Coin',
   description: 'Flip it',
@@ -23,7 +24,6 @@ const coin = defineGame<CoinState, CoinAction, CoinState, { sides: number }>({
     z.object({ type: z.literal('flip') }),
     z.object({ type: z.literal('stop') }),
     z.object({ type: z.literal('end') }),
-    z.object({ type: z.literal('ding') }),
     z.object({ type: z.literal('boom') }),
   ]),
   init: (ctx) => ({ state: { flips: 0, dings: 0, sides: ctx.settings.sides } }),
@@ -36,15 +36,16 @@ const coin = defineGame<CoinState, CoinAction, CoinState, { sides: number }>({
         }
       case 'stop':
         return { state, effects: [{ type: 'cancel', key: 'ding' }] }
-      case 'ding':
-        if (ctx.actorId !== null) return gameError('system only')
-        return { state: { ...state, dings: state.dings + 1 }, effects: [{ type: 'notice', to: 'all', message: 'ding' }] }
       case 'end':
         return { state, effects: [{ type: 'gameOver' }] }
       case 'boom':
         throw new Error('game bug')
     }
   },
+  onTimer: (state) => ({
+    state: { ...state, dings: state.dings + 1 },
+    effects: [{ type: 'notice', to: 'all', message: 'ding' }],
+  }),
   view: (state) => state,
 })
 
@@ -288,9 +289,9 @@ describe('running a game', () => {
     await m.send(host, { type: 'create_room' })
     await m.send(host, { type: 'start_game' })
     await m.send(host, { type: 'action', action: { type: 'flip' } })
-    // a player can't trigger the system-only action
+    // a player can't send a timer action
     await m.send(host, { type: 'action', action: { type: 'ding' } })
-    expect(host.last('error')).toMatchObject({ code: 'game', message: 'system only' })
+    expect(host.last('error')).toMatchObject({ code: 'validation' })
     m.clock.advance(999)
     await m.settle()
     expect(host.last('state')!.game).toMatchObject({ dings: 0 })

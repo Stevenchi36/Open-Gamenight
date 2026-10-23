@@ -1,8 +1,8 @@
 import { createSim, type GameSim } from '@wsfg/core/testing'
-import { liarsDice, type LiarsDiceAction, type LiarsDiceState } from '../server/game.ts'
-import { defaultSettings, type LiarsDiceSettings, type LiarsDiceView } from '../shared/index.ts'
+import { liarsDice, type LiarsDiceState, type LiarsDiceTimer } from '../server/game.ts'
+import { defaultSettings, type ClientAction, type LiarsDiceSettings, type LiarsDiceView } from '../shared/index.ts'
 
-export type Sim = GameSim<LiarsDiceState, LiarsDiceAction, LiarsDiceView, LiarsDiceSettings>
+export type Sim = GameSim<LiarsDiceState, ClientAction, LiarsDiceTimer, LiarsDiceView, LiarsDiceSettings>
 
 export const PLAYERS = ['p1', 'p2', 'p3']
 
@@ -34,7 +34,7 @@ export function nextSeat(sim: Sim, id = sim.state.turn!): string {
   return seats[(seats.indexOf(id) + 1) % seats.length]!
 }
 
-export function act(sim: Sim, actorId: string, action: LiarsDiceAction): void {
+export function act(sim: Sim, actorId: string, action: ClientAction): void {
   const result = sim.act(actorId, action)
   if (!result.ok) throw new Error(`${actorId}: ${result.error}`)
 }

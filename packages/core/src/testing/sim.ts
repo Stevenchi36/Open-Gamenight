@@ -1,6 +1,6 @@
 /**
  * A synchronous, in-memory stand-in for the room runner, for game tests.
- * It applies init/reduce/hooks, executes effects against a virtual clock,
+ * It applies init/reduce/onTimer/hooks, executes effects against a virtual clock,
  * and exposes per-player views. No sockets, no DB: `prepare` replaces the
  * game's async prepareRound with a synchronous fake.
  */
@@ -22,7 +22,7 @@ export interface SimPlayer {
   connected?: boolean
 }
 
-export interface SimOptions<S, A, Settings, P> {
+export interface SimOptions<S, A, T, Settings, P> {
   /** In join order. */
   players: SimPlayer[]
   /** Defaults to the first player. */
@@ -33,7 +33,7 @@ export interface SimOptions<S, A, Settings, P> {
   /** Virtual clock start, ms. Defaults to 0. */
   now?: number
   /** Synchronous stand-in for prepareRound. */
-  prepare?: (request: PrepareRequest<S, A>) => P | undefined
+  prepare?: (request: PrepareRequest<S, A, T>) => P | undefined
 }
 
 export interface SimNotice {
@@ -43,23 +43,23 @@ export interface SimNotice {
 
 export type ActResult = { ok: true } | { ok: false; error: string }
 
-export class GameSim<S, A, V, Settings, P = undefined> {
+export class GameSim<S, A, T, V, Settings, P = undefined> {
   state: S
   players: PlayerInfo[]
   hostId: PlayerId
   now: number
   readonly settings: Settings
   /** Pending scheduled actions by key, in scheduling order. */
-  readonly timers = new Map<string, { at: number; action: A }>()
+  readonly timers = new Map<string, { at: number; action: T }>()
   readonly notices: SimNotice[] = []
   /** True once the game emitted gameOver; further actions are rejected. */
   over = false
 
-  readonly game: GameModule<S, A, V, Settings, P>
+  readonly game: GameModule<S, A, T, V, Settings, P>
   private readonly rng: Rng
-  private readonly prepare: ((request: PrepareRequest<S, A>) => P | undefined) | undefined
+  private readonly prepare: ((request: PrepareRequest<S, A, T>) => P | undefined) | undefined
 
-  constructor(game: GameModule<S, A, V, Settings, P>, options: SimOptions<S, A, Settings, P>) {
+  constructor(game: GameModule<S, A, T, V, Settings, P>, options: SimOptions<S, A, T, Settings, P>) {
     this.game = game
     if (options.players.length === 0) throw new Error('GameSim: at least one player is required')
     this.players = options.players.map((p) => ({
@@ -74,17 +74,23 @@ export class GameSim<S, A, V, Settings, P = undefined> {
     this.rng = createRng(options.seed ?? 1)
     this.prepare = options.prepare
 
+    // apply() would set this.state too; TS needs to see it assigned here.
     const result = game.init({ ...this.baseCtx(), prepared: this.prepare?.({ trigger: 'init' }) })
     this.state = result.state
-    this.applyEffects(result)
+    this.apply(result)
   }
 
   /** A player action. Validated with actionSchema, like the core does. */
   act(actorId: PlayerId, action: unknown): ActResult {
+    if (this.over) return { ok: false, error: 'game is over' }
     if (!this.players.some((p) => p.id === actorId)) return { ok: false, error: `unknown player ${actorId}` }
     const parsed = this.game.actionSchema.safeParse(action)
     if (!parsed.success) return { ok: false, error: `validation: ${parsed.error.message}` }
-    return this.dispatch(actorId, parsed.data)
+    const prepared = this.prepare?.({ trigger: 'action', state: this.state, action: parsed.data, actorId })
+    const result = this.game.reduce(this.state, parsed.data, { ...this.baseCtx(), actorId, prepared })
+    if (isGameError(result)) return { ok: false, error: result.error }
+    this.apply(result)
+    return { ok: true }
   }
 
   /** Fire every timer due up to now + ms, in time order, then set the clock to now + ms. */
@@ -145,34 +151,25 @@ export class GameSim<S, A, V, Settings, P = undefined> {
 
   private fire(key: string): void {
     const timer = this.timers.get(key)
-    if (!timer) return
+    if (!timer || this.over) return
     this.timers.delete(key)
     this.now = Math.max(this.now, timer.at)
-    // A scheduled action the reducer rejects is dropped, as in the real runner.
-    this.dispatch(null, timer.action)
-  }
-
-  private dispatch(actorId: PlayerId | null, action: A): ActResult {
-    if (this.over) return { ok: false, error: 'game is over' }
-    const prepared = this.prepare?.({ trigger: 'action', state: this.state, action, actorId })
-    const result = this.game.reduce(this.state, action, { ...this.baseCtx(), actorId, prepared })
-    if (isGameError(result)) return { ok: false, error: result.error }
-    this.state = result.state
-    this.applyEffects(result)
-    return { ok: true }
+    const onTimer = this.game.onTimer
+    if (!onTimer) throw new Error(`GameSim: ${this.game.id} scheduled a timer but has no onTimer`)
+    const prepared = this.prepare?.({ trigger: 'timer', state: this.state, action: timer.action })
+    this.apply(onTimer.call(this.game, this.state, timer.action, { ...this.baseCtx(), prepared }))
   }
 
   private runHook(
-    hook: ((state: S, playerId: PlayerId, ctx: HookCtx<Settings>) => Transition<S, A>) | undefined,
+    hook: ((state: S, playerId: PlayerId, ctx: HookCtx<Settings>) => Transition<S, T>) | undefined,
     playerId: PlayerId,
   ): void {
     if (!hook || this.over) return
-    const result = hook.call(this.game, this.state, playerId, this.baseCtx())
-    this.state = result.state
-    this.applyEffects(result)
+    this.apply(hook.call(this.game, this.state, playerId, this.baseCtx()))
   }
 
-  private applyEffects(result: Transition<S, A>): void {
+  private apply(result: Transition<S, T>): void {
+    this.state = result.state
     for (const effect of result.effects ?? []) {
       switch (effect.type) {
         case 'schedule':
@@ -225,9 +222,9 @@ export class GameSim<S, A, V, Settings, P = undefined> {
   }
 }
 
-export function createSim<S, A, V, Settings, P = undefined>(
-  game: GameModule<S, A, V, Settings, P>,
-  options: SimOptions<S, A, Settings, P>,
-): GameSim<S, A, V, Settings, P> {
+export function createSim<S, A, T, V, Settings, P = undefined>(
+  game: GameModule<S, A, T, V, Settings, P>,
+  options: SimOptions<S, A, T, Settings, P>,
+): GameSim<S, A, T, V, Settings, P> {
   return new GameSim(game, options)
 }

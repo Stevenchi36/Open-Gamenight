@@ -6,14 +6,14 @@
 import { defineGame } from '@wsfg/core/contract'
 import express from 'express'
 import { BUILTIN_CATEGORIES } from './builtin-words.ts'
-import { imposter as game, type ImposterAction, type ImposterState, type PreparedWord } from './game.ts'
+import { imposter as game, type ImposterState, type ImposterTimer, type PreparedWord } from './game.ts'
 import { categoryUsage, countWords, pickWord, playableCategories } from './library.ts'
 import { adminRouter } from './admin.ts'
 import { mcpTools } from './mcp.ts'
 import { migrations } from './migrations.ts'
-import type { ImposterSettings, ImposterView } from '../shared/index.ts'
+import type { ClientAction, ImposterSettings, ImposterView } from '../shared/index.ts'
 
-export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, ImposterSettings, PreparedWord>({
+export const imposter = defineGame<ImposterState, ClientAction, ImposterTimer, ImposterView, ImposterSettings, PreparedWord>({
   ...game,
   migrations,
   mcpTools,
@@ -61,4 +61,4 @@ export const imposter = defineGame<ImposterState, ImposterAction, ImposterView, 
   },
 })
 
-export type { ImposterAction, ImposterState, PreparedWord, SecretWord } from './game.ts'
+export type { ImposterState, ImposterTimer, PreparedWord, SecretWord } from './game.ts'

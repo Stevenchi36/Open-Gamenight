@@ -1,8 +1,8 @@
 import { createSim, type GameSim } from '@wsfg/core/testing'
-import { imposter, type ImposterAction, type ImposterState, type PreparedWord } from '../server/game.ts'
-import { defaultSettings, type ImposterSettings, type ImposterView } from '../shared/index.ts'
+import { imposter, type ImposterState, type ImposterTimer, type PreparedWord } from '../server/game.ts'
+import { defaultSettings, type ClientAction, type ImposterSettings, type ImposterView } from '../shared/index.ts'
 
-export type Sim = GameSim<ImposterState, ImposterAction, ImposterView, ImposterSettings, PreparedWord>
+export type Sim = GameSim<ImposterState, ClientAction, ImposterTimer, ImposterView, ImposterSettings, PreparedWord>
 
 export const PLAYERS = ['p1', 'p2', 'p3', 'p4']
 export const WORD: PreparedWord = { id: 7, category: 'Animals', word: 'Penguin', hint: 'Dressed for dinner' }
