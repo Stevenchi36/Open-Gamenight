@@ -26,12 +26,12 @@ function moves(sim: Sim): Move<ClientAction>[] {
 }
 
 const configs: Array<[string, Partial<HerdSettings>]> = [
-  ['defaults (check matches, pink cow, unlimited)', {}],
+  ['defaults (check matches, black sheep, unlimited)', {}],
   ['no check, score limit 2, timer', { checkMatches: false, scoreLimit: 2, answerTimerSeconds: 30 }],
-  ['no pink cow, score limit 3', { pinkCow: false, scoreLimit: 3 }],
+  ['no black sheep, score limit 3', { blackSheep: false, scoreLimit: 3 }],
 ]
 
-describe('herd secret-leak test', () => {
+describe('flock secret-leak test', () => {
   it.each(configs)('%s', (_name, settings) => {
     const result = runLeakTest(herd, {
       players,

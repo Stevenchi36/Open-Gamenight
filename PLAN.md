@@ -481,24 +481,24 @@ BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
 ### Hold-to-reveal
 Your dice sit behind `HoldToReveal`, like Imposter's role card: phones lie on a shared table.
 
-## 7b. Herd Mentality (`games/herd`)
+## 7b. Flock (`games/herd`)
 
-The third game: everyone answers the same question and tries to give the answer most people give. The first game with free-text answers that are compared with each other, and the second with a library (questions), managed like Imposter's words.
+The third game: everyone answers the same question and tries to give the answer most people give. The first game with free-text answers that are compared with each other, and the second with a library (questions), managed like Imposter's words. Players see the name Flock; the id `herd` (folder, tables, routes, MCP tools) is internal and stays.
 
 ### Rules
 1. Each round shows one **question** ("Name a breakfast cereal") and its category. Everyone in the round types **one answer** in secret. Answers can be changed until the reveal.
 2. **Reveal** when every connected player has answered, when the answer timer runs out, or when the host taps **Reveal now**. Answers are grouped automatically: the same answer after normalising (case, accents, punctuation, extra spaces, a leading "the"/"a"/"an", a plural "s").
 3. **Check matches** (setting, default on). Everyone sees the groups; the host merges near-misses ("Coco Pops" and "Cocoa Pops") or splits a merge again, then taps **Score it**. Off: scoring follows the automatic groups straight away.
-4. **Scoring.** If one group is strictly bigger than every other and has at least 2 players, that is **the herd**: each of its players scores 1 point. A tie for biggest, or all answers different, scores nobody.
-5. **Pink cow** (setting, default on). If exactly one player is alone in their group (the odd one out), they take the pink cow from whoever has it. With a score limit, the pink cow's holder can't win. The holder leaving clears it.
-6. **Score limit** (setting, default unlimited). With a limit, the game ends after a round where a player has at least that many points and doesn't hold the pink cow; everyone who qualifies at once wins together. Unlimited: rounds go on until the host returns to the lobby.
-7. The host starts the next round (new question); after a win, **New game** resets scores and the pink cow.
+4. **Scoring.** If one group is strictly bigger than every other and has at least 2 players, that is **the flock**: each of its players scores 1 point. A tie for biggest, or all answers different, scores nobody.
+5. **Black sheep** (setting, default on). If exactly one player is alone in their group (the odd one out), they become the black sheep, taking over from whoever was before. With a score limit, the black sheep can't win. The black sheep leaving clears it.
+6. **Score limit** (setting, default unlimited). With a limit, the game ends after a round where a player has at least that many points and isn't the black sheep; everyone who qualifies at once wins together. Unlimited: rounds go on until the host returns to the lobby.
+7. The host starts the next round (new question); after a win, **New game** resets scores and the black sheep.
 
 ### Settings (host, lobby only)
 | Setting | Default | Notes |
 |---|---|---|
 | Score limit | unlimited | `null` / 5 / 8 / 10 / 12 / 15 / 20 |
-| Pink cow | on | |
+| Black sheep | on | |
 | Check matches | on | host merges near-misses before scoring |
 | Category | Any | categories from the library that have questions, plus "Any" |
 | Answer timer | off | 30 / 45 / 60 / 90 / 120 seconds; on expiry, reveal with the answers in |
@@ -509,8 +509,8 @@ ANSWERING -> (REVIEW) -> RESULTS -> next_round -> ANSWERING   (new_game after a 
 ```
 - `ANSWERING`: round players (everyone present at round start) `submit_answer`; resubmitting replaces your answer. Advances once every connected round player has answered (a disconnected player who hasn't answered sits the round out), on the timer, or on the host's `reveal_answers`.
 - `REVIEW` (Check matches on): answers are public, grouped. Host-only `merge_groups { from, into }`, `split_group { group }`, `score_round`.
-- `RESULTS`: herd, points, pink cow, scoreboard, winners when the limit is reached. Host: **Next question** (`next_round`), or **New game** (`new_game`) after a win, or **Back to lobby**.
-- Late joiners wait for the next round. A round player leaving drops their answer; the pink cow goes with them.
+- `RESULTS`: flock, points, black sheep, scoreboard, winners when the limit is reached. Host: **Next question** (`next_round`), or **New game** (`new_game`) after a win, or **Back to lobby**.
+- Late joiners wait for the next round. A round player leaving drops their answer; the black sheep goes with them.
 
 ### Actions
 | action | payload | Who |
@@ -531,10 +531,10 @@ ANSWERING -> (REVIEW) -> RESULTS -> next_round -> ANSWERING   (new_game after a 
   you: { status: 'playing' | 'waiting', answer: string | null },  // your own answer only
   roundPlayers, answered: PlayerId[],     // who has answered, not what
   deadline: number | null,                // answer timer
-  scores, pinkCowId: PlayerId | null,
+  scores, blackSheepId: PlayerId | null,
   groups: [{ id, label, answers: [{ playerId, text }] }],  // [] during ANSWERING; biggest first
-  herdId: string | null,                  // REVIEW (current leader) and RESULTS
-  result: { pointsAwarded, pinkCowFrom, pinkCowTo, winnerIds } | null,  // RESULTS only
+  flockId: string | null,                 // REVIEW (current leader) and RESULTS
+  result: { pointsAwarded, blackSheepFrom, blackSheepTo, winnerIds } | null,  // RESULTS only
 }
 ```
 `secrets` declares: other players' answers are hidden during `ANSWERING` (variant check: a viewer's view must not change when another player's answer changes, including to the viewer's own answer).

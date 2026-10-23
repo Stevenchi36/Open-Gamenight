@@ -55,7 +55,7 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
     {
       name: 'add_questions',
       description:
-        'Add questions to the Herd Mentality library. Players all answer the same question and score by matching the most popular answer, ' +
+        'Add questions to the Flock library. Players all answer the same question and score by matching the most popular answer, ' +
         'so good questions have a few obvious answers most people reach for ("Name a breakfast cereal", "What is the best pizza topping?"), ' +
         'answered in a word or short phrase. Avoid trivia with one correct answer. ' +
         'Categories that do not exist yet are created (reported in createdCategories); prefer existing names from list_categories. ' +

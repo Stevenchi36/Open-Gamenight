@@ -4,7 +4,7 @@
       <span>Question {{ view.round }}</span>
       <span v-if="settings.scoreLimit !== null">· First to {{ settings.scoreLimit }}</span>
       <v-spacer />
-      <PinkCow v-if="view.pinkCowId === me" />
+      <BlackSheep v-if="view.blackSheepId === me" />
       <span v-if="myScore !== null">Your score: <strong>{{ myScore }}</strong></span>
     </div>
     <AnsweringPhase v-if="view.phase === 'ANSWERING'" v-bind="phaseProps" />
@@ -18,7 +18,7 @@ import { computed } from 'vue'
 import AnsweringPhase from './phases/AnsweringPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import ReviewPhase from './phases/ReviewPhase.vue'
-import PinkCow from './PinkCow.vue'
+import BlackSheep from './BlackSheep.vue'
 import type { PhaseProps } from './props.ts'
 
 const props = defineProps<PhaseProps>()

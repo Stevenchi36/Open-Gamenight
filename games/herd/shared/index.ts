@@ -1,5 +1,5 @@
 /**
- * Herd Mentality types shared by the server module and the Vue client:
+ * Flock types shared by the server module and the Vue client:
  * settings, client actions, and the per-player view.
  */
 import type { GameMeta } from '@wsfg/core/contract'
@@ -14,8 +14,8 @@ export const MAX_PLAYERS = 12
 /** Spread into both the server and the client module. */
 export const meta: GameMeta = {
   id: GAME_ID,
-  name: 'Herd Mentality',
-  description: 'Everyone answers the same question. Think like the herd: you score when you match the most popular answer.',
+  name: 'Flock',
+  description: 'Everyone answers the same question. Think like the flock: you score when you match the most popular answer.',
   minPlayers: MIN_PLAYERS,
   maxPlayers: MAX_PLAYERS,
 }
@@ -32,8 +32,8 @@ export const ANSWER_TIMERS = [30, 45, 60, 90, 120] as const
 export const settingsSchema = z.object({
   /** Points to win; null = unlimited (play until the host stops). */
   scoreLimit: z.number().int().min(1).max(50).nullable(),
-  /** The lone odd-one-out takes the pink cow; its holder can't win. */
-  pinkCow: z.boolean(),
+  /** The lone odd one out becomes the black sheep, who can't win. */
+  blackSheep: z.boolean(),
   /** The host merges near-miss answers before scoring. */
   checkMatches: z.boolean(),
   /** null = any category. */
@@ -46,7 +46,7 @@ export type HerdSettings = z.infer<typeof settingsSchema>
 
 export const defaultSettings: HerdSettings = {
   scoreLimit: null,
-  pinkCow: true,
+  blackSheep: true,
   checkMatches: true,
   category: null,
   answerTimerSeconds: null,
@@ -82,11 +82,11 @@ export interface AnswerGroup {
 }
 
 export interface RoundResult {
-  /** Every round player, 0 for those outside the herd. */
+  /** Every round player, 0 for those outside the flock. */
   pointsAwarded: Record<PlayerId, number>
-  /** Who held the pink cow before this round and who holds it now (equal when it didn't move). */
-  pinkCowFrom: PlayerId | null
-  pinkCowTo: PlayerId | null
+  /** Who held the black sheep before this round and who holds it now (equal when it didn't move). */
+  blackSheepFrom: PlayerId | null
+  blackSheepTo: PlayerId | null
   /** Non-empty when the score limit was reached: the game is over. */
   winnerIds: PlayerId[]
 }
@@ -108,11 +108,11 @@ export interface HerdView {
   /** ms since epoch, while the answer timer runs. */
   deadline: number | null
   scores: Record<PlayerId, number>
-  pinkCowId: PlayerId | null
+  blackSheepId: PlayerId | null
   /** Empty while answering; biggest group first from REVIEW on. */
   groups: AnswerGroup[]
-  /** The herd's group id (REVIEW: as things stand), or null on a tie. */
-  herdId: string | null
+  /** The flock's group id (REVIEW: as things stand), or null on a tie. */
+  flockId: string | null
   /** RESULTS only. */
   result: RoundResult | null
 }

@@ -1,5 +1,5 @@
 /**
- * Herd Mentality: pure init / reduce / onTimer / view, plus the secrets spec checked
+ * Flock: pure init / reduce / onTimer / view, plus the secrets spec checked
  * by the core leak test. No I/O here; the question arrives through ctx.prepared
  * (from prepareRound) or is picked from the starter list with ctx.rng.
  *
@@ -65,7 +65,7 @@ export interface HerdState {
   merged: Record<string, string>
   deadline: number | null
   scores: Scores
-  pinkCowId: PlayerId | null
+  blackSheepId: PlayerId | null
   result: RoundResult | null
   /** Starter questions used this game ("category|question", lower case). */
   usedBuiltin: string[]
@@ -116,7 +116,7 @@ function commonestSpelling(texts: string[]): string {
 }
 
 /** The strictly biggest group with 2+ answers; null on a tie or when every answer differs. */
-export function herdOf(groups: readonly AnswerGroup[]): string | null {
+export function flockOf(groups: readonly AnswerGroup[]): string | null {
   const [first, second] = groups
   if (!first || first.answers.length < 2) return null
   return (second?.answers.length ?? 0) < first.answers.length ? first.id : null
@@ -162,14 +162,14 @@ function chooseQuestion(
   }
 }
 
-/** A new round. `fresh` (new_game): scores and the pink cow start over. */
+/** A new round. `fresh` (new_game): scores and the black sheep start over. */
 function startRound(prev: HerdState | null, ctx: Ctx, prepared: PreparedQuestion | undefined, fresh = false): Step {
   const ids = ctx.players.map((p) => p.id)
   const chosen = chooseQuestion(ctx, prepared, prev?.usedBuiltin ?? [], prev?.usedQuestionIds ?? [])
   const { answerTimerSeconds } = ctx.settings
   const deadline = answerTimerSeconds ? ctx.now + answerTimerSeconds * 1000 : null
   const round = (prev?.round ?? 0) + 1
-  const pinkCowId = !fresh && prev?.pinkCowId && ids.includes(prev.pinkCowId) ? prev.pinkCowId : null
+  const blackSheepId = !fresh && prev?.blackSheepId && ids.includes(prev.blackSheepId) ? prev.blackSheepId : null
 
   const state: HerdState = {
     settings: ctx.settings,
@@ -181,7 +181,7 @@ function startRound(prev: HerdState | null, ctx: Ctx, prepared: PreparedQuestion
     merged: {},
     deadline,
     scores: carryScores(fresh ? undefined : prev?.scores, ids),
-    pinkCowId,
+    blackSheepId,
     result: null,
     usedBuiltin: chosen.usedBuiltin,
     usedQuestionIds: chosen.usedQuestionIds,
@@ -208,16 +208,16 @@ function reveal(state: HerdState): Step {
 
 function scoreRound(state: HerdState): Step {
   const groups = buildGroups(state)
-  const herdId = herdOf(groups)
+  const flockId = flockOf(groups)
   const points: Scores = {}
   for (const id of state.roundPlayers) points[id] = 0
-  for (const { playerId } of groups.find((g) => g.id === herdId)?.answers ?? []) points[playerId] = 1
+  for (const { playerId } of groups.find((g) => g.id === flockId)?.answers ?? []) points[playerId] = 1
   const scores = addPoints(state.scores, points)
 
-  const pinkCowFrom = state.pinkCowId
-  const pinkCowTo = (state.settings.pinkCow ? loneAnswerer(groups) : null) ?? pinkCowFrom
+  const blackSheepFrom = state.blackSheepId
+  const blackSheepTo = (state.settings.blackSheep ? loneAnswerer(groups) : null) ?? blackSheepFrom
   const limit = state.settings.scoreLimit
-  const winnerIds = limit === null ? [] : Object.keys(scores).filter((id) => scores[id]! >= limit && id !== pinkCowTo)
+  const winnerIds = limit === null ? [] : Object.keys(scores).filter((id) => scores[id]! >= limit && id !== blackSheepTo)
 
   return {
     state: {
@@ -225,8 +225,8 @@ function scoreRound(state: HerdState): Step {
       phase: 'RESULTS',
       deadline: null,
       scores,
-      pinkCowId: pinkCowTo,
-      result: { pointsAwarded: points, pinkCowFrom, pinkCowTo, winnerIds },
+      blackSheepId: blackSheepTo,
+      result: { pointsAwarded: points, blackSheepFrom, blackSheepTo, winnerIds },
     },
     effects: [CANCEL_TIMER],
   }
@@ -317,9 +317,9 @@ function view(state: HerdState, viewerId: PlayerId): HerdView {
     answered: state.roundPlayers.filter((id) => id in state.answers),
     deadline: state.phase === 'ANSWERING' ? state.deadline : null,
     scores: state.scores,
-    pinkCowId: state.pinkCowId,
+    blackSheepId: state.blackSheepId,
     groups,
-    herdId: revealed ? herdOf(groups) : null,
+    flockId: revealed ? flockOf(groups) : null,
     result: state.phase === 'RESULTS' ? state.result : null,
   }
 }
@@ -343,7 +343,7 @@ export const herd = defineGame<HerdState, ClientAction, HerdTimer, HerdView, Her
     const next: HerdState = {
       ...state,
       scores: withoutPlayer(state.scores, playerId),
-      pinkCowId: state.pinkCowId === playerId ? null : state.pinkCowId,
+      blackSheepId: state.blackSheepId === playerId ? null : state.blackSheepId,
     }
     // RESULTS keeps the round as scored; earlier, their answer leaves with them.
     if (!state.roundPlayers.includes(playerId) || state.phase === 'RESULTS') return { state: next }

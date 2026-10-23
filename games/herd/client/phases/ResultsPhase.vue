@@ -10,19 +10,19 @@
       First to {{ settings.scoreLimit }} point{{ settings.scoreLimit === 1 ? '' : 's' }}.
     </StatusCard>
 
-    <StatusCard compact :color="inHerd ? 'success' : undefined" :overline="view.question.text" :title="headline">
-      {{ herdLine }}
+    <StatusCard compact :color="inFlock ? 'success' : undefined" :overline="view.question.text" :title="headline">
+      {{ flockLine }}
     </StatusCard>
 
-    <v-alert v-if="pinkCowMoved" variant="tonal" color="pink" class="mb-4">
-      <template #prepend><PinkCow size="large" /></template>
-      {{ pinkCowLine }}
+    <v-alert v-if="blackSheepMoved" variant="tonal" color="grey" class="mb-4">
+      <template #prepend><BlackSheep size="large" /></template>
+      {{ blackSheepLine }}
     </v-alert>
 
-    <GroupList :groups="view.groups" :herd-id="view.herdId" :room="room" />
+    <GroupList :groups="view.groups" :flock-id="view.flockId" :room="room" />
 
     <ScoreBoard :scores="view.scores" :room="room" :gained="result.pointsAwarded" class="mb-4">
-      <template #badge="{ id }"><PinkCow v-if="id === view.pinkCowId" class="ml-1" /></template>
+      <template #badge="{ id }"><BlackSheep v-if="id === view.blackSheepId" class="ml-1" /></template>
     </ScoreBoard>
 
     <NextRoundButton
@@ -39,20 +39,20 @@
 import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import GroupList from '../GroupList.vue'
-import PinkCow from '../PinkCow.vue'
-import { herdSummary } from '../herd-summary.ts'
+import BlackSheep from '../BlackSheep.vue'
+import { flockSummary } from '../flock-summary.ts'
 import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)
 const gameOver = computed(() => (result.value?.winnerIds.length ?? 0) > 0)
-const inHerd = computed(() => (result.value?.pointsAwarded[props.me] ?? 0) > 0)
-const herdLine = computed(() => herdSummary(props.view, 'final'))
+const inFlock = computed(() => (result.value?.pointsAwarded[props.me] ?? 0) > 0)
+const flockLine = computed(() => flockSummary(props.view, 'final'))
 
 const headline = computed(() => {
   if (props.view.you.status === 'waiting') return 'Round over'
-  if (inHerd.value) return 'You followed the herd!'
-  return props.view.herdId ? 'You strayed from the herd' : 'Nobody scores'
+  if (inFlock.value) return 'You followed the flock!'
+  return props.view.flockId ? 'You strayed from the flock' : 'Nobody scores'
 })
 
 const winnerTitle = computed(() => {
@@ -61,11 +61,11 @@ const winnerTitle = computed(() => {
   return `${ids.map((id) => nameOf(props.room, id)).join(' and ')} win${ids.length === 1 ? 's' : ''}`
 })
 
-const pinkCowMoved = computed(() => result.value && result.value.pinkCowTo !== result.value.pinkCowFrom)
-const pinkCowLine = computed(() => {
-  const to = result.value?.pinkCowTo
+const blackSheepMoved = computed(() => result.value && result.value.blackSheepTo !== result.value.blackSheepFrom)
+const blackSheepLine = computed(() => {
+  const to = result.value?.blackSheepTo
   const who = to === props.me ? 'You were' : `${nameOf(props.room, to)} was`
-  const suffix = props.settings.scoreLimit !== null ? " Whoever holds it can't win." : ''
-  return `${who} the only odd one out, so ${to === props.me ? 'you take' : 'they take'} the pink cow.${suffix}`
+  const suffix = props.settings.scoreLimit !== null ? " The black sheep can't win." : ''
+  return `${who} the only odd one out, so ${to === props.me ? "you're" : "they're"} the black sheep now.${suffix}`
 })
 </script>

@@ -18,7 +18,7 @@
 
     <GroupList
       :groups="view.groups"
-      :herd-id="view.herdId"
+      :flock-id="view.flockId"
       :room="room"
       :selectable="amHost"
       :selected="selected"
@@ -27,7 +27,7 @@
       @split="(group) => send({ type: 'split_group', group })"
     />
 
-    <div class="text-body-1 text-center mb-4">{{ herdLine }}</div>
+    <div class="text-body-1 text-center mb-4">{{ flockLine }}</div>
 
     <v-btn v-if="amHost" block size="x-large" color="primary" prepend-icon="mdi-check" @click="send({ type: 'score_round' })">
       Score it
@@ -40,13 +40,13 @@ import { isHost, nameOf } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import GroupList from '../GroupList.vue'
 import QuestionCard from '../QuestionCard.vue'
-import { herdSummary } from '../herd-summary.ts'
+import { flockSummary } from '../flock-summary.ts'
 import type { PhaseProps } from '../props.ts'
 
 const props = defineProps<PhaseProps>()
 const amHost = computed(() => isHost(props.room, props.me))
 const selected = ref<string | null>(null)
-const herdLine = computed(() => herdSummary(props.view, 'so far'))
+const flockLine = computed(() => flockSummary(props.view, 'so far'))
 
 const labelOf = (id: string) => props.view.groups.find((g) => g.id === id)?.label ?? ''
 

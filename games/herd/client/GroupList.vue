@@ -13,7 +13,7 @@
         <div class="flex-grow-1">
           <div class="text-subtitle-1 font-weight-medium">
             {{ group.label }}
-            <v-chip v-if="group.id === herdId" size="x-small" color="success" variant="flat" class="ml-1">The herd</v-chip>
+            <v-chip v-if="group.id === flockId" size="x-small" color="success" variant="flat" class="ml-1">The flock</v-chip>
           </div>
           <div class="text-body-2 text-medium-emphasis">
             <span v-for="(a, i) in group.answers" :key="a.playerId">
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-// Answers grouped after the reveal, biggest first; the herd is highlighted. In REVIEW the host
+// Answers grouped after the reveal, biggest first; the flock is highlighted. In REVIEW the host
 // taps groups to merge them (`pick`) and splits merged ones.
 import type { RoomView } from '@wsfg/core/protocol'
 import { nameOf } from '@wsfg/core/ui'
@@ -37,7 +37,7 @@ import type { AnswerGroup } from '../shared/index.ts'
 
 const props = defineProps<{
   groups: AnswerGroup[]
-  herdId: string | null
+  flockId: string | null
   room: RoomView
   selectable?: boolean
   selected?: string | null
@@ -47,6 +47,6 @@ const emit = defineEmits<{ pick: [id: string]; split: [id: string] }>()
 
 function cardColor(id: string) {
   if (id === props.selected) return 'primary'
-  return id === props.herdId ? 'success' : undefined
+  return id === props.flockId ? 'success' : undefined
 }
 </script>

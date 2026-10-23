@@ -1,5 +1,5 @@
 /**
- * The full Herd Mentality module: the pure game (game.ts) plus its I/O integrations,
+ * The full Flock module: the pure game (game.ts) plus its I/O integrations,
  * which the core wires up: migrations, prepareRound (question from the library),
  * a public categories route for the lobby, admin routes, and MCP tools.
  */

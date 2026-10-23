@@ -76,7 +76,7 @@ export function listQuestions(
   return { total, questions }
 }
 
-/** Every Herd category (including empty ones) with total and unused question counts. */
+/** Every Flock category (including empty ones) with total and unused question counts. */
 export function listCategories(db: DatabaseSync): CategoryStats[] {
   return db
     .prepare(
@@ -228,7 +228,7 @@ const generatedSchema = z.object({
   questions: z.array(z.object({ category: z.string(), question: z.string() })),
 })
 
-const SYSTEM = `You write questions for Herd Mentality, a party game for families and friends.
+const SYSTEM = `You write questions for Flock, a party game for families and friends.
 Everyone answers the same question in secret, trying to give the answer most other players will give; matching the most popular answer scores.
 
 Rules for each question:

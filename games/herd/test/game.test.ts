@@ -53,7 +53,7 @@ describe('answering', () => {
       ['Corn Flakes', ['p4']],
       ['Shreddies', ['p3']],
     ])
-    expect(v.herdId).toBe(groupWith(sim, 'p1'))
+    expect(v.flockId).toBe(groupWith(sim, 'p1'))
   })
 
   it('lets the host reveal early; others cannot', () => {
@@ -91,10 +91,10 @@ describe('checking matches', () => {
     return sim
   }
 
-  it('lets the host merge near-misses, changing the herd', () => {
+  it('lets the host merge near-misses, changing the flock', () => {
     const sim = newGame()
     answerAll(sim, { p1: 'Coco Pops', p2: 'Cocoa Pops', p3: 'Cheerios', p4: 'Cheerio' })
-    expect(sim.view('p1').herdId).toBe(groupWith(sim, 'p3')) // 2-1-1
+    expect(sim.view('p1').flockId).toBe(groupWith(sim, 'p3')) // 2-1-1
     const coco = groupWith(sim, 'p1')
     const cocoa = groupWith(sim, 'p2')
     expect(sim.view('p3').groups.every((g) => !g.merged)).toBe(true)
@@ -102,7 +102,7 @@ describe('checking matches', () => {
     const v = sim.view('p3')
     expect(v.groups.find((g) => g.id === coco)).toMatchObject({ label: 'Coco Pops', merged: true })
     expect(v.groups.find((g) => g.id === coco)!.answers.map((a) => a.playerId)).toEqual(['p1', 'p2'])
-    expect(v.herdId).toBeNull() // now 2 v 2: a tie
+    expect(v.flockId).toBeNull() // now 2 v 2: a tie
   })
 
   it('only the host merges, and only existing, different groups', () => {
@@ -142,7 +142,7 @@ describe('scoring', () => {
     return sim
   }
 
-  it('gives the herd a point each and nobody else', () => {
+  it('gives the flock a point each and nobody else', () => {
     const sim = scored({ p1: 'Cheerios', p2: 'Cheerios', p3: 'Cheerios', p4: 'Muesli', p5: 'Muesli' })
     expect(sim.view('p1').result!.pointsAwarded).toEqual({ p1: 1, p2: 1, p3: 1, p4: 0, p5: 0 })
     expect(sim.state.scores).toEqual({ p1: 1, p2: 1, p3: 1, p4: 0, p5: 0 })
@@ -182,7 +182,7 @@ describe('scoring', () => {
   })
 })
 
-describe('pink cow', () => {
+describe('black sheep', () => {
   function play(sim: ReturnType<typeof newGame>, answers: Record<string, string>) {
     answerAll(sim, answers)
     if (sim.state.phase !== 'RESULTS') throw new Error('expected RESULTS')
@@ -191,41 +191,41 @@ describe('pink cow', () => {
   it('goes to the only lone answer, and moves to the next one', () => {
     const sim = newGame({ settings: { checkMatches: false } })
     play(sim, { p1: 'A', p2: 'A', p3: 'A', p4: 'B' })
-    expect(sim.view('p1').pinkCowId).toBe('p4')
-    expect(sim.view('p1').result).toMatchObject({ pinkCowFrom: null, pinkCowTo: 'p4' })
+    expect(sim.view('p1').blackSheepId).toBe('p4')
+    expect(sim.view('p1').result).toMatchObject({ blackSheepFrom: null, blackSheepTo: 'p4' })
     act(sim, 'p1', { type: 'next_round' })
-    expect(sim.view('p1').pinkCowId).toBe('p4')
+    expect(sim.view('p1').blackSheepId).toBe('p4')
     play(sim, { p1: 'A', p2: 'B', p3: 'B', p4: 'B' })
-    expect(sim.view('p1').result).toMatchObject({ pinkCowFrom: 'p4', pinkCowTo: 'p1' })
+    expect(sim.view('p1').result).toMatchObject({ blackSheepFrom: 'p4', blackSheepTo: 'p1' })
   })
 
   it('stays put when there are several lone answers or none', () => {
     const sim = newGame({ settings: { checkMatches: false } })
     play(sim, { p1: 'A', p2: 'A', p3: 'B', p4: 'C' })
-    expect(sim.state.pinkCowId).toBeNull()
+    expect(sim.state.blackSheepId).toBeNull()
     act(sim, 'p1', { type: 'next_round' })
     play(sim, { p1: 'A', p2: 'A', p3: 'B', p4: 'B' })
-    expect(sim.state.pinkCowId).toBeNull()
+    expect(sim.state.blackSheepId).toBeNull()
   })
 
   it('needs at least three answers', () => {
     const sim = newGame({ settings: { checkMatches: false } })
     answerAll(sim, { p1: 'A', p2: 'B' })
     act(sim, 'p1', { type: 'reveal_answers' })
-    expect(sim.state.pinkCowId).toBeNull()
+    expect(sim.state.blackSheepId).toBeNull()
   })
 
   it('is never handed out when the setting is off', () => {
-    const sim = newGame({ settings: { checkMatches: false, pinkCow: false } })
+    const sim = newGame({ settings: { checkMatches: false, blackSheep: false } })
     play(sim, { p1: 'A', p2: 'A', p3: 'A', p4: 'B' })
-    expect(sim.state.pinkCowId).toBeNull()
+    expect(sim.state.blackSheepId).toBeNull()
   })
 
   it('leaves with its holder', () => {
     const sim = newGame({ settings: { checkMatches: false }, players: ['p1', 'p2', 'p3', 'p4', 'p5'] })
     play(sim, { p1: 'A', p2: 'A', p3: 'A', p4: 'B', p5: 'A' })
     sim.remove('p4')
-    expect(sim.state.pinkCowId).toBeNull()
+    expect(sim.state.blackSheepId).toBeNull()
   })
 })
 
@@ -241,7 +241,7 @@ describe('score limit', () => {
   })
 
   it('ends the game when players reach the limit; they win together', () => {
-    const sim = newGame({ settings: { checkMatches: false, scoreLimit: 2, pinkCow: false } })
+    const sim = newGame({ settings: { checkMatches: false, scoreLimit: 2, blackSheep: false } })
     answerAll(sim, { p1: 'A', p2: 'A', p3: 'B', p4: 'C' })
     act(sim, 'p1', { type: 'next_round' })
     answerAll(sim, { p1: 'A', p2: 'A', p3: 'B', p4: 'C' })
@@ -249,33 +249,33 @@ describe('score limit', () => {
     expect(sim.act('p1', { type: 'next_round' })).toEqual({ ok: false, error: 'The game is over: start a new game' })
   })
 
-  it('the pink cow holder cannot win until it moves on', () => {
+  it('the black sheep holder cannot win until it moves on', () => {
     const sim = newGame({ settings: { checkMatches: false, scoreLimit: 1 }, players: ['p1', 'p2', 'p3', 'p4', 'p5'] })
-    sim.state = { ...sim.state, pinkCowId: 'p1' }
-    answerAll(sim, { p1: 'A', p2: 'A', p3: 'A', p4: 'B', p5: 'C' }) // two lone answers: the cow stays with p1
+    sim.state = { ...sim.state, blackSheepId: 'p1' }
+    answerAll(sim, { p1: 'A', p2: 'A', p3: 'A', p4: 'B', p5: 'C' }) // two lone answers: the black sheep stays with p1
     expect(sim.view('p1').result!.winnerIds).toEqual(['p2', 'p3'])
   })
 
-  it('a holder over the limit wins once the cow moves away', () => {
+  it('a holder over the limit wins once the black sheep moves away', () => {
     const sim = newGame({ settings: { checkMatches: false, scoreLimit: 3 } })
-    sim.state = { ...sim.state, pinkCowId: 'p1', scores: { p1: 5, p2: 0, p3: 0, p4: 0 } }
-    answerAll(sim, { p1: 'A', p2: 'B', p3: 'B', p4: 'C' }) // two lone answers: cow stays, nobody wins
+    sim.state = { ...sim.state, blackSheepId: 'p1', scores: { p1: 5, p2: 0, p3: 0, p4: 0 } }
+    answerAll(sim, { p1: 'A', p2: 'B', p3: 'B', p4: 'C' }) // two lone answers: the black sheep stays, nobody wins
     expect(sim.view('p1').result!.winnerIds).toEqual([])
     act(sim, 'p1', { type: 'next_round' })
-    answerAll(sim, { p1: 'A', p2: 'A', p3: 'A', p4: 'B' }) // p4 takes the cow
-    expect(sim.view('p1').result).toMatchObject({ pinkCowTo: 'p4', winnerIds: ['p1'] })
+    answerAll(sim, { p1: 'A', p2: 'A', p3: 'A', p4: 'B' }) // p4 takes the black sheep
+    expect(sim.view('p1').result).toMatchObject({ blackSheepTo: 'p4', winnerIds: ['p1'] })
   })
 
-  it('new game resets scores and the pink cow; only after a win', () => {
+  it('new game resets scores and the black sheep; only after a win', () => {
     const sim = newGame({ settings: { checkMatches: false, scoreLimit: 1 } })
     answerAll(sim, { p1: 'A', p2: 'A', p3: 'A', p4: 'B' })
     expect(sim.state.result!.winnerIds).toEqual(['p1', 'p2', 'p3'])
-    expect(sim.state.pinkCowId).toBe('p4')
+    expect(sim.state.blackSheepId).toBe('p4')
     expect(sim.act('p2', { type: 'new_game' })).toEqual({ ok: false, error: 'Only the host can start a new game' })
     act(sim, 'p1', { type: 'new_game' })
     expect(sim.state.phase).toBe('ANSWERING')
     expect(sim.state.scores).toEqual({ p1: 0, p2: 0, p3: 0, p4: 0 })
-    expect(sim.state.pinkCowId).toBeNull()
+    expect(sim.state.blackSheepId).toBeNull()
     answerAll(sim, { p1: 'A', p2: 'B', p3: 'C', p4: 'D' })
     expect(sim.act('p1', { type: 'new_game' })).toEqual({ ok: false, error: 'The game is not over yet' })
   })
@@ -323,9 +323,9 @@ describe('leavers', () => {
   it('a leaver in REVIEW takes their answer with them', () => {
     const sim = newGame()
     answerAll(sim, { p1: 'A', p2: 'A', p3: 'B', p4: 'B' })
-    expect(sim.view('p1').herdId).toBeNull()
+    expect(sim.view('p1').flockId).toBeNull()
     sim.remove('p4')
-    expect(sim.view('p1').herdId).toBe(groupWith(sim, 'p1'))
+    expect(sim.view('p1').flockId).toBe(groupWith(sim, 'p1'))
   })
 
   it('RESULTS keeps the scored round when someone leaves', () => {

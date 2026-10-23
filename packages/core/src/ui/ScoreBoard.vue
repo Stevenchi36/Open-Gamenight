@@ -25,7 +25,7 @@ import type { RoomView } from '../protocol.ts'
 import { nameOf } from './helpers.ts'
 
 const props = defineProps<{ scores: Record<string, number>; room: RoomView; gained?: Record<string, number> }>()
-// badge: a game's marker after a player's name (e.g. Herd's pink cow)
+// badge: a game's marker after a player's name (e.g. Flock's black sheep)
 defineSlots<{ badge?(props: { id: string }): unknown }>()
 const rows = computed(() =>
   Object.entries(props.scores)

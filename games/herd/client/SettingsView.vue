@@ -9,12 +9,12 @@
       @update:model-value="(v: unknown) => set('scoreLimit', v as number | null)"
     />
     <SettingToggle
-      label="Pink cow"
-      :model-value="settings.pinkCow"
+      label="Black sheep"
+      :model-value="settings.blackSheep"
       :items="onOff"
-      :hint="settings.pinkCow ? 'The only odd one out takes the pink cow; its holder can\'t win' : 'No pink cow'"
+      :hint="settings.blackSheep ? 'The only odd one out becomes the black sheep, who can\'t win' : 'No black sheep'"
       :disabled="!isHost"
-      @update:model-value="(v: unknown) => set('pinkCow', v as boolean)"
+      @update:model-value="(v: unknown) => set('blackSheep', v as boolean)"
     />
     <SettingToggle
       label="Check matches"

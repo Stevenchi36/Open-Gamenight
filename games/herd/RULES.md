@@ -1,6 +1,6 @@
-# Herd Mentality
+# Flock
 
-**Goal:** think like the herd. Give the answer most other players give.
+**Goal:** think like the flock. Give the answer most other players give.
 
 ## A round
 
@@ -11,22 +11,22 @@
 
 ## Scoring
 
-- The biggest group is **the herd**: everyone in it scores **1 point**.
+- The biggest group is **the flock**: everyone in it scores **1 point**.
 - If two or more groups tie for biggest, or everyone said something different, **nobody scores**.
 
-## The pink cow
+## The black sheep
 
-If exactly one player is the odd one out (the only answer nobody matched), they take the **pink cow** 🐮 from whoever has it. It only moves on when someone else is the only odd one out. With a score limit, **you can't win while you hold the pink cow**, however many points you have. If it passes to someone else in the same round you reach the limit, you win.
+If exactly one player is the odd one out (the only answer nobody matched), they become **the black sheep** 🐑, taking over from whoever was before. It only moves on when someone else is the only odd one out. With a score limit, **the black sheep can't win**, however many points they have. If it passes to someone else in the same round you reach the limit, you win.
 
 ## Winning
 
 - **Unlimited** (the default): play as many questions as you like; the scoreboard keeps count.
-- **Score limit:** the first to reach it wins, unless they hold the pink cow. Players who get there in the same round win together. The host can then start a new game.
+- **Score limit:** the first to reach it wins, unless they are the black sheep. Players who get there in the same round win together. The host can then start a new game.
 
 ## Settings
 
 - **Score limit:** unlimited, or first to 5, 8, 10, 12, 15 or 20.
-- **Pink cow:** on or off.
+- **Black sheep:** on or off.
 - **Check matches:** the host merges near-misses before scoring, or scoring follows the automatic matches.
 - **Category:** any, or one category of questions.
 - **Answer timer:** off, or 30 to 120 seconds.

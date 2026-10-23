@@ -158,7 +158,7 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 - A word that's already in the same category (ignoring case) is skipped.
 - Categories are shared rows (`categories` table), managed with the `*_category` tools or in the admin panel (Admin → Word Imposter → Categories). A category that still has words can't be deleted; move or delete its words first.
 
-Herd Mentality's question library works the same way, with its own categories:
+Flock's question library (tools prefixed `herd_`, the game's internal id) works the same way, with its own categories:
 
 | Tool | What it does |
 |---|---|
@@ -183,8 +183,8 @@ Herd Mentality's question library works the same way, with its own categories:
 - "Rename the imposter category Food to Food & Drink."
 - "Merge the imposter categories Snacks and Food: move every Snacks word into Food, then delete Snacks."
 - "Find imposter words whose category doesn't really fit them and move them somewhere better."
-- "Add 30 herd questions in a new Music category."
-- "Look through the herd questions and remove any that are really trivia with one right answer."
+- "Add 30 Flock questions in a new Music category."
+- "Look through the Flock questions and remove any that are really trivia with one right answer."
 
 **Claude keeps new words secret.** After adding or generating words, Claude reports only how many it added and to which categories, so you can still play. Ask "show me the words" if you want to see them. (They are still in the tool call itself; Claude Code shows it collapsed, so don't expand it if you're playing.)
 
