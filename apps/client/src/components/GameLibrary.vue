@@ -22,10 +22,11 @@
     </div>
 
     <v-card v-for="game in filtered" :key="game.id" class="mb-3">
-      <v-card-title class="d-flex align-center flex-wrap ga-2">
-        {{ game.name }}
+      <div class="d-flex align-center flex-wrap ga-2 pr-4">
+        <v-card-title>{{ game.name }}</v-card-title>
+        <!-- Outside v-card-title: its line-height and letter-spacing pushed the chip's icon off centre. -->
         <v-chip size="small" variant="tonal" prepend-icon="mdi-account-group">{{ playersText(game) }}</v-chip>
-      </v-card-title>
+      </div>
       <v-card-text>{{ game.description }}</v-card-text>
       <v-card-actions class="flex-wrap">
         <RulesDialog v-if="clientOf(game.id)" :game="clientOf(game.id)!">
