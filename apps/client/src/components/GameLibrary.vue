@@ -24,7 +24,7 @@
     <v-card v-for="game in filtered" :key="game.id" class="mb-3">
       <v-card-title class="d-flex align-center flex-wrap ga-2">
         {{ game.name }}
-        <v-chip size="small" variant="tonal" prepend-icon="mdi-account-group">{{ playersText(game) }}</v-chip>
+        <v-chip size="small" variant="tonal" prepend-icon="mdi-account-group" class="players-chip">{{ playersText(game) }}</v-chip>
       </v-card-title>
       <v-card-text>{{ game.description }}</v-card-text>
       <v-card-actions class="flex-wrap">
@@ -90,3 +90,10 @@ function clearFilters() {
   players.value = null
 }
 </script>
+
+<style scoped>
+/* The icon box is centred, but Roboto's digits sit above the line box's middle, so the icon read ~1px low next to them. */
+.players-chip :deep(.v-icon) {
+  transform: translateY(-1px);
+}
+</style>
