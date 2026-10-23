@@ -1,7 +1,9 @@
 <template>
   <v-dialog v-model="open" max-width="640" scrollable>
     <template #activator="{ props: activator }">
-      <v-btn v-bind="activator" variant="tonal" prepend-icon="mdi-help-circle-outline">How to play</v-btn>
+      <slot name="activator" :props="activator">
+        <v-btn v-bind="activator" variant="tonal" prepend-icon="mdi-help-circle-outline">How to play</v-btn>
+      </slot>
     </template>
     <v-card>
       <v-card-text class="rules">
