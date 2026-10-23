@@ -40,6 +40,7 @@
       :last="view.last"
       :line="view.line"
       :playable="myTurn"
+      :disc="view.you.disc"
       @drop="(column) => send({ type: 'drop', column })"
     />
 

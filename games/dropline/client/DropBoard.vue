@@ -25,7 +25,16 @@
 // last disc dropped gets a dot and the winning line a ring.
 import type { Disc, Spot } from '../shared/index.ts'
 
-const props = defineProps<{ columns: Disc[][]; cols: number; rows: number; last: Spot | null; line: Spot[] | null; playable: boolean }>()
+const props = defineProps<{
+  columns: Disc[][]
+  cols: number
+  rows: number
+  last: Spot | null
+  line: Spot[] | null
+  playable: boolean
+  /** Yours, previewed where it would land in the hovered column. */
+  disc: Disc | null
+}>()
 const emit = defineEmits<{ drop: [column: number] }>()
 
 const canDrop = (c: number) => props.playable && props.columns[c]!.length < props.rows
@@ -37,6 +46,7 @@ function holeClass(column: Disc[], col: number, row: number) {
     [`dl-hole--${disc}`]: !!disc,
     'dl-hole--last': props.last?.col === col && props.last.row === row,
     'dl-hole--win': at(props.line, col, row),
+    [`dl-hole--next-${props.disc}`]: !disc && row === column.length && !!props.disc,
   }
 }
 </script>
@@ -65,8 +75,16 @@ function holeClass(column: Disc[], col: number, row: number) {
 }
 .dl-column--playable:hover,
 .dl-column--playable:focus-visible {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.35);
   outline: none;
+}
+.dl-column--playable:hover .dl-hole--next-red,
+.dl-column--playable:focus-visible .dl-hole--next-red {
+  background: rgba(229, 57, 53, 0.55);
+}
+.dl-column--playable:hover .dl-hole--next-blue,
+.dl-column--playable:focus-visible .dl-hole--next-blue {
+  background: rgba(30, 136, 229, 0.55);
 }
 .dl-hole {
   aspect-ratio: 1;
