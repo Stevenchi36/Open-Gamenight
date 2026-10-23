@@ -2,7 +2,7 @@
  * Builds the Express app. Kept separate from index.ts so tests can boot the
  * exact same app on a random port with temp databases.
  */
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { DatabaseSync } from 'node:sqlite'
 import type { AiCore } from './ai.ts'
@@ -15,6 +15,16 @@ import type { Config } from './config.ts'
 import type { AppLogger } from './logger.ts'
 import { originCheck, rateLimit, RateLimiter, realIp } from './middleware.ts'
 import { createAdminRouter } from './routes/admin.ts'
+
+/**
+ * The build id Vite stamped into the built client's index.html (`<meta name="wsfg-build">`),
+ * or null when there is no build (dev, tests without one).
+ */
+export function readBuildId(clientDistDir: string): string | null {
+  const file = join(clientDistDir, 'index.html')
+  if (!existsSync(file)) return null
+  return /<meta name="wsfg-build" content="([^"]+)"/.exec(readFileSync(file, 'utf8'))?.[1] ?? null
+}
 
 export interface AppDeps {
   config: Config

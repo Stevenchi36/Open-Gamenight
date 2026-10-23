@@ -69,7 +69,7 @@ beforeAll(async () => {
   guests = await Promise.all([1, 2, 3].map(() => connect(t.wsUrl)))
   all = [host, ...guests]
   expect((await host.next('session')).user).toMatchObject({ name: 'Hosty' })
-  for (const g of guests) expect(await g.next('session')).toEqual({ type: 'session', user: null })
+  for (const g of guests) expect(await g.next('session')).toMatchObject({ type: 'session', user: null })
 
   // A small library category so the typed round goes through prepareRound + pickWord.
   const { addWords } = await import('../../../games/imposter/server/library.ts')

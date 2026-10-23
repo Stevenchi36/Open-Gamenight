@@ -128,6 +128,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
+- **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.
 - **Updates run through `npm run deploy` (`scripts/deploy.sh`): fast-forward pull, frozen install, build, `supervisorctl restart`.** One command, no skipped build; fails fast on a diverged checkout or lockfile drift. Not `pnpm deploy`, which is pnpm's own built-in command.
 - **Real client IP via configurable `TRUSTED_PROXY_HOPS` / `REAL_IP_HEADER` (`CF-Connecting-IP`).** Otherwise every IP-based limit sees Cloudflare's IPs; configurable for self-hosters.
 - **Branding via `APP_NAME` / `APP_PRIMARY_COLOR`; nothing domain-specific hard-coded.** Ready for self-hosting later.

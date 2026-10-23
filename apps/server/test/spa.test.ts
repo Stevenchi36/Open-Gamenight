@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { readBuildId } from '../src/app.ts'
 import { startTestServer, type TestServer } from './helpers/server.ts'
 
 let t: TestServer
@@ -44,5 +45,20 @@ describe('built client', () => {
     const res = await t.fetch('/api/nope')
     expect(res.status).toBe(404)
     expect(await res.json()).toMatchObject({ error: 'not_found' })
+  })
+})
+
+describe('readBuildId', () => {
+  it('reads the id Vite stamped into index.html, or null without one', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'wsfg-build-'))
+    try {
+      expect(readBuildId(dir)).toBeNull()
+      writeFileSync(join(dir, 'index.html'), '<!doctype html><title>spa</title>')
+      expect(readBuildId(dir)).toBeNull()
+      writeFileSync(join(dir, 'index.html'), '<head><meta name="wsfg-build" content="lq3x9a"></head>')
+      expect(readBuildId(dir)).toBe('lq3x9a')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })

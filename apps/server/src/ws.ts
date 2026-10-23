@@ -21,6 +21,8 @@ export interface WsOptions {
   auth: Auth
   rooms: RoomManager
   logger: AppLogger
+  /** Sent in `session` so tabs running an older client build reload. */
+  buildId: string | null
   heartbeatMs?: number
   maxConnectionsPerIp?: number
   messagesPerSecond?: number
@@ -54,7 +56,7 @@ class SocketConn implements Conn {
 }
 
 export function attachWebSocket(server: Server, options: WsOptions) {
-  const { config, auth, rooms, logger } = options
+  const { config, auth, rooms, logger, buildId } = options
   const heartbeatMs = options.heartbeatMs ?? 30_000
   const maxPerIp = options.maxConnectionsPerIp ?? 30
   const perSecond = options.messagesPerSecond ?? 10
@@ -98,7 +100,11 @@ export function attachWebSocket(server: Server, options: WsOptions) {
     const conn = new SocketConn(ws, ip, user)
     const limiter = new RateLimiter({ windowMs: 1000, max: perSecond })
     conns.add(conn)
-    conn.send({ type: 'session', user: user ? { id: user.id, name: user.name, role: user.role } : null })
+    conn.send({
+      type: 'session',
+      user: user ? { id: user.id, name: user.name, role: user.role } : null,
+      build: buildId,
+    })
 
     ws.on('pong', () => {
       conn.alive = true

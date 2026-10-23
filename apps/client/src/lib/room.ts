@@ -170,6 +170,7 @@ function handle(message: ServerMessage): void {
   switch (message.type) {
     case 'session':
       state.user = message.user
+      if (message.build && __BUILD_ID__ && message.build !== __BUILD_ID__) reloadForBuild(message.build)
       return
     case 'joined':
       save(SAVED_KEY, { code: message.code, token: message.token })
@@ -215,6 +216,22 @@ function handle(message: ServerMessage): void {
       }
       return
   }
+}
+
+/**
+ * The server is serving a newer client than this tab runs (a deploy happened), and the
+ * old bundle may not understand its views. Reload once per build: if a cache keeps
+ * serving the old bundle, carry on rather than loop.
+ */
+function reloadForBuild(build: string): void {
+  const key = 'wsfg.reloadedFor'
+  try {
+    if (sessionStorage.getItem(key) === build) return
+    sessionStorage.setItem(key, build)
+  } catch {
+    return // no storage, no loop guard: don't risk a reload loop
+  }
+  location.reload()
 }
 
 function clearRoom(reason: string | null): void {

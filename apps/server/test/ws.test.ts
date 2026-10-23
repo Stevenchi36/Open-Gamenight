@@ -42,7 +42,7 @@ describe('upgrade checks', () => {
 
   it('sends the session on connect: null for guests, the user when signed in', async () => {
     const guest = await connect(t.wsUrl)
-    expect(await guest.next('session')).toEqual({ type: 'session', user: null })
+    expect(await guest.next('session')).toMatchObject({ type: 'session', user: null })
     const signedIn = await connect(t.wsUrl, { cookie })
     expect((await signedIn.next('session')).user).toMatchObject({ name: 'Hosty', role: 'user' })
     guest.close()

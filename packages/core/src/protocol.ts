@@ -124,7 +124,8 @@ export type RoomPlayer = z.infer<typeof roomPlayerSchema>
 export type AvailableGame = z.infer<typeof availableGameSchema>
 
 export const serverMessageSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('session'), user: sessionUserSchema.nullable() }),
+  /** `build`: the id of the client build the server is serving (null in dev); a tab running another build reloads. */
+  z.object({ type: z.literal('session'), user: sessionUserSchema.nullable(), build: z.string().nullable() }),
   z.object({ type: z.literal('joined'), playerId, token: reconnectToken, code: roomCode }),
   /** `game` is the game's view(state, you) output; null in the lobby. `now` is server time (ms), for countdowns. */
   z.object({ type: z.literal('state'), room: roomViewSchema, game: z.unknown(), now: z.number() }),

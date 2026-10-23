@@ -5,7 +5,7 @@
  */
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { createApp, createServices } from './app.ts'
+import { createApp, createServices, readBuildId } from './app.ts'
 import { boot, type BootOptions, type Booted } from './boot.ts'
 import type { Config } from './config.ts'
 import { RoomManager } from './rooms.ts'
@@ -39,7 +39,8 @@ export async function startServer(config: Config, options: StartOptions = {}): P
     logger: logger.child('rooms'),
     servicesFor: (game) => createServices(booted, game),
   })
-  const ws = attachWebSocket(server, { config, auth, rooms, logger: logger.child('ws'), ...options.ws })
+  const buildId = readBuildId(config.clientDistDir)
+  const ws = attachWebSocket(server, { config, auth, rooms, logger: logger.child('ws'), buildId, ...options.ws })
 
   const port = options.port ?? config.PORT
   await new Promise<void>((resolve) => server.listen(port, options.host, resolve))
