@@ -15,7 +15,6 @@ Candidates for future games, not yet filtered. Each entry has a one-line pitch, 
 - **Wavelength / Spectrum**: the clue-giver secretly sees a target on a scale ("cold ↔ hot") and gives a clue; the others agree on a slider position and score by how close they get.
   - Needs: a library of scale pairs; a dial/slider component (could go in `@wsfg/core/ui`).
   - Secrets: the target position.
-- **Two Truths and a Lie**: each player types three statements about themselves; the others vote for the lie. No content library.
 - **Wits & Wagers** (trivia with numeric answers): everyone guesses a number ("How tall is the Eiffel Tower?"), then bets on which guess is closest. Someone who knows nothing can still win by betting well.
   - Needs: an AI-generated question library.
   - Secrets: guesses until everyone has submitted.
