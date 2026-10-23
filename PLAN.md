@@ -197,7 +197,7 @@ JSON messages `{ type, ...payload }`, every one validated with zod. Connect to `
 **Server -> Client**
 | type | payload |
 |---|---|
-| `session` | `{ user: { id, name, role } | null, build: string | null }`, sent on connect. `build` is the served client build's id (null in dev); a tab running a different build reloads once |
+| `session` | `{ user: { id, name, role } \| null, build: string \| null }`, sent on connect. `build` is the served client build's id (null in dev); a tab running a different build reloads once |
 | `joined` | `{ playerId, token, code }` |
 | `state` | `{ room: RoomView, game: GameView \| null }` per recipient |
 | `error` | `{ code, message }`, `code` in `unauthorized`, `forbidden`, `rate_limited`, `room_cap`, `validation`, `not_found`, `game` |
