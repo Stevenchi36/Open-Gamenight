@@ -5,8 +5,8 @@
 import type { Rng } from '@wsfg/core/rng'
 import { deltaE, hexToOklab } from './spectral.ts'
 
-/** Distance at which closeness reaches 0%. */
-const CLOSENESS_ZERO_AT = 0.25
+/** Closeness falls by a factor of e every this much distance: 0.25 away is 37%. */
+const CLOSENESS_SCALE = 0.25
 /** No two colours in a round closer than this (OKLab), so none look alike. */
 const MIN_APART = 0.12
 const WHITE = '#ffffff'
@@ -49,7 +49,10 @@ export function distanceBetween(a: string, b: string): number {
   return deltaE(hexToOklab(a), hexToOklab(b))
 }
 
-/** 0-100 to 2 decimals (whole numbers tied too often): 100 is exact, 0 is CLOSENESS_ZERO_AT or further. */
+/**
+ * 0-100 to 2 decimals (whole numbers tied too often). Exponential, so it never reaches 0
+ * and far-off guesses still show which was closer; 100 is exact.
+ */
 export function closeness(distance: number): number {
-  return Math.round(10_000 * Math.max(0, 1 - distance / CLOSENESS_ZERO_AT)) / 100
+  return Math.round(10_000 * Math.exp(-distance / CLOSENESS_SCALE)) / 100
 }

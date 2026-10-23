@@ -6,7 +6,7 @@
 
 1. **Look at the colours.** Everyone sees the same 2 to 6 paint colours.
 2. **Pick your guess in secret.** Use the colour picker to choose the colour they'd make if you mixed them **in equal parts, like paint**. Blue and yellow make green, red and white make pink. You can change your guess until the reveal.
-3. **Reveal.** Once everyone has guessed (or the timer runs out, or the host taps **Reveal now**), the real mix appears next to every guess, closest first. Each guess shows how close it was, as a percentage to 2 decimal places.
+3. **Reveal.** Once everyone has guessed (or the timer runs out, or the host taps **Reveal now**), the real mix appears next to every guess, closest first. Each guess shows how close it was, as a percentage to 2 decimal places: 100% is exact, and it drops quickly as guesses get further off, but never quite reaches 0.
 
 ## Scoring
 

@@ -62,14 +62,16 @@ describe('colours', () => {
     }
   })
 
-  it('scores closeness from 100 (exact) down to 0 (0.25 away or more)', () => {
+  it('scores closeness from 100 (exact) down a curve that never reaches 0', () => {
     expect(closeness(0)).toBe(100)
-    expect(closeness(0.125)).toBe(50)
-    expect(closeness(0.25)).toBe(0)
-    expect(closeness(0.5)).toBe(0)
-    expect(closeness(0.9)).toBe(0)
-    expect(closeness(0.07531)).toBe(69.88)
-    expect(closeness(0.07469)).toBe(70.12)
+    expect(closeness(0.124)).toBe(60.9) // a plain grey guess for a mid green
+    expect(closeness(0.25)).toBe(36.79)
+    // black vs white, the furthest apart two colours get, still beats a slightly closer guess
     expect(distanceBetween('#000000', '#ffffff')).toBeCloseTo(1, 3)
+    expect(closeness(1)).toBe(1.83)
+    expect(closeness(0.9)).toBeGreaterThan(closeness(1))
+    // 2 decimals separate guesses that whole percentages would tie
+    expect(closeness(0.07531)).toBe(73.99)
+    expect(closeness(0.07469)).toBe(74.17)
   })
 })
