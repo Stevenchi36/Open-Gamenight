@@ -46,6 +46,46 @@ describe('migrateGamesDb', () => {
     db.close()
   })
 
+  it('moves a renamed game onto its new id without rerunning its migrations', () => {
+    const db = tempDb()
+    const v1 = { id: 'old', migrations: [{ id: '001', sql: 'CREATE TABLE IF NOT EXISTS old_things (id INTEGER PRIMARY KEY)' }] }
+    migrateGamesDb(db, [v1 as unknown as AnyGameModule])
+    db.prepare("INSERT INTO categories (game_id, name) VALUES ('old', 'Animals'), ('other', 'Animals')").run()
+    db.prepare("INSERT INTO ai_usage (game_id, model, input_tokens, output_tokens) VALUES ('old', 'm', 1, 2)").run()
+    db.prepare('INSERT INTO old_things DEFAULT VALUES').run()
+
+    const v2 = {
+      id: 'renamed',
+      renamedFrom: ['old'],
+      migrations: [...v1.migrations, { id: '002_rename', sql: 'ALTER TABLE old_things RENAME TO renamed_things' }],
+    } as unknown as AnyGameModule
+    expect(migrateGamesDb(db, [v2])).toEqual(['renamed:002_rename'])
+    expect(db.prepare("SELECT id FROM schema_migrations WHERE id LIKE '%:0%' AND id NOT LIKE 'core:%' ORDER BY id").all()).toEqual([
+      { id: 'renamed:001' },
+      { id: 'renamed:002_rename' },
+    ])
+    expect(db.prepare('SELECT game_id FROM categories ORDER BY game_id').all()).toEqual([{ game_id: 'other' }, { game_id: 'renamed' }])
+    expect(db.prepare('SELECT game_id FROM ai_usage').all()).toEqual([{ game_id: 'renamed' }])
+    expect(db.prepare('SELECT COUNT(*) AS n FROM renamed_things').get()).toEqual({ n: 1 })
+    expect(migrateGamesDb(db, [v2])).toEqual([])
+    db.close()
+  })
+
+  it('runs a renamed game from scratch on a fresh database, old table names included', () => {
+    const db = tempDb()
+    const v2 = {
+      id: 'renamed',
+      renamedFrom: ['old'],
+      migrations: [
+        { id: '001', sql: 'CREATE TABLE IF NOT EXISTS old_things (id INTEGER PRIMARY KEY)' },
+        { id: '002_rename', sql: 'ALTER TABLE old_things RENAME TO renamed_things' },
+      ],
+    } as unknown as AnyGameModule
+    expect(migrateGamesDb(db, [v2])).toEqual(['core:001_ai_usage', 'core:002_categories', 'renamed:001', 'renamed:002_rename'])
+    db.prepare('INSERT INTO renamed_things DEFAULT VALUES').run()
+    db.close()
+  })
+
   it('rolls back a failing migration', () => {
     const db = tempDb()
     const bad = game('demo', 'CREATE TABLE demo_a (id INTEGER); CREATE TABLE demo_a (id INTEGER);')

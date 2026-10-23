@@ -19,6 +19,8 @@ describe('assertValidGame', () => {
       { migrations: [{ id: '001', sql: '' }, { id: '001', sql: '' }] },
       /duplicate migration/,
     ],
+    ['renamedFrom its own id', { renamedFrom: ['oracle'] }, /renamedFrom/],
+    ['an invalid renamedFrom id', { renamedFrom: ['Old-Game'] }, /renamedFrom/],
   ])('rejects %s', (_label, patch, message) => {
     expect(() => assertValidGame({ ...makeOracle(), ...patch })).toThrow(message)
   })
@@ -28,6 +30,13 @@ describe('assertValidRegistry', () => {
   it('rejects an empty registry and duplicate ids', () => {
     expect(() => assertValidRegistry([])).toThrow(/empty/)
     expect(() => assertValidRegistry([makeOracle(), makeOracle()])).toThrow(/duplicate game id/)
+  })
+
+  it('rejects a renamedFrom id that another game still uses or also claims', () => {
+    const renamed = (id: string) => ({ ...makeOracle(), id, renamedFrom: ['oracle'] })
+    expect(() => assertValidRegistry([renamed('seer')])).not.toThrow()
+    expect(() => assertValidRegistry([makeOracle(), renamed('seer')])).toThrow(/used by another game/)
+    expect(() => assertValidRegistry([renamed('seer'), renamed('prophet')])).toThrow(/used by another game/)
   })
 })
 

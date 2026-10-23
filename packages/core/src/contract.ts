@@ -233,6 +233,13 @@ export interface GameModule<S, A, T, V, Settings, P = undefined> extends GameMet
 
   migrations?: Migration[]
   /**
+   * Ids this game used before (oldest first). Before its migrations run, the core moves
+   * the old id's recorded migrations, categories and AI usage to the current id, and
+   * accepts the old table prefixes in migrations already written. The game's own new
+   * migration renames its tables.
+   */
+  renamedFrom?: string[]
+  /**
    * Mounted at /api/admin/<id>, already behind requireAdmin and the Origin check.
    * JSON bodies are parsed. `res.locals.user` is the signed-in admin (AdminUser).
    */
@@ -292,6 +299,9 @@ export function assertValidGame(game: AnyGameModule): void {
     if (migrationIds.has(m.id)) throw new Error(`${where}: duplicate migration id "${m.id}"`)
     migrationIds.add(m.id)
   }
+  for (const old of game.renamedFrom ?? []) {
+    if (!GAME_ID_PATTERN.test(old) || old === game.id) throw new Error(`${where}: renamedFrom "${old}" must be a different valid id`)
+  }
 }
 
 /** Checks the whole registry: each game valid, ids unique. */
@@ -302,5 +312,13 @@ export function assertValidRegistry(games: readonly AnyGameModule[]): void {
     assertValidGame(game)
     if (ids.has(game.id)) throw new Error(`duplicate game id "${game.id}"`)
     ids.add(game.id)
+  }
+  // An old id still in use would have its data taken over by the renamed game.
+  const former = new Set<string>()
+  for (const game of games) {
+    for (const old of game.renamedFrom ?? []) {
+      if (ids.has(old) || former.has(old)) throw new Error(`game "${game.id}": renamedFrom "${old}" is used by another game`)
+      former.add(old)
+    }
   }
 }

@@ -58,14 +58,32 @@ export const CORE_MIGRATIONS: Migration[] = [
 
 const CREATE_TABLE = /create\s+(?:virtual\s+)?table\s+(?:if\s+not\s+exists\s+)?["`[]?(\w+)/gi
 
-/** Throws if a game migration creates a table outside its `<gameId>_` prefix. */
-export function assertTablePrefix(gameId: string, migration: Migration): void {
+/**
+ * Throws if a game migration creates a table outside its `<gameId>_` prefix.
+ * `formerIds` (from renamedFrom) are accepted too: migrations written before a rename keep their table names.
+ */
+export function assertTablePrefix(gameId: string, migration: Migration, formerIds: readonly string[] = []): void {
+  const prefixes = [gameId, ...formerIds].map((id) => `${id}_`)
   for (const match of migration.sql.matchAll(CREATE_TABLE)) {
     const table = match[1]!
-    if (!table.toLowerCase().startsWith(`${gameId}_`)) {
+    if (!prefixes.some((prefix) => table.toLowerCase().startsWith(prefix))) {
       throw new Error(`game "${gameId}" migration ${migration.id} creates table "${table}" without the "${gameId}_" prefix`)
     }
   }
+}
+
+/** A renamed game takes over its old id's rows in the core tables: recorded migrations, categories, AI usage. */
+function adoptFormerId(db: DatabaseSync, oldId: string, newId: string): void {
+  transaction(db, () => {
+    db.prepare('UPDATE schema_migrations SET id = ? || substr(id, ?) WHERE substr(id, 1, ?) = ?').run(
+      `${newId}:`,
+      oldId.length + 2,
+      oldId.length + 1,
+      `${oldId}:`,
+    )
+    db.prepare('UPDATE categories SET game_id = ? WHERE game_id = ?').run(newId, oldId)
+    db.prepare('UPDATE ai_usage SET game_id = ? WHERE game_id = ?').run(newId, oldId)
+  })
 }
 
 /** Apply core then game migrations in order, each once, recorded in schema_migrations. */
@@ -74,17 +92,16 @@ export function migrateGamesDb(db: DatabaseSync, games: readonly AnyGameModule[]
     id         TEXT PRIMARY KEY,
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`)
-  const applied = new Set(
-    (db.prepare('SELECT id FROM schema_migrations').all() as { id: string }[]).map((r) => r.id),
-  )
+  const appliedIds = () => new Set((db.prepare('SELECT id FROM schema_migrations').all() as { id: string }[]).map((r) => r.id))
+  let applied = appliedIds()
   const record = db.prepare('INSERT INTO schema_migrations (id) VALUES (?)')
   const ran: string[] = []
 
-  const run = (owner: string, migrations: readonly Migration[]) => {
+  const run = (owner: string, migrations: readonly Migration[], formerIds: readonly string[] = []) => {
     for (const migration of migrations) {
       const id = `${owner}:${migration.id}`
       if (applied.has(id)) continue
-      if (owner !== 'core') assertTablePrefix(owner, migration)
+      if (owner !== 'core') assertTablePrefix(owner, migration, formerIds)
       transaction(db, () => {
         db.exec(migration.sql)
         record.run(id)
@@ -95,6 +112,13 @@ export function migrateGamesDb(db: DatabaseSync, games: readonly AnyGameModule[]
   }
 
   run('core', CORE_MIGRATIONS)
-  for (const game of games) run(game.id, game.migrations ?? [])
+  for (const game of games) {
+    const formerIds = game.renamedFrom ?? []
+    if (formerIds.length > 0) {
+      for (const oldId of formerIds) adoptFormerId(db, oldId, game.id)
+      applied = appliedIds()
+    }
+    run(game.id, game.migrations ?? [], formerIds)
+  }
   return ran
 }
