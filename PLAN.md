@@ -563,7 +563,7 @@ The fourth game: a few random paint colours are shown, and everyone picks the co
 1. Each round shows **2-6 random colours** (setting). Everyone in the round picks one colour with a colour picker, in secret, and can change it until the reveal.
 2. **Reveal** when every connected round player has guessed, when the guess timer runs out, or when the host taps **Reveal now**.
 3. **The answer** is the colours mixed like paint in equal parts: Kubelka-Munk pigment mixing (spectral.js, vendored in `server/spectral.ts`), so blue + yellow makes green. Computed once at round start.
-4. **Closeness** is the OKLab distance between a guess and the answer (perceptual: equal distances look about equally different). Shown as a percentage to 2 decimals, `100 × max(0, 1 − distance / 0.5)`.
+4. **Closeness** is the OKLab distance between a guess and the answer (perceptual: equal distances look about equally different). Shown as a percentage to 2 decimals, `100 × max(0, 1 − distance / 0.25)`: most colour pairs are under 0.2 apart, so a gentler scale gave poor guesses 60-75%.
 5. **Scoring** (setting):
    - **Ranked** (default): you score 1 point for every round player who was further away than you. With N guessers the closest gets N−1 and the furthest 0; equal distances score the same; a player with no guess counts as furthest and scores 0.
    - **Closest only:** the closest guess scores 1 point (everyone tied for closest scores).

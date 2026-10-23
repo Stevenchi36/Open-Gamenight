@@ -6,7 +6,7 @@ import type { Rng } from '@wsfg/core/rng'
 import { deltaE, hexToOklab } from './spectral.ts'
 
 /** Distance at which closeness reaches 0%. */
-const CLOSENESS_ZERO_AT = 0.5
+const CLOSENESS_ZERO_AT = 0.25
 /** No two colours in a round closer than this (OKLab), so none look alike. */
 const MIN_APART = 0.12
 const WHITE = '#ffffff'
