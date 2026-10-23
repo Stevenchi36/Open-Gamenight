@@ -73,11 +73,13 @@ const playerItems = computed(() => {
 
 const filtered = computed(() => {
   const q = (search.value ?? '').trim().toLowerCase()
-  return config.games.filter(
-    (g) =>
-      (!q || g.name.toLowerCase().includes(q)) &&
-      (players.value === null || (g.minPlayers <= players.value && players.value <= g.maxPlayers)),
-  )
+  return config.games
+    .filter(
+      (g) =>
+        (!q || g.name.toLowerCase().includes(q)) &&
+        (players.value === null || (g.minPlayers <= players.value && players.value <= g.maxPlayers)),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name))
 })
 
 const clientOf = (id: string) => clientGames.find((g) => g.id === id)
