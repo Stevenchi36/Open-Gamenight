@@ -134,11 +134,13 @@ export class GameRunner {
       case 'schedule': {
         game.timers.get(effect.key)?.cancel()
         const timer = this.deps.clock.setTimeout(() => {
-          if (game.timers.get(effect.key) !== timer) return
-          game.timers.delete(effect.key)
           void this.deps
             .enqueue(room, async () => {
-              if (room.game === game) await this.action(room, null, effect.action)
+              // Checked on the queue, not when the clock fires: work queued ahead of
+              // this may have cancelled or replaced the key, and then it must not run.
+              if (room.game !== game || game.timers.get(effect.key) !== timer) return
+              game.timers.delete(effect.key)
+              await this.action(room, null, effect.action)
             })
             .catch((error) => this.deps.logger.error('scheduled action failed', { error: errorText(error) }))
         }, effect.at - this.deps.clock.now())

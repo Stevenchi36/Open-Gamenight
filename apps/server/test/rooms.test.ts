@@ -8,7 +8,7 @@ import { createManager, FakeConn, user } from './helpers/rooms.ts'
 const imposter = registry[0]!
 
 type CoinState = { flips: number; dings: number; sides: number }
-type CoinAction = { type: 'flip' } | { type: 'end' } | { type: 'ding' } | { type: 'boom' }
+type CoinAction = { type: 'flip' } | { type: 'stop' } | { type: 'end' } | { type: 'ding' } | { type: 'boom' }
 
 /** Tiny second game: tests game switching, timers and gameOver. */
 const coin = defineGame<CoinState, CoinAction, CoinState, { sides: number }>({
@@ -21,6 +21,7 @@ const coin = defineGame<CoinState, CoinAction, CoinState, { sides: number }>({
   defaultSettings: { sides: 2 },
   actionSchema: z.discriminatedUnion('type', [
     z.object({ type: z.literal('flip') }),
+    z.object({ type: z.literal('stop') }),
     z.object({ type: z.literal('end') }),
     z.object({ type: z.literal('ding') }),
     z.object({ type: z.literal('boom') }),
@@ -33,6 +34,8 @@ const coin = defineGame<CoinState, CoinAction, CoinState, { sides: number }>({
           state: { ...state, flips: state.flips + 1 },
           effects: [{ type: 'schedule', key: 'ding', at: ctx.now + 1000, action: { type: 'ding' } }],
         }
+      case 'stop':
+        return { state, effects: [{ type: 'cancel', key: 'ding' }] }
       case 'ding':
         if (ctx.actorId !== null) return gameError('system only')
         return { state: { ...state, dings: state.dings + 1 }, effects: [{ type: 'notice', to: 'all', message: 'ding' }] }
@@ -295,6 +298,24 @@ describe('running a game', () => {
     await m.settle()
     expect(host.last('state')!.game).toMatchObject({ flips: 1, dings: 1 })
     expect(host.last('notice')).toMatchObject({ message: 'ding' })
+  })
+
+  it('drops a timer that fired while an action cancelling it was already queued', async () => {
+    const m = createManager({ games: [coin] })
+    const host = new FakeConn(user('u1'))
+    await m.send(host, { type: 'create_room' })
+    const room = [...m.rooms.rooms.values()][0]!
+    await m.send(host, { type: 'start_game' })
+    await m.send(host, { type: 'action', action: { type: 'flip' } })
+    let release!: () => void
+    const gate = new Promise<void>((r) => (release = r))
+    void m.rooms.enqueue(room, () => gate)
+    const stopped = m.send(host, { type: 'action', action: { type: 'stop' } })
+    m.clock.advance(1000) // fires while 'stop' waits in the queue
+    release()
+    await stopped
+    await m.settle()
+    expect(host.last('state')!.game).toMatchObject({ dings: 0 })
   })
 
   it('returns to the lobby on gameOver or when the host says so, cancelling timers', async () => {
