@@ -8,6 +8,7 @@
  * generation) go through addQuestions, which creates missing categories.
  */
 import type { DatabaseSync } from 'node:sqlite'
+import { duplicateReason, findMatch, matchKey } from '@wsfg/core/categories'
 import { AiError, categoryScope, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
@@ -122,14 +123,23 @@ export interface AddResult {
   insertedByCategory: Record<string, number>
 }
 
+/** The question in this category worded the same as `question` apart from spelling (core matchKey), else null. */
+function similarQuestion(db: DatabaseSync, categoryId: number, question: string, exceptId = 0): string | null {
+  const rows = db.prepare('SELECT question FROM ballpark_questions WHERE category_id = ? AND id != ?').all(categoryId, exceptId)
+  return findMatch(
+    question,
+    (rows as { question: string }[]).map((r) => r.question),
+  )
+}
+
 /**
- * Validate, de-dupe (same category + question, case-insensitive) and insert.
+ * Validate, de-dupe (same category + question, spelled alike: core matchKey) and insert.
  * Duplicates are skipped, not errors. Unknown category names are created.
  */
 export function addQuestions(lib: Library, inputs: QuestionInput[], source: QuestionSource = 'manual'): AddResult {
   const { db, categories } = lib
   const insert = db.prepare(
-    'INSERT INTO ballpark_questions (category_id, question, answer, unit, fact, source) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
+    'INSERT INTO ballpark_questions (category_id, question, answer, unit, fact, source) VALUES (?, ?, ?, ?, ?, ?)',
   )
   const result: AddResult = { inserted: 0, skipped: [], createdCategories: [], insertedByCategory: {} }
   db.exec('BEGIN IMMEDIATE')
@@ -146,11 +156,15 @@ export function addQuestions(lib: Library, inputs: QuestionInput[], source: Ques
         category = categories.create(name)
         result.createdCategories.push(category.name)
       }
-      const { changes } = insert.run(category.id, question, answer, unit, fact, source)
-      if (changes > 0) {
-        result.inserted++
-        result.insertedByCategory[category.name] = (result.insertedByCategory[category.name] ?? 0) + 1
-      } else result.skipped.push({ question, category: category.name, reason: 'Already in the library' })
+      // Earlier inserts in this batch are visible here, so repeats within it are caught too.
+      const match = similarQuestion(db, category.id, question)
+      if (match !== null) {
+        result.skipped.push({ question, category: category.name, reason: duplicateReason(question, match) })
+        continue
+      }
+      insert.run(category.id, question, answer, unit, fact, source)
+      result.inserted++
+      result.insertedByCategory[category.name] = (result.insertedByCategory[category.name] ?? 0) + 1
     }
     db.exec('COMMIT')
   } catch (error) {
@@ -184,10 +198,7 @@ export function updateQuestion(lib: Library, id: number, patch: QuestionPatch): 
   })
   if (!checked.ok) return checked
   const { question, answer, unit, fact } = checked.value
-  const clash = db
-    .prepare('SELECT 1 FROM ballpark_questions WHERE category_id = ? AND question = ? COLLATE NOCASE AND id != ?')
-    .get(category.id, question, id)
-  if (clash) return { ok: false, error: `That question is already in ${category.name}` }
+  if (similarQuestion(db, category.id, question, id) !== null) return { ok: false, error: `That question is already in ${category.name}` }
   db.prepare('UPDATE ballpark_questions SET category_id = ?, question = ?, answer = ?, unit = ?, fact = ? WHERE id = ?').run(
     category.id,
     question,
@@ -342,7 +353,6 @@ export function screenCandidates(
   category: string | null,
 ): { candidates: ValidQuestion[]; skipped: AddResult['skipped'] } {
   const { db, categories } = lib
-  const exists = db.prepare(`SELECT 1 ${FROM} WHERE c.name = ? COLLATE NOCASE AND q.question = ? COLLATE NOCASE`)
   const seen = new Set<string>()
   const candidates: ValidQuestion[] = []
   const skipped: AddResult['skipped'] = []
@@ -354,10 +364,12 @@ export function screenCandidates(
     }
     const { question } = checked.value
     // Generated names land on the existing category they mean ("Animal" -> "Animals").
-    const cat = categories.resolve(checked.value.category)?.name ?? checked.value.category
-    const key = `${cat}|${question}`.toLowerCase()
-    if (seen.has(key) || exists.get(cat, question)) {
-      skipped.push({ question, category: cat, reason: 'Already in the library' })
+    const existing = categories.resolve(checked.value.category)
+    const cat = existing?.name ?? checked.value.category
+    const key = `${matchKey(cat)}|${matchKey(question) || question.toLowerCase()}`
+    const match = existing ? similarQuestion(db, existing.id, question) : null
+    if (seen.has(key) || match !== null) {
+      skipped.push({ question, category: cat, reason: match !== null ? duplicateReason(question, match) : 'Already in the library' })
       continue
     }
     seen.add(key)

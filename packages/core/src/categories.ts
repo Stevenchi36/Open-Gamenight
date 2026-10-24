@@ -48,7 +48,7 @@ export interface CategoryService {
   get(id: number): Category | null
   /** Case-insensitive. */
   findByName(name: string): Category | null
-  /** The category this name means: an exact (case-insensitive) match, else one with the same categoryKey ("Sport & Games" for "sports and games"). */
+  /** The category this name means: an exact (case-insensitive) match, else one with the same matchKey ("Sport & Games" for "sports and games"). */
   resolve(name: string): Category | null
   /** Throws 'invalid', or 'exists' when the name resolves to an existing category. */
   create(name: string): Category
@@ -72,14 +72,15 @@ export function normalizeCategoryName(raw: string): string {
 }
 
 /**
- * What makes two category names the same category: no case, accents or punctuation,
- * "&" read as "and", no leading "the", and a plural "s" dropped from words of 4+ letters
- * (not -ss/-us/-is). So "Sports & Games", "sport and game" and "Sport and Games!" match.
- * Different wording ("Sport" vs "Athletics") is left to whoever is adding: the MCP tools
- * ask Claude to check list_categories first.
+ * What makes two names the same category, or two library entries (words, questions) in
+ * one category the same entry: no case, accents or punctuation, "&" read as "and", no
+ * leading "the", and a plural "s" dropped from words of 4+ letters (not -ss/-us/-is).
+ * So "Sports & Games", "sport and game" and "Sport and Games!" match, as do "T-Rex" and
+ * "t rex". Different wording ("Sport" vs "Athletics") is left to whoever is adding: the
+ * MCP tools ask Claude to check list_categories first.
  */
-export function categoryKey(name: string): string {
-  const words = name
+export function matchKey(text: string): string {
+  const words = text
     .normalize('NFKD')
     .replace(/\p{M}/gu, '')
     .toLowerCase()
@@ -91,6 +92,19 @@ export function categoryKey(name: string): string {
     .filter(Boolean)
   if (words.length > 1 && words[0] === 'the') words.shift()
   return words.map((w) => (w.length >= 4 && /[^siu]s$/.test(w) ? w.slice(0, -1) : w)).join(' ')
+}
+
+/** The entry of `existing` that means the same as `text` (same matchKey), else null. */
+export function findMatch(text: string, existing: string[]): string | null {
+  const key = matchKey(text)
+  // Text with no letters or digits has an empty key; compare it as written.
+  const same = key ? (e: string) => matchKey(e) === key : (e: string) => e.toLowerCase() === text.toLowerCase()
+  return existing.find(same) ?? null
+}
+
+/** Skip reason for a library entry that findMatch found, naming the stored spelling when it differs. */
+export function duplicateReason(text: string, match: string): string {
+  return match.toLowerCase() === text.toLowerCase() ? 'Already in the library' : `Already in the library as ${match}`
 }
 
 type Row = { id: number; name: string; created_at: string }
@@ -126,8 +140,8 @@ export function createCategoryService(db: DatabaseSync, gameId: string): Categor
   const resolve = (name: string) => {
     const exact = findByName(name)
     if (exact) return exact
-    const key = categoryKey(name)
-    return key ? (list().find((c) => categoryKey(c.name) === key) ?? null) : null
+    const key = matchKey(name)
+    return key ? (list().find((c) => matchKey(c.name) === key) ?? null) : null
   }
   const clashMessage = (name: string, existing: Category) =>
     existing.name.toLowerCase() === name.toLowerCase()
@@ -152,7 +166,7 @@ export function createCategoryService(db: DatabaseSync, gameId: string): Categor
       const current = get(id)
       if (!current) throw new CategoryError('not_found', 'No such category')
       // An exact clash wins over a key match, so "Animals" -> "animals" on itself stays a rename.
-      const clash = findByName(name) ?? list().find((c) => c.id !== id && categoryKey(c.name) === categoryKey(name))
+      const clash = findByName(name) ?? list().find((c) => c.id !== id && matchKey(c.name) === matchKey(name))
       if (clash && clash.id !== id) throw new CategoryError('exists', clashMessage(name, clash))
       try {
         return toCategory(update.get(name, gameId, id) as Row)
@@ -181,7 +195,7 @@ export function createCategoryService(db: DatabaseSync, gameId: string): Categor
 
 /**
  * For game tools that take category names: check what exists and reuse it, since only
- * spelling differences (categoryKey) are matched automatically, not different wording.
+ * spelling differences (matchKey) are matched automatically, not different wording.
  */
 export const CATEGORY_REUSE_RULE =
   'Before adding, call list_categories and reuse an existing category whenever one means the same thing, even if worded differently ' +

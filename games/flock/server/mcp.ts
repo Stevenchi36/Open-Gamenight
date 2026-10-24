@@ -66,7 +66,7 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         'answered in a word or short phrase. Avoid trivia with one correct answer. ' +
         CATEGORY_REUSE_RULE +
         ' ' +
-        'Duplicates (same category + question) and invalid entries are skipped and reported.',
+        'Duplicates (same category + question, ignoring case, punctuation and plural "s") and invalid entries are skipped and reported.',
       inputSchema: addSchema,
       handler: async (args) => addQuestions(services, addSchema.parse(args).questions, 'claude'),
     },

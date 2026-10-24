@@ -81,7 +81,7 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         'one loosely related word by default (the imposter must be able to bluff, not deduce the word), unless the user asks for longer or more specific hints. ' +
         CATEGORY_REUSE_RULE +
         ' ' +
-        'Duplicates (same category + word) and invalid entries are skipped and reported. ' +
+        'Duplicates (same category + word, ignoring case, punctuation and plural "s", so "T Rex" matches "T-Rex") and invalid entries are skipped and reported. ' +
         SECRET_REPLY_RULE,
       inputSchema: addSchema,
       handler: async (args) => ({ ...addWords(services, addSchema.parse(args).words, 'claude'), note: SECRET_REPLY_RULE }),

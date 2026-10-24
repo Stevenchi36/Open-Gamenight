@@ -86,7 +86,7 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         'Avoid populations, prices and records likely to change. ' +
         CATEGORY_REUSE_RULE +
         ' ' +
-        'Duplicates (same category + question) and invalid entries are skipped and reported. ' +
+        'Duplicates (same category + question, ignoring case, punctuation and plural "s") and invalid entries are skipped and reported. ' +
         SECRET_REPLY_RULE,
       inputSchema: addSchema,
       handler: async (args) => ({ ...addQuestions(services, addSchema.parse(args).questions, 'claude'), note: SECRET_REPLY_RULE }),

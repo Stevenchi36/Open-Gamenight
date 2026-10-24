@@ -13,6 +13,7 @@ import {
   pickQuestion,
   playableCategories,
   removeQuestions,
+  screenCandidates,
   updateQuestion,
 } from '../server/library.ts'
 import { migrations } from '../server/migrations.ts'
@@ -99,6 +100,25 @@ describe('addQuestions', () => {
         { question: 'how tall is BIG BEN?', reason: 'Already in the library' },
         { question: 'How wide is it?', reason: 'Unknown unit "ft"' },
       ],
+    })
+  })
+
+  it('skips questions that differ only in punctuation or plurals, and screens generated ones the same way', () => {
+    addQuestions(services, questions)
+    expect(addQuestions(services, [q('Landmarks', 'How tall is Big-Ben?', 96, 'm')]).skipped).toEqual([
+      { question: 'How tall is Big-Ben?', category: 'Landmarks', reason: 'Already in the library as How tall is Big Ben?' },
+    ])
+    expect(screenCandidates(services, [q('landmark', 'How tall is the Eiffel-Tower?', 330, 'm')], null).skipped).toEqual([
+      {
+        question: 'How tall is the Eiffel-Tower?',
+        category: 'Landmarks',
+        reason: 'Already in the library as How tall is the Eiffel Tower?',
+      },
+    ])
+    const benId = listQuestions(db, { q: 'Big Ben' }).questions[0]!.id
+    expect(updateQuestion(services, benId, { question: 'how tall is the eiffel-tower?' })).toEqual({
+      ok: false,
+      error: 'That question is already in Landmarks',
     })
   })
 })

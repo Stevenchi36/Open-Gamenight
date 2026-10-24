@@ -14,6 +14,7 @@ import {
   pickWord,
   playableCategories,
   removeWords,
+  screenCandidates,
   updateWord,
 } from '../server/library.ts'
 import { VAGUE_DEFAULT_HINTS } from '../server/default-hints.ts'
@@ -166,6 +167,47 @@ describe('addWords', () => {
     expect(services.categories.list().map((c) => c.name)).toEqual(['Animals', 'Food'])
   })
 
+  it('skips words spelled differently from one in the same category, including within the batch', () => {
+    addWords(services, [...words, { category: 'Dinosaurs', word: 'T-Rex', hint: 'Tiny arms' }])
+    expect(
+      addWords(services, [
+        { category: 'Animals', word: 'penguins', hint: 'Waddles' },
+        { category: 'Dinosaurs', word: 't rex', hint: 'Roars' },
+        { category: 'Food', word: 'Ice Cream', hint: 'Cold' },
+        { category: 'Food', word: 'ice-cream!', hint: 'Cone' },
+        { category: 'Food', word: 'Penguin', hint: 'Biscuit' }, // other categories don't count
+      ]),
+    ).toMatchObject({
+      inserted: 2,
+      skipped: [
+        { word: 'penguins', reason: 'Already in the library as Penguin' },
+        { word: 't rex', reason: 'Already in the library as T-Rex' },
+        { word: 'ice-cream!', reason: 'Already in the library as Ice Cream' },
+      ],
+    })
+  })
+
+  it('screens generated words against the library and the batch by spelling', () => {
+    addWords(services, words)
+    expect(
+      screenCandidates(
+        services,
+        [
+          { category: 'animal', word: 'Giraffes', hint: 'Tall' },
+          { category: 'Space', word: 'Black Hole', hint: 'Dark' },
+          { category: 'space', word: 'black-holes', hint: 'Pull' },
+        ],
+        null,
+      ),
+    ).toEqual({
+      candidates: [{ category: 'Space', word: 'Black Hole', hint: 'Dark', difficulty: 'medium' }],
+      skipped: [
+        { word: 'Giraffes', category: 'Animals', reason: 'Already in the library as Giraffe' },
+        { word: 'black-holes', category: 'space', reason: 'Already in the library' },
+      ],
+    })
+  })
+
   it('rolls back everything if an insert fails midway', () => {
     db.exec("CREATE TRIGGER boom BEFORE INSERT ON imposter_words WHEN NEW.word = 'Boom' BEGIN SELECT RAISE(ABORT, 'boom'); END")
     expect(() =>
@@ -205,10 +247,11 @@ describe('listWords / listCategories / updateWord / removeWords', () => {
     const penguin = listWords(db, { q: 'Penguin' }).words[0]!
     const moved = updateWord(services, penguin.id, { categoryId: idOf('Food'), hint: 'Waddles in a suit' })
     expect(moved).toMatchObject({ ok: true, value: { category: 'Food', word: 'Penguin', hint: 'Waddles in a suit' } })
-    expect(updateWord(services, penguin.id, { word: 'pizza' })).toEqual({ ok: false, error: 'pizza is already in Food' })
+    expect(updateWord(services, penguin.id, { word: 'pizzas' })).toEqual({ ok: false, error: 'Pizza is already in Food' })
     expect(updateWord(services, penguin.id, { hint: 'a PENGUIN' })).toEqual({ ok: false, error: 'Hint must not contain the word' })
     expect(updateWord(services, penguin.id, { categoryId: 999 })).toEqual({ ok: false, error: 'No such category' })
     expect(updateWord(services, 999, {})).toEqual({ ok: false, error: 'No such word' })
+    expect(updateWord(services, penguin.id, { word: 'PENGUINS' })).toMatchObject({ ok: true, value: { word: 'PENGUINS' } }) // itself
   })
 
   it('a category with words cannot be deleted; an emptied one can', () => {

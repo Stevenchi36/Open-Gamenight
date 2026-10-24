@@ -350,7 +350,7 @@ CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | 
 
 ### Validation
 - Clue (typed only): trimmed, a single token (no spaces), 1-24 chars, **not equal to the secret word**, and **not a repeat** of an earlier clue this round (both case-insensitive). Rejected with `error { code: 'game' }` so the player can retry.
-- Library words: `word` non-empty, 1-3 words, under 30 chars; `category` under 40; `hint` under 120 and must **not contain the word** (case-insensitive). Duplicates (same category + word, case-insensitive) are skipped, not errors.
+- Library words: `word` non-empty, 1-3 words, under 30 chars; `category` under 40; `hint` under 120 and must **not contain the word** (case-insensitive). Duplicates (same category + word, compared by core `matchKey`: ignoring case, accents, punctuation, a leading "the" and a plural "s") are skipped, not errors; the skip reason names the stored spelling when it differs. Questions in other games de-dupe the same way.
 
 ### View (per player)
 ```ts

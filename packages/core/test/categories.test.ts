@@ -1,6 +1,14 @@
 import { DatabaseSync } from 'node:sqlite'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { CATEGORIES_MIGRATION, CategoryError, categoryKey, createCategoryService, type CategoryService } from '../src/categories.ts'
+import {
+  CATEGORIES_MIGRATION,
+  CategoryError,
+  createCategoryService,
+  duplicateReason,
+  findMatch,
+  matchKey,
+  type CategoryService,
+} from '../src/categories.ts'
 
 let db: DatabaseSync
 let mine: CategoryService
@@ -68,9 +76,21 @@ describe('createCategoryService', () => {
   })
 
   it('works out matching keys', () => {
-    expect(categoryKey('  Crème Brûlée & Cakes ')).toBe('creme brulee and cake')
-    expect(categoryKey('Glass, Cactus & Paris')).toBe('glass cactus and paris')
-    expect(categoryKey('The Movies')).toBe('movie')
+    expect(matchKey('  Crème Brûlée & Cakes ')).toBe('creme brulee and cake')
+    expect(matchKey('Glass, Cactus & Paris')).toBe('glass cactus and paris')
+    expect(matchKey('The Movies')).toBe('movie')
+  })
+
+  it('finds library entries that mean the same, and names them in the skip reason', () => {
+    const words = ['Dogs', 'T-Rex', 'Ice Cream', '???']
+    expect(findMatch('dog', words)).toBe('Dogs')
+    expect(findMatch('t rex', words)).toBe('T-Rex')
+    expect(findMatch('ICE-CREAM!', words)).toBe('Ice Cream')
+    expect(findMatch('???', words)).toBe('???')
+    expect(findMatch('!!!', words)).toBeNull()
+    expect(findMatch('Cat', words)).toBeNull()
+    expect(duplicateReason('dogs', 'Dogs')).toBe('Already in the library')
+    expect(duplicateReason('dog', 'Dogs')).toBe('Already in the library as Dogs')
   })
 
   it('renames, refusing clashes; case-only renames are fine', () => {

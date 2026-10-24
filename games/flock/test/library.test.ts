@@ -13,6 +13,7 @@ import {
   pickQuestion,
   playableCategories,
   removeQuestions,
+  screenCandidates,
   updateQuestion,
 } from '../server/library.ts'
 import { migrations } from '../server/migrations.ts'
@@ -100,6 +101,22 @@ describe('addQuestions', () => {
         { question: 'name a BREAKFAST cereal', reason: 'Already in the library' },
         { question: 'Hi', reason: 'Question must be at least 5 characters' },
       ],
+    })
+  })
+
+  it('skips questions that differ only in punctuation or plurals, and screens generated ones the same way', () => {
+    addQuestions(services, questions)
+    expect(addQuestions(services, [{ category: 'Food', question: 'Name a breakfast cereal!' }]).skipped).toEqual([
+      { question: 'Name a breakfast cereal!', category: 'Food', reason: 'Already in the library as Name a breakfast cereal' },
+    ])
+    expect(screenCandidates(services, [{ category: 'food', question: 'Name some pizza toppings' }], null).candidates).toHaveLength(1)
+    expect(screenCandidates(services, [{ category: 'food', question: 'Name a pizza toppings' }], null).skipped).toEqual([
+      { question: 'Name a pizza toppings', category: 'Food', reason: 'Already in the library as Name a pizza topping' },
+    ])
+    const cereal = listQuestions(db, { q: 'cereal' }).questions[0]!
+    expect(updateQuestion(services, cereal.id, { question: 'name a pizza-topping' })).toEqual({
+      ok: false,
+      error: 'That question is already in Food',
     })
   })
 })

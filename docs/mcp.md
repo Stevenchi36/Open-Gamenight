@@ -166,7 +166,7 @@ Flock's question library works the same way, with its own categories:
 |---|---|
 | `flock_list_categories` | All question categories with ids, total and unused counts, plus `runningLow` (fewer than 5 unused). |
 | `flock_search_questions` | Search by `categoryId` or `category` (name) and/or `query` (substring of the question), up to `limit` (max 200). Returns question ids. |
-| `flock_add_questions` | Add `{ questions: [{ category, question }] }`, up to 200 per call. Missing categories are created; duplicates (same category + question, ignoring case) and invalid entries are skipped with a reason. Saved with source `claude`. |
+| `flock_add_questions` | Add `{ questions: [{ category, question }] }`, up to 200 per call. Missing categories are created; duplicates (same category + question, ignoring case, punctuation and plural "s") and invalid entries are skipped with a reason. Saved with source `claude`. |
 | `flock_update_question` | Edit one question `{ id, categoryId? \| category?, question? }`: move it or fix its text. |
 | `flock_remove_questions` | Remove by `{ ids: [...] }` (ids from `search_questions`). |
 | `flock_create_category` / `flock_rename_category` / `flock_delete_category` | Same as the imposter ones. |

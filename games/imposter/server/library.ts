@@ -8,6 +8,7 @@
  * generation) go through addWords, which creates missing categories.
  */
 import type { DatabaseSync } from 'node:sqlite'
+import { duplicateReason, findMatch, matchKey } from '@wsfg/core/categories'
 import { AiError, categoryScope, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
@@ -122,16 +123,22 @@ export interface AddResult {
   insertedByCategory: Record<string, number>
 }
 
+/** The word in this category that means the same as `word` ("Dogs" for "dog", core matchKey), else null. */
+function similarWord(db: DatabaseSync, categoryId: number, word: string, exceptId = 0): string | null {
+  const rows = db.prepare('SELECT word FROM imposter_words WHERE category_id = ? AND id != ?').all(categoryId, exceptId)
+  return findMatch(
+    word,
+    (rows as { word: string }[]).map((r) => r.word),
+  )
+}
+
 /**
- * Validate, de-dupe (same category + word, case-insensitive) and insert.
+ * Validate, de-dupe (same category + word, spelled alike: core matchKey) and insert.
  * Duplicates are skipped, not errors. Unknown category names are created.
  */
 export function addWords(lib: Library, inputs: WordInput[], source: WordSource = 'manual'): AddResult {
   const { db, categories } = lib
-  const insert = db.prepare(
-    `INSERT INTO imposter_words (category_id, word, hint, difficulty, source) VALUES (?, ?, ?, ?, ?)
-     ON CONFLICT DO NOTHING`,
-  )
+  const insert = db.prepare('INSERT INTO imposter_words (category_id, word, hint, difficulty, source) VALUES (?, ?, ?, ?, ?)')
   const result: AddResult = { inserted: 0, skipped: [], createdCategories: [], insertedByCategory: {} }
   db.exec('BEGIN IMMEDIATE')
   try {
@@ -147,11 +154,15 @@ export function addWords(lib: Library, inputs: WordInput[], source: WordSource =
         category = categories.create(name)
         result.createdCategories.push(category.name)
       }
-      const { changes } = insert.run(category.id, word, hint, difficulty, source)
-      if (changes > 0) {
-        result.inserted++
-        result.insertedByCategory[category.name] = (result.insertedByCategory[category.name] ?? 0) + 1
-      } else result.skipped.push({ word, category: category.name, reason: 'Already in the library' })
+      // Earlier inserts in this batch are visible here, so repeats within it are caught too.
+      const match = similarWord(db, category.id, word)
+      if (match !== null) {
+        result.skipped.push({ word, category: category.name, reason: duplicateReason(word, match) })
+        continue
+      }
+      insert.run(category.id, word, hint, difficulty, source)
+      result.inserted++
+      result.insertedByCategory[category.name] = (result.insertedByCategory[category.name] ?? 0) + 1
     }
     db.exec('COMMIT')
   } catch (error) {
@@ -182,10 +193,8 @@ export function updateWord(lib: Library, id: number, patch: WordPatch): Validati
     difficulty: patch.difficulty ?? current.difficulty,
   })
   if (!checked.ok) return checked
-  const clash = db
-    .prepare('SELECT 1 FROM imposter_words WHERE category_id = ? AND word = ? COLLATE NOCASE AND id != ?')
-    .get(category.id, checked.value.word, id)
-  if (clash) return { ok: false, error: `${checked.value.word} is already in ${category.name}` }
+  const clash = similarWord(db, category.id, checked.value.word, id)
+  if (clash !== null) return { ok: false, error: `${clash} is already in ${category.name}` }
   db.prepare('UPDATE imposter_words SET category_id = ?, word = ?, hint = ?, difficulty = ? WHERE id = ?').run(
     category.id,
     checked.value.word,
@@ -348,7 +357,6 @@ export function screenCandidates(
   category: string | null,
 ): { candidates: Candidate[]; skipped: AddResult['skipped'] } {
   const { db, categories } = lib
-  const exists = db.prepare(`SELECT 1 ${FROM} WHERE c.name = ? COLLATE NOCASE AND w.word = ? COLLATE NOCASE`)
   const seen = new Set<string>()
   const candidates: Candidate[] = []
   const skipped: AddResult['skipped'] = []
@@ -360,10 +368,12 @@ export function screenCandidates(
     }
     const { word } = checked.value
     // Generated names land on the existing category they mean ("Animal" -> "Animals").
-    const cat = categories.resolve(checked.value.category)?.name ?? checked.value.category
-    const key = `${cat}|${word}`.toLowerCase()
-    if (seen.has(key) || exists.get(cat, word)) {
-      skipped.push({ word, category: cat, reason: 'Already in the library' })
+    const existing = categories.resolve(checked.value.category)
+    const cat = existing?.name ?? checked.value.category
+    const key = `${matchKey(cat)}|${matchKey(word) || word.toLowerCase()}`
+    const match = existing ? similarWord(db, existing.id, word) : null
+    if (seen.has(key) || match !== null) {
+      skipped.push({ word, category: cat, reason: match !== null ? duplicateReason(word, match) : 'Already in the library' })
       continue
     }
     seen.add(key)
