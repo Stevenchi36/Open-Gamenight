@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@wsfg/core": "workspace:*",
+    "@wsfg/game-ballpark": "workspace:*",
     "@wsfg/game-colormix": "workspace:*",
     "@wsfg/game-dropline": "workspace:*",
     "@wsfg/game-flock": "workspace:*",

@@ -181,9 +181,11 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Odds by distance from the middle slot (2 up to 5; two central slots pay 3 with an even count; All too high pays 6); writing the winning guess scores 3.** That's the original betting mat, computed from the slot count rather than fixed spaces.
 - **Bets are 2 tokens each; chips scoring lets a token carry a stake from your score, and a token without a stake still wins its odds.** Tokens alone keep every player in the game even with no chips, as the original's betting markers do; scores never go negative.
 - **Questions are stored with one metric unit (or a unit-free one) and converted for an `imperial` room setting, default metric.** The user asked for it; one stored unit keeps the library single-sourced. The question text never names a unit, so it reads the same in both systems.
-- **A converted answer is rounded before play (whole numbers from 100 up, else 3 significant figures; whole degrees), and scoring uses the rounded value.** "Without going over" must be judged on the number players see, not a hidden 1082.68.
+- **A converted answer is rounded before play (whole numbers from 100 up, else 3 significant figures, or one decimal for temperatures so 37 °C reads 98.6 °F), and scoring uses the rounded value.** "Without going over" must be judged on the number players see, not a hidden 1082.68.
 - **Answers are secret during play, so MCP add/generate tools reply with counts only.** As with Imposter's words: the admin adding questions may be about to play.
 - **A leaving player's guess stays on the board once betting has started.** Others may already have bet on it.
+- **Core `ScoreBoard` shows negative round points as a red "−N".** Chips scoring can lose points; showing "+-3" in green would be wrong for every future game that can lose points too.
+- **Guesses are typed into a decimal keypad field with a ± button.** Phone number pads often have no minus key, and some answers (record low temperatures) are negative. Commas and spaces typed as digit grouping are ignored.
 
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)

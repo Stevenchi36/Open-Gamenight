@@ -172,6 +172,10 @@ Flock's question library works the same way, with its own categories:
 
 **Rules for a question:** 5-120 characters, category under 40. A good question has many possible answers but a few obvious favourites, answered in a word or short phrase ("Name a breakfast cereal", "What is the best pizza topping?"), not trivia with one right answer. Questions aren't secret, so Claude may list them.
 
+Ballpark's question library has the same tools under `ballpark_*` (`ballpark_list_categories`, `ballpark_search_questions`, `ballpark_add_questions`, `ballpark_update_question`, `ballpark_remove_questions`, the three category tools, and `ballpark_generate_questions` with an API key). Each question is `{ category, question, answer, unit, fact? }`; `update_question` also takes `answer`, `unit` and `fact` (null removes a unit or fact).
+
+**Rules for a Ballpark question:** 5-160 characters ending in "?", with one well-documented numeric answer that won't change soon (no populations, prices or breakable records). The question never names its unit: the game shows it beside the question and converts it for imperial rooms. `unit` is a metric code for measurements (`mm`, `cm`, `m`, `km`, `m2`, `km2`, `g`, `kg`, `t`, `ml`, `l`, `km/h`, `C`), a code that reads the same in both systems (`%`, `s`, `min`, `h`, `days`, `years`), or null for counts and calendar years. `fact` (optional, up to 200 characters, no measurements) is shown with the answer. **Answers are secret**, so Claude reports only counts and categories after adding or generating, as with Imposter's words.
+
 ## Example prompts
 
 - "List the imposter categories and tell me which are running low."
@@ -185,6 +189,7 @@ Flock's question library works the same way, with its own categories:
 - "Find imposter words whose category doesn't really fit them and move them somewhere better."
 - "Add 30 Flock questions in a new Music category."
 - "Look through the Flock questions and remove any that are really trivia with one right answer."
+- "Add 20 Ballpark questions about famous buildings. Don't show me the answers."
 
 **Claude keeps new words secret.** After adding or generating words, Claude reports only how many it added and to which categories, so you can still play. Ask "show me the words" if you want to see them. (They are still in the tool call itself; Claude Code shows it collapsed, so don't expand it if you're playing.)
 

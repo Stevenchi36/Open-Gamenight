@@ -755,7 +755,7 @@ Questions are stored with one metric unit (or a unit that is the same in both sy
 | `km2` | square miles | | `l` | US gallons |
 | `km/h` | mph | | `C` | °F |
 
-Unconverted in both systems: `%`, `s`, `min`, `h`, `days`, `years`, and `null` (no unit: counts, calendar years). A converted answer is rounded before play, and scoring uses the rounded value players see: a whole number from 100 up, otherwise 3 significant figures (330 m → 1,083 ft; 1.6 m → 5.25 ft); temperatures to whole degrees. Conversion is pure (`shared/units.ts`), so it lives in the reducer.
+Unconverted in both systems: `%`, `s`, `min`, `h`, `days`, `years`, and `null` (no unit: counts, calendar years). A converted answer is rounded before play, and scoring uses the rounded value players see: a whole number from 100 up, otherwise 3 significant figures, with temperatures below 100 to one decimal place instead (330 m → 1,083 ft; 1.6 m → 5.25 ft; 37 °C → 98.6 °F). Conversion is pure (`shared/units.ts`), so it lives in the reducer.
 
 ### State machine
 ```

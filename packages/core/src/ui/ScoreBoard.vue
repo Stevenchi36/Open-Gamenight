@@ -8,7 +8,9 @@
         </template>
         <v-list-item-title>
           {{ row.name }}
-          <v-chip v-if="row.gained" size="x-small" color="success" class="ml-1">+{{ row.gained }}</v-chip>
+          <v-chip v-if="row.gained" size="x-small" :color="row.gained > 0 ? 'success' : 'error'" class="ml-1">
+            {{ row.gained > 0 ? '+' : '−' }}{{ Math.abs(row.gained) }}
+          </v-chip>
           <slot name="badge" :id="row.id" />
         </v-list-item-title>
         <template #append>
