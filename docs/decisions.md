@@ -209,6 +209,22 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **A leaver's hand is shuffled into the pond and their books stay down; fewer than 2 players left ends the game with no points.** All 13 books stay reachable without inventing a new end rule.
 - **Your hand isn't behind `HoldToReveal`.** You read it every turn, and cards are held in the hand rather than left on the table.
 
+## Last Card rules
+- **Last Card is the ninth game (id `lastcard`): the classic colour-matching shed-your-hand game under its traditional generic name.** UNO is a Mattel trademark; the user chose the name. Mechanics are free to use.
+- **Its 108-card deck, card type and card face live in the game, not in `kit`/`ui`.** They're specific to this game; it reuses `deal`, `CardTable` and `PlayingCard`'s face-down back.
+- **Scoring is a setting: card points to a target (default, 500) or 1 point per round won.** The user wanted both. Points scoring counts games won as the carried score and keeps the running points per game.
+- **Stacking, draw until playable, 7-0 swaps and jump-in are settings, all off by default.** The user picked these house rules; off by default plays the official rules.
+- **The last-card call is a setting: Call (press it or be caught for 2, default) or Automatic.** The user wanted both. A late call is allowed until someone catches you, and the catch window closes when the next card is played or drawn, so it stays a race between the forgetful player and the table.
+- **The Last card! button is shown and pressable at any hand size.** Enabling it only at two cards would remind the player to call, which is the skill being tested. For the same reason the attention glow ignores an exposed player.
+- **Wild Draw Four is only playable with no card of the current colour, enforced, with no challenge.** A challenge needs the challenged hand shown to one player and a second decision round; enforcing gives the same legal play without either. When answering a stack it may be played regardless, since you're passing on a penalty, not choosing to start one.
+- **Stacking: Draw Two on Draw Two, Wild Draw Four on either, never Draw Two on Wild Draw Four.** The most common house version.
+- **After drawing, the drawer always chooses Play it or Keep it, even when the card can't be played; with stacking, a player facing a draw card always gets to choose too.** Passing automatically would tell the table the drawn card was unplayable, or that the player holds no draw card: hidden-hand information. One extra tap is the price.
+- **A wild turned up as the first card goes back into the pile; other first cards act as if the dealer played them, except Reverse, where the dealer goes first anticlockwise.** The official rule has the first player name a wild's colour, an extra step before the first turn; Reverse follows the official rule.
+- **A disconnected player's turn is taken after the 15s grace: they take a pending stack, keep a drawn card, or else draw one; nobody plays a card for them.** Skipping without a draw would reward disconnecting, and choosing a card to play would be an arbitrary move.
+- **A leaver's hand is shuffled into the draw pile and a stack waiting on them is dropped; fewer than 2 players left ends the round with no points.** As in Gone Fishin'; nobody else should take a penalty aimed at someone who left.
+- **Hands are revealed on the results screen.** In points scoring they are what the winner scores, so the table can check the count, as when hands are turned up at a real table.
+- **Jump-in reuses `play` from a player whose turn it isn't; the room's action queue settles races and a late jump-in is refused because the top card changed.** No timers or claim windows: first to send wins, as at a table.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.
