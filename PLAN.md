@@ -891,7 +891,7 @@ Shown openly, not behind `HoldToReveal`: you need it on every turn, and a hand o
 
 ### The table (`@wsfg/core/ui`)
 - **`PlayingCard`**: one card, face up (rank and suit pip) or face down, in a few sizes. Red suits use a theme colour that holds up in dark mode.
-- **`CardTable`**: an oval with the seats in order around it, rotated so the viewer sits at the bottom; slots for each seat (name, connection icon, turn highlight, a face-down fan with a count, books), the middle (the pond and the latest move) and the viewer's area. Seats emit a tap, so a game can make them targets. On narrow portrait screens the seats shrink to compact chips around the oval; with 2 players the other seat sits at the top.
+- **`CardTable`**: an oval with the seats in order around it, clockwise, rotated so the viewer's own seat is at the bottom. It draws each seat's name, connection icon and turn highlight; the game fills a `seat` slot (here a face-down fan with a count, and the books as rank tags) and a `center` slot (the pond). Seats in `tappable` emit `select`, so a game can make them targets; `dimmed` fades leavers. Below 520px wide (a container query) the table goes nearly square and the seats shrink; with 2 players the other seat sits at the top. The latest move shows in a status card above the table, and your hand below it.
 - **Asking**: tap a rank in your hand, then a seat that holds cards (or the other way round), then **Ask**. Only valid targets are tappable.
 - **Kit**: `standardDeck()` (52 `Card`s, a fixed order to shuffle with `ctx.rng.shuffle`), `deal(deck, players, count)` returning hands and the rest, and `sortCards` (by rank, ace low, then suit), with core tests. `Card`, `Rank`, `Suit`, `RANKS`, `SUITS` and `rankSchema` live in kit too.
 

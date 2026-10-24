@@ -325,6 +325,9 @@ importers:
       '@wsfg/game-flock':
         specifier: workspace:*
         version: link:flock
+      '@wsfg/game-gonefishin':
+        specifier: workspace:*
+        version: link:gonefishin
       '@wsfg/game-imposter':
         specifier: workspace:*
         version: link:imposter

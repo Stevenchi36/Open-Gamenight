@@ -13,6 +13,7 @@
     "@wsfg/game-colormix": "workspace:*",
     "@wsfg/game-dropline": "workspace:*",
     "@wsfg/game-flock": "workspace:*",
+    "@wsfg/game-gonefishin": "workspace:*",
     "@wsfg/game-imposter": "workspace:*",
     "@wsfg/game-liarsdice": "workspace:*",
     "@wsfg/game-tictactoe": "workspace:*"
