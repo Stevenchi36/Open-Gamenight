@@ -6,6 +6,7 @@
           <v-list nav density="comfortable">
             <v-list-subheader>Admin</v-list-subheader>
             <v-list-item prepend-icon="mdi-view-dashboard-outline" title="Overview" :to="{ name: 'admin' }" exact />
+            <v-list-item v-if="aiEnabled" prepend-icon="mdi-creation-outline" title="Assistant" :to="{ name: 'admin-chat' }" />
             <v-list-item prepend-icon="mdi-door-open" title="Rooms" :to="{ name: 'admin-rooms' }" />
             <v-list-item prepend-icon="mdi-account-multiple-outline" title="Users" :to="{ name: 'admin-users' }" />
             <template v-for="game in gamesWithPages" :key="game.id">
@@ -41,11 +42,14 @@ import { computed, onMounted, ref } from 'vue'
 
 /** Games that use the shared categories table (reported by the server). */
 const withCategories = ref(new Set<string>())
+/** The Assistant needs the server's AI key. */
+const aiEnabled = ref(false)
 onMounted(async () => {
   const res = await fetch('/api/admin/status')
   if (!res.ok) return
-  const { games } = (await res.json()) as { games: { id: string; hasCategories: boolean }[] }
-  withCategories.value = new Set(games.filter((g) => g.hasCategories).map((g) => g.id))
+  const status = (await res.json()) as { games: { id: string; hasCategories: boolean }[]; aiEnabled: boolean }
+  withCategories.value = new Set(status.games.filter((g) => g.hasCategories).map((g) => g.id))
+  aiEnabled.value = status.aiEnabled
 })
 
 const gamesWithPages = computed(() => clientGames.filter((g) => g.adminPages?.length || withCategories.value.has(g.id)))

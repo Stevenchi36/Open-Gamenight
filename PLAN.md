@@ -268,6 +268,12 @@ ai.generate({ gameId, userId, system, prompt, tool }) -> Promise<ToolInput>
 - **Daily cap in output tokens** across all games and admins (`AI_DAILY_OUTPUT_TOKEN_CAP`), computed from `usage.output_tokens` in `ai_usage`. Requests are refused once the cap is hit. Plus a per-admin rate limit (`AI_PER_ADMIN_CALLS_PER_HOUR`).
 - Logs every call to `ai_usage { id, game_id, user_id, model, input_tokens, output_tokens, created_at }`.
 - Per-call limits in game units (e.g. Imposter's max 50 words) are the game's job.
+- `ai.chat(userId, params)`: one raw Messages call for the admin Assistant (`apps/server/src/chat.ts` runs the tool loop). Same daily cap; logged as `chat` in `ai_usage` and limited per admin message (`AI_CHAT_MESSAGES_PER_HOUR`) instead of per call.
+
+### Admin Assistant (`apps/server/src/chat.ts`, `/admin/chat`)
+- `POST /api/admin/chat { conversationId?, message }` behind the Origin check and `requireAdmin`; answers with NDJSON events (`text`, `tool`, `error`, then `done` with the conversation id).
+- Claude (`ANTHROPIC_CHAT_MODEL`) gets every game's MCP tools under the same names (core `gameMcpTools`), without `generate_*`, and a system prompt listing the games. It asks before removing anything.
+- Conversations are kept server-side in memory (5 per admin, 2 idle hours); the history is append-only so thinking blocks stay valid. At most 12 model calls per admin message.
 - The API key lives only in the server environment; never sent to the browser.
 
 ### MCP server (`apps/mcp`, stdio)
@@ -838,6 +844,7 @@ CREATE TABLE ballpark_questions (
 | `/room/:code` | public | Core room shell: lobby (players, game picker, game `SettingsView`, Start) or the game's `PlayView` |
 | `/admin` | admin | Admin shell with nav |
 | `/admin/users` | admin | List, create (email, name, password, role), set role, ban/unban, reset password |
+| `/admin/chat` | admin | Assistant: type what you want ("add 20 ocean animals to Word Imposter") and Claude does it with the library tools; shown only when AI is configured |
 | `/admin/rooms` | admin | Open rooms (code, game, status, players, who opened it), refreshed every 10s; Join (normal join, takes a seat) and Close (everyone is sent out with a notice) |
 | `/admin/<gameId>/*` | admin | Pages contributed by games, e.g. `/admin/imposter/words` |
 
@@ -873,6 +880,8 @@ ANTHROPIC_API_KEY=                           # optional; server only
 ANTHROPIC_MODEL=claude-haiku-5-5
 AI_DAILY_OUTPUT_TOKEN_CAP=200000
 AI_PER_ADMIN_CALLS_PER_HOUR=20
+ANTHROPIC_CHAT_MODEL=claude-opus-5-5         # admin Assistant
+AI_CHAT_MESSAGES_PER_HOUR=60                 # admin Assistant, per admin
 MAX_ROOMS=50
 MAX_ROOMS_PER_USER=2
 ```

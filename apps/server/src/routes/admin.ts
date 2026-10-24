@@ -8,8 +8,10 @@
 import { CategoryError } from '@wsfg/core/categories'
 import type { AnyGameModule, ServerServices } from '@wsfg/core/contract'
 import express, { type Router } from 'express'
+import { z } from 'zod'
 import type { AiCore } from '../ai.ts'
 import type { Auth } from '../auth.ts'
+import { CHAT_MESSAGE_MAX_LENGTH, type AdminChat } from '../chat.ts'
 import type { Config } from '../config.ts'
 import { originCheck, rateLimit, RateLimiter, requireAdmin, sessionUser } from '../middleware.ts'
 import type { RoomManager } from '../rooms.ts'
@@ -23,9 +25,16 @@ export interface AdminRouterDeps {
   ai: AiCore | null
   rooms: AdminRooms
   servicesFor: (game: AnyGameModule) => ServerServices
+  /** The Assistant; null without AI. */
+  chat: AdminChat | null
 }
 
-export function createAdminRouter({ config, auth, games, ai, rooms, servicesFor }: AdminRouterDeps): Router {
+const chatBody = z.object({
+  conversationId: z.string().max(100).nullish(),
+  message: z.string().trim().min(1, 'Type a message').max(CHAT_MESSAGE_MAX_LENGTH, `Keep it under ${CHAT_MESSAGE_MAX_LENGTH} characters`),
+})
+
+export function createAdminRouter({ config, auth, games, ai, rooms, servicesFor, chat }: AdminRouterDeps): Router {
   const router = express.Router()
   router.use(originCheck(config))
   router.use(requireAdmin(auth))
@@ -54,6 +63,35 @@ export function createAdminRouter({ config, auth, games, ai, rooms, servicesFor 
       return
     }
     res.json({ closed: true })
+  })
+
+  /**
+   * The Assistant: one admin message in, then progress as NDJSON (ChatEvent per line) while
+   * Claude works through the tools, ending with `done`. Streamed so long turns don't hit
+   * proxy timeouts and the page can show each step.
+   */
+  router.post('/chat', async (req, res) => {
+    if (!chat) {
+      res.status(404).json({ error: 'not_found', message: 'The Assistant needs ANTHROPIC_API_KEY' })
+      return
+    }
+    const body = chatBody.safeParse(req.body)
+    if (!body.success) {
+      res.status(400).json({ error: 'validation', message: body.error.issues[0]?.message ?? 'Invalid message' })
+      return
+    }
+    const turn = chat.start(sessionUser(res).id, body.data.conversationId ?? null, body.data.message)
+    if ('status' in turn) {
+      res.status(turn.status).json({ error: turn.error, message: turn.message })
+      return
+    }
+    res.status(200).set({ 'content-type': 'application/x-ndjson; charset=utf-8', 'cache-control': 'no-store', 'x-accel-buffering': 'no' })
+    res.flushHeaders()
+    // The turn finishes even if the admin leaves the page; only the writes stop.
+    await turn.run((event) => {
+      if (!res.writableEnded && !res.destroyed) res.write(`${JSON.stringify(event)}\n`)
+    })
+    res.end()
   })
 
   router.use('/categories', createCategoriesRouter(games, servicesFor))

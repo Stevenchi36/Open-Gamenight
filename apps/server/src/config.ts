@@ -42,6 +42,8 @@ const schema = z.object({
   ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
   AI_DAILY_OUTPUT_TOKEN_CAP: int(200_000),
   AI_PER_ADMIN_CALLS_PER_HOUR: int(20),
+  ANTHROPIC_CHAT_MODEL: z.string().default('claude-opus-5-5'),
+  AI_CHAT_MESSAGES_PER_HOUR: int(60),
   MAX_ROOMS: int(50),
   MAX_ROOMS_PER_USER: int(2),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),

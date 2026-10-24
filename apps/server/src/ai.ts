@@ -35,8 +35,16 @@ export interface AiUsageSummary {
 export interface AiCore {
   /** The AiService bound to one game (what goes into ServerServices.ai). */
   forGame(gameId: string): AiService
+  /**
+   * One raw Messages call for the admin chat (chat.ts runs the tool loop). Same daily
+   * cap, logged to ai_usage as CHAT_USAGE_ID; the chat applies its own per-admin limit.
+   */
+  chat(userId: string, params: Anthropic.MessageCreateParamsNonStreaming): Promise<Anthropic.Message>
   usageToday(): AiUsageSummary
 }
+
+/** ai_usage.game_id for admin chat calls. */
+export const CHAT_USAGE_ID = 'chat'
 
 const MAX_TOKENS = 16_000
 
@@ -53,12 +61,33 @@ export function createAiCore(deps: {
   const usedToday = db.prepare(
     "SELECT COALESCE(SUM(output_tokens), 0) AS out FROM ai_usage WHERE created_at >= date('now')",
   )
+  // Chat makes several calls per message and is limited per message instead (chat.ts).
   const callsLastHour = db.prepare(
-    "SELECT COUNT(*) AS n FROM ai_usage WHERE user_id = ? AND created_at >= datetime('now', '-1 hour')",
+    `SELECT COUNT(*) AS n FROM ai_usage WHERE user_id = ? AND game_id != '${CHAT_USAGE_ID}' AND created_at >= datetime('now', '-1 hour')`,
   )
   const record = db.prepare(
     'INSERT INTO ai_usage (game_id, user_id, model, input_tokens, output_tokens) VALUES (?, ?, ?, ?, ?)',
   )
+
+  function checkDailyCap(): void {
+    const { out } = usedToday.get() as { out: number }
+    if (out >= config.AI_DAILY_OUTPUT_TOKEN_CAP) {
+      throw new AiError('cap', "Today's AI budget is used up. It resets at midnight UTC.")
+    }
+  }
+
+  async function chat(userId: string, params: Anthropic.MessageCreateParamsNonStreaming): Promise<Anthropic.Message> {
+    checkDailyCap()
+    let response: Anthropic.Message
+    try {
+      response = await client.messages.create(params)
+    } catch (error) {
+      throw toAiError(error, logger)
+    }
+    record.run(CHAT_USAGE_ID, userId, response.model, response.usage.input_tokens, response.usage.output_tokens)
+    logger.info('ai chat call', { userId, model: response.model, output_tokens: response.usage.output_tokens })
+    return response
+  }
 
   async function generate<T>(gameId: string, request: Parameters<AiService['generate']>[0] & { tool: AiToolSpec<T> }): Promise<T> {
     const { userId, system, prompt, tool } = request
@@ -68,10 +97,7 @@ export function createAiCore(deps: {
         throw new AiError('rate_limited', `You've used your ${config.AI_PER_ADMIN_CALLS_PER_HOUR} generations for this hour.`)
       }
     }
-    const { out } = usedToday.get() as { out: number }
-    if (out >= config.AI_DAILY_OUTPUT_TOKEN_CAP) {
-      throw new AiError('cap', "Today's AI budget is used up. It resets at midnight UTC.")
-    }
+    checkDailyCap()
 
     const { $schema: _ignored, ...inputSchema } = z.toJSONSchema(tool.inputSchema) as Record<string, unknown>
     let response: Anthropic.Message
@@ -114,6 +140,7 @@ export function createAiCore(deps: {
 
   return {
     forGame: (gameId) => ({ generate: (request) => generate(gameId, request) }),
+    chat,
     usageToday() {
       const totals = db
         .prepare(

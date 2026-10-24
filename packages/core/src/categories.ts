@@ -8,7 +8,7 @@
  */
 import type { DatabaseSync } from 'node:sqlite'
 import { z } from 'zod'
-import type { McpToolDef, Migration } from './contract.ts'
+import type { AnyGameModule, McpToolDef, Migration, ServerServices } from './contract.ts'
 
 export const CATEGORY_NAME_MAX_LENGTH = 39
 
@@ -209,6 +209,14 @@ const renameSchema = z.object({
   name: z.string().describe('New name, under 40 characters'),
 })
 const deleteSchema = z.object({ id: z.number().int().describe('Category id (from list_categories)') })
+
+/**
+ * Every tool a game offers the MCP server and the admin Assistant (unprefixed names):
+ * its own mcpTools plus, on the shared categories table, create/rename/delete_category.
+ */
+export function gameMcpTools(game: AnyGameModule, services: ServerServices): McpToolDef[] {
+  return [...(game.mcpTools?.(services) ?? []), ...(game.categories ? categoryMcpTools(services.categories) : [])]
+}
 
 /**
  * Category management tools for a game that uses the shared table. The MCP

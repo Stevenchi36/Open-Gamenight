@@ -2,7 +2,7 @@
 
 The repo ships a small **MCP server** (`apps/mcp`) that lets Claude Code or Claude Desktop read and edit the game libraries directly, for example the Word Imposter word library. You ask Claude in plain language ("add 30 kitchen words"); Claude writes the words and saves them through the server's tools.
 
-**No API key needed.** When you drive it from Claude Code or Claude Desktop, Claude writes the words itself on your Claude subscription (Pro works). The `ANTHROPIC_API_KEY` in `.env` is only for the **Generate** button in the admin page, which calls the API from the server and is billed separately.
+**No API key needed.** When you drive it from Claude Code or Claude Desktop, Claude writes the words itself on your Claude subscription (Pro works). The `ANTHROPIC_API_KEY` in `.env` is only for the **Generate** button in the admin page and the admin **Assistant** chat (`/admin/chat`), which call the API from the server and are billed separately. The Assistant uses these same tools (same names, without `generate_*`), so anything below also works by typing it there.
 
 - [How it works](#how-it-works)
 - [Use it locally](#use-it-locally)
