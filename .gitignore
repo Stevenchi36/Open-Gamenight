@@ -9,3 +9,5 @@ coverage/
 .vite/
 .DS_Store
 .idea/
+dist.next/
+dist.old/

@@ -20,7 +20,15 @@ main() {
   pnpm install --frozen-lockfile
 
   echo "==> Building client"
-  pnpm build
+  # Into a new folder, swapped in only once it succeeds: Vite empties its outDir before building,
+  # and the running server serves dist/ until the restart below, so building in place meant a
+  # failed build took the site down.
+  local client=apps/client
+  rm -rf "$client/dist.next"
+  pnpm --filter @wsfg/client exec vite build --outDir dist.next
+  rm -rf "$client/dist.old"
+  if [ -d "$client/dist" ]; then mv "$client/dist" "$client/dist.old"; fi
+  mv "$client/dist.next" "$client/dist"
 
   echo "==> Restarting $program"
   sudo supervisorctl restart "$program"

@@ -113,7 +113,12 @@ export function createApp(deps: AppDeps): Express {
     app.use(express.static(config.clientDistDir, { index: false, maxAge: '1h' }))
     // `{*splat}` is optional, so `/` matches too; Express 5's `/*splat` needs at least one character.
     app.get('/{*splat}', (_req, res) => {
-      res.sendFile(join(config.clientDistDir, 'index.html'))
+      res.sendFile(join(config.clientDistDir, 'index.html'), (error) => {
+        // dist/ can vanish under a running server (a build in place, a failed deploy).
+        if (!error || res.headersSent) return
+        logger.error('client build missing', { dir: config.clientDistDir })
+        res.status(503).type('text').send('The site is being updated. Try again in a minute.')
+      })
     })
   }
 

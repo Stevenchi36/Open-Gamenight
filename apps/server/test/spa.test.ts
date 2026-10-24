@@ -46,6 +46,15 @@ describe('built client', () => {
     expect(res.status).toBe(404)
     expect(await res.json()).toMatchObject({ error: 'not_found' })
   })
+
+  // Runs last: it removes the build out from under the running server, as a failed deploy did.
+  it('says the site is updating when the build disappears, without leaking paths', async () => {
+    rmSync(join(root, 'apps', 'client', 'dist'), { recursive: true, force: true })
+    const res = await t.fetch('/room/ABCD')
+    expect(res.status).toBe(503)
+    const body = await res.text()
+    expect(body).toBe('The site is being updated. Try again in a minute.')
+  })
 })
 
 describe('readBuildId', () => {
