@@ -9,7 +9,8 @@ import { dropLine } from '@wsfg/game-dropline/server'
 import { flock } from '@wsfg/game-flock/server'
 import { goneFishin } from '@wsfg/game-gonefishin/server'
 import { imposter } from '@wsfg/game-imposter/server'
+import { lastCard } from '@wsfg/game-lastcard/server'
 import { liarsDice } from '@wsfg/game-liarsdice/server'
 import { ticTacToe } from '@wsfg/game-tictactoe/server'
 
-export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe, dropLine, ballpark, goneFishin]
+export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe, dropLine, ballpark, goneFishin, lastCard]
