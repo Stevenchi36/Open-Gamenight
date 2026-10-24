@@ -37,9 +37,11 @@ const height = computed(() => (props.compact ? 64 : 96))
   /* keeps white and near-background colours visible in both themes */
   box-shadow: 0 0 0 1px rgba(128, 128, 128, 0.5);
 }
-/* shrinks rather than overflowing a narrow phone */
+/* a real width, not just flex-basis: the palette sizes to its content, and empty
+   spans sized only by flex-basis collapse it to 0. Still shrinks on a narrow phone. */
 .strip {
-  flex: 0 1 calc(var(--swatch-h) / 2);
+  flex: 0 1 auto;
+  width: calc(var(--swatch-h) / 2);
   min-width: 0;
 }
 .answer {
