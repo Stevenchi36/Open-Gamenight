@@ -3,6 +3,10 @@ html,
 body {
   overscroll-behavior-y: none;
 }
+/* The cards' default radius (vuetify.ts): Vuetify's own steps jump from lg (8px) to xl (24px). */
+.rounded-card {
+  border-radius: 20px;
+}
 .room-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: 0.25em;

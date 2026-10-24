@@ -22,13 +22,13 @@
     </div>
 
     <v-card v-for="game in filtered" :key="game.id" class="mb-3">
-      <v-card-title class="d-flex align-center flex-wrap ga-2 px-6 pt-5">
+      <v-card-title class="d-flex align-center flex-wrap ga-2 px-5 pt-4">
         {{ game.name }}
         <v-chip size="small" variant="tonal" prepend-icon="mdi-account-group" class="players-chip">{{ playersText(game) }}</v-chip>
       </v-card-title>
-      <v-card-text class="px-6">{{ game.description }}</v-card-text>
-      <!-- 16px inset so the lg (8px) buttons' corners sit concentric with the card's xl (24px) ones -->
-      <v-card-actions class="flex-wrap pa-4 pt-0">
+      <v-card-text class="px-5">{{ game.description }}</v-card-text>
+      <!-- 12px inset so the lg (8px) buttons' corners sit concentric with the card's 20px ones -->
+      <v-card-actions class="flex-wrap pa-3 pt-0">
         <RulesDialog v-if="clientOf(game.id)" :game="clientOf(game.id)!">
           <template #activator="{ props: activator }">
             <v-btn v-bind="activator" prepend-icon="mdi-help-circle-outline">How to play</v-btn>
