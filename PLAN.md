@@ -967,7 +967,7 @@ type Move =                                              // public: what the tab
   scores,
 }
 ```
-`secrets` declares: each hand (and the card just drawn) is visible only to its owner until `RESULTS` (variant: swap a card between two other hands, or a hand and the draw pile, or change another player's drawn card), and the draw pile's order is visible to nobody. A drawn card's identity isn't in `Move`; the drawer always gets the play-or-keep choice, so a quick pass doesn't tell the table the card was unplayable, and with stacking a player facing a draw card always gets the choice too, so a pause doesn't tell the table they hold one. The leak test covers the default settings and all house rules together, both scorings, a leaver, and RESULTS.
+`secrets` declares: each hand (and the card just drawn) is visible only to its owner until `RESULTS` (variant: swap a card between two other hands, or a hand and the draw pile, or change another player's drawn card), and the draw pile's order is visible to nobody. A drawn card's identity isn't in `Move`; the drawer always gets the play-or-keep choice, so a quick pass doesn't tell the table the card was unplayable, and with stacking a player facing a draw card always gets the choice too, so a pause doesn't tell the table they hold one. The leak test covers the default settings, all house rules together, both scorings and both call modes, a late joiner, and RESULTS.
 
 ### Client
 - **`LcCard`** (game-local): a coloured card face with the number or symbol; wilds show four colour quarters. Face-down cards reuse `PlayingCard`'s back.

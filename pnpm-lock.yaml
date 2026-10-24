@@ -331,6 +331,9 @@ importers:
       '@wsfg/game-imposter':
         specifier: workspace:*
         version: link:imposter
+      '@wsfg/game-lastcard':
+        specifier: workspace:*
+        version: link:lastcard
       '@wsfg/game-liarsdice':
         specifier: workspace:*
         version: link:liarsdice
@@ -430,6 +433,18 @@ importers:
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
+
+  games/lastcard:
+    dependencies:
+      '@wsfg/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      vue:
+        specifier: ^3.5.44
+        version: 3.5.44(typescript@6.0.3)
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
 
   games/liarsdice:
     dependencies:
