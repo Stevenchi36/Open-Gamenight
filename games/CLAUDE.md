@@ -16,7 +16,7 @@ Build from the shared pieces, and grow them rather than copying:
 
 - `@wsfg/core/kit` (`packages/core/src/kit.ts`): pure reducer helpers: presence, `pickConnected`, `nextTurnOrder` + `playerOrderSchema`, scores, `tallyVotes`/`dropBallots`, the `secretBallots` leak spec, `DISCONNECT_GRACE_MS`.
 - `@wsfg/core/ui` (`packages/core/src/ui/`): play-view helpers (`nameOf`, `isHost`, `useCountdown`, ...) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, ...).
-- `@wsfg/core/library` (server only): batches for library games: `resolveBatch` when adding, `recentOrder` for a "Recently added" pick, `newestBatch`/`newestBatchStats`, and `BATCH_RULE`/`batchField` for MCP add tools.
+- `@wsfg/core/library` (server only): batches for library games: `resolveBatch` when adding, `recentOrder` for a "Recently added" pick, `newestBatch`/`newestBatchStats`, `removeUsed` for the admin's Clear used, and `BATCH_RULE`/`batchField` for MCP add tools.
 - `SettingSlider`, `SettingSelect`, `SettingToggle`: global components for a `SettingsView`, used without imports.
 
 When a game needs something a second game could use, add it to `kit` or `ui` (with a core test for `kit`) and record it in `docs/decisions.md`. Keep it in the game only when it carries that game's rules or words.

@@ -90,6 +90,32 @@ describe('/api/admin/imposter', () => {
     expect(await del.json()).toEqual({ removed: 1 })
   })
 
+  it('clears used words in one category, or in all of them', async () => {
+    await t.fetch('/api/admin/imposter/words', {
+      method: 'POST',
+      cookie: admin,
+      ...json({
+        words: [
+          { category: 'Weather', word: 'Rainbow', hint: 'Colours' },
+          { category: 'Weather', word: 'Thunder', hint: 'Loud' },
+          { category: 'Tools', word: 'Hammer', hint: 'Nails' },
+        ],
+      }),
+    })
+    const { db } = createServices(t.booted, t.booted.games.find((g) => g.id === 'imposter')!)
+    db.exec("UPDATE imposter_words SET times_used = 1 WHERE word IN ('Rainbow', 'Hammer')")
+    const ids = (await (await t.fetch('/api/admin/imposter/categories', { cookie: admin })).json()) as {
+      categories: { id: number; category: string }[]
+    }
+    const weather = ids.categories.find((c) => c.category === 'Weather')!.id
+    const clear = (body: unknown) => t.fetch('/api/admin/imposter/words/used', { method: 'DELETE', cookie: admin, ...json(body) })
+    expect((await clear({ categoryId: 'x' })).status).toBe(400)
+    expect(await (await clear({ categoryId: weather })).json()).toEqual({ removed: 1 })
+    expect(await (await clear({})).json()).toEqual({ removed: 1 })
+    const left = db.prepare("SELECT word FROM imposter_words WHERE word IN ('Rainbow', 'Thunder', 'Hammer')").all()
+    expect(left).toEqual([{ word: 'Thunder' }])
+  })
+
   it('validates request bodies', async () => {
     const res = await t.fetch('/api/admin/imposter/words', { method: 'POST', cookie: admin, ...json({ words: [] }) })
     expect(res.status).toBe(400)

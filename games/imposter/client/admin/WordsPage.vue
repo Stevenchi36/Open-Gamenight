@@ -62,6 +62,7 @@
         <v-btn v-if="selected.length" color="error" variant="tonal" prepend-icon="mdi-delete" @click="removeSelected">
           Delete {{ selected.length }}
         </v-btn>
+        <v-btn v-else-if="usedCount" variant="text" prepend-icon="mdi-broom" @click="clearing = true">Clear used</v-btn>
       </v-card-text>
       <v-data-table-server
         v-model="selected"
@@ -204,6 +205,21 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="clearing" max-width="420">
+      <v-card :title="`Clear used words${filter.categoryId ? ` in ${nameOf(filter.categoryId)}` : ''}?`">
+        <v-card-text>
+          Deletes the {{ usedCount }} word{{ usedCount === 1 ? '' : 's' }} that {{ usedCount === 1 ? 'has' : 'have' }} been played at least once{{
+            filter.categoryId ? '' : ', in every category'
+          }}. This can't be undone.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn @click="clearing = false">Cancel</v-btn>
+          <v-btn color="error" @click="clearUsed">Delete {{ usedCount }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar v-model="snack.show" :color="snack.color" timeout="5000">{{ snack.text }}</v-snackbar>
   </div>
 </template>
@@ -326,6 +342,22 @@ async function removeSelected() {
     const { removed } = await api<{ removed: number }>('/words', { method: 'DELETE', body: { ids: selected.value } })
     selected.value = []
     notify(`Deleted ${removed} word${removed === 1 ? '' : 's'}`)
+    await refresh()
+  } catch (error) {
+    notify((error as Error).message, 'error')
+  }
+}
+
+// ---- clear used: delete everything already played, in the filtered category or all of them
+const clearing = ref(false)
+const usedCount = computed(() =>
+  categories.value.filter((c) => !filter.categoryId || c.id === filter.categoryId).reduce((n, c) => n + c.total - c.unused, 0),
+)
+async function clearUsed() {
+  clearing.value = false
+  try {
+    const { removed } = await api<{ removed: number }>('/words/used', { method: 'DELETE', body: { categoryId: filter.categoryId } })
+    notify(`Deleted ${removed} used word${removed === 1 ? '' : 's'}`)
     await refresh()
   } catch (error) {
     notify((error as Error).message, 'error')

@@ -44,6 +44,13 @@ export function newestBatchStats(db: DatabaseSync, table: string): { total: numb
     .get(batch) as { total: number; unused: number }
 }
 
+/** Delete every played row (times_used > 0), optionally within one category id, for the admin's "Clear used". */
+export function removeUsed(db: DatabaseSync, table: string, categoryId?: number | null): number {
+  const where = categoryId ? 'AND category_id = ?' : ''
+  const params = categoryId ? [categoryId] : []
+  return Number(db.prepare(`DELETE FROM ${table} WHERE times_used > 0 ${where}`).run(...params).changes)
+}
+
 /** Tool description sentence for MCP add/generate tools. */
 export const BATCH_RULE =
   'Each call saves its entries as one batch (returned as `batch`); the lobby\'s "Recently added" setting plays the newest batch first. ' +

@@ -417,6 +417,7 @@ CREATE TABLE IF NOT EXISTS imposter_words (
 | `GET /categories` | Categories with total / unused counts |
 | `POST /words` | Save one or many (manual entry or approved candidates) |
 | `DELETE /words` | Remove by `{ ids: [] }` |
+| `DELETE /words/used` | "Clear used": remove every word played at least once, in `{ categoryId? }` or all categories |
 | `POST /words/generate` | `{ count (max 50), category?, difficulty?, save? }` -> **candidates only, not saved**; with `save: true`, saves them and returns counts only (`inserted`, `insertedByCategory`, `createdCategories`, `skippedCount`) |
 
 **Generation flow:** admin enters category + count (and optional extra instructions, e.g. "really easy, for young kids"), clicks Generate, reviews candidates in a table (edit or untick), then Save (`POST /words`). Keeps junk and spoiler hints out of the library. A "no spoilers" checkbox skips the review: the server saves directly and the dialog shows only how many words went into each category, for admins who also play.
@@ -561,7 +562,7 @@ CREATE TABLE flock_questions (
 - Question: trimmed, 5-120 chars. Categories are the core `categories` rows with `game_id = 'flock'`.
 - Migration `002_default_questions` seeds a starter set (source `builtin`); the same frozen list is the in-code fallback when the library has nothing to pick.
 - `prepareRound` picks the least-used question (random among ties), optionally in the chosen category, skipping ones used in this room, and marks it used; otherwise a built-in question plus a host notice.
-- **Admin** (`/api/admin/flock/*`, page `/admin/flock/questions`): browse/search, add, edit/move, delete, and AI generation (review, then save), like Imposter's words.
+- **Admin** (`/api/admin/flock/*`, page `/admin/flock/questions`): browse/search, add, edit/move, delete, Clear used (`DELETE /questions/used`), and AI generation (review, then save), like Imposter's words.
 - **MCP tools:** `flock_add_questions`, `flock_list_categories`, `flock_search_questions`, `flock_update_question`, `flock_remove_questions`, `flock_generate_questions` (only with `ANTHROPIC_API_KEY`), plus the core `flock_*_category` tools.
 
 ## 7c. Color Mix (`games/colormix`)
@@ -821,7 +822,7 @@ CREATE TABLE ballpark_questions (
 - Good questions have one well-documented answer that won't change soon, where a reasonable guess lands in the right order of magnitude. The AI prompt and MCP descriptions say so; the admin review is where wrong numbers get caught.
 - Migration `002_default_questions` seeds a starter set (source `builtin`); the same frozen list is the in-code fallback, as in Flock.
 - `prepareRound` picks the least-used question (random among ties), optionally in the chosen category, skipping ones used in this room, and marks it used; otherwise a built-in question plus a host notice.
-- **Admin** (`/api/admin/ballpark/*`, page `/admin/ballpark/questions`): browse/search, add, edit/move, delete, and AI generation (review, then save, with Imposter's "no spoilers" option), like Flock's questions.
+- **Admin** (`/api/admin/ballpark/*`, page `/admin/ballpark/questions`): browse/search, add, edit/move, delete, Clear used, and AI generation (review, then save, with Imposter's "no spoilers" option), like Flock's questions.
 - **MCP tools:** `ballpark_add_questions`, `ballpark_list_categories`, `ballpark_search_questions`, `ballpark_update_question`, `ballpark_remove_questions`, `ballpark_generate_questions` (only with `ANTHROPIC_API_KEY`), plus the core `ballpark_*_category` tools. Add and generate reply with counts only, as Imposter's do: answers are spoilers.
 
 ## 8. Vue client (`apps/client`)

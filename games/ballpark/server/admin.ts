@@ -5,6 +5,7 @@
  * also plays never sees the answers.
  */
 import { AI_INSTRUCTIONS_MAX_LENGTH, AiError, type AdminUser, type ServerServices } from '@wsfg/core/contract'
+import { removeUsed } from '@wsfg/core/library'
 import express, { type Response, type Router } from 'express'
 import { z } from 'zod'
 import {
@@ -16,6 +17,7 @@ import {
   MAX_GENERATE,
   MAX_PAGE_SIZE,
   removeQuestions,
+  TABLE,
   updateQuestion,
 } from './library.ts'
 
@@ -39,6 +41,8 @@ const addBody = z.object({
   source: z.enum(['manual', 'claude']).default('manual'),
 })
 const removeBody = z.object({ ids: z.array(z.number().int()).min(1).max(1000) })
+/** No category: clear used entries in every category. */
+const clearUsedBody = z.object({ categoryId: z.number().int().positive().nullish() })
 const patchBody = z.object({
   categoryId: z.number().int().positive().optional(),
   question: z.string().optional(),
@@ -98,6 +102,12 @@ export function adminRouter(services: ServerServices): Router {
     const body = removeBody.safeParse(req.body)
     if (!body.success) return invalid(res, body.error)
     res.json({ removed: removeQuestions(db, body.data.ids) })
+  })
+
+  router.delete('/questions/used', (req, res) => {
+    const body = clearUsedBody.safeParse(req.body ?? {})
+    if (!body.success) return invalid(res, body.error)
+    res.json({ removed: removeUsed(db, TABLE, body.data.categoryId) })
   })
 
   router.post('/questions/generate', async (req, res) => {

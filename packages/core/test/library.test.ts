@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { newestBatch, newestBatchStats, recentOrder, resolveBatch } from '../src/library.ts'
+import { newestBatch, newestBatchStats, recentOrder, removeUsed, resolveBatch } from '../src/library.ts'
 
 let db: DatabaseSync
 
@@ -70,5 +70,17 @@ describe('newestBatch / newestBatchStats', () => {
     expect(newestBatch(db, 't')).toBe(2)
     expect(newestBatch(db, 't', 1)).toBe(1)
     expect(newestBatchStats(db, 't')).toEqual({ total: 2, unused: 1 })
+  })
+})
+
+describe('removeUsed', () => {
+  it('deletes played rows, optionally in one category, and keeps unplayed ones', () => {
+    insert(1, null, { category: 1, used: 2 })
+    insert(2, null, { category: 1 })
+    insert(3, null, { category: 2, used: 1 })
+    insert(4, null, { category: 2 })
+    expect(removeUsed(db, 't', 2)).toBe(1)
+    expect(removeUsed(db, 't')).toBe(1)
+    expect((db.prepare('SELECT id FROM t ORDER BY id').all() as { id: number }[]).map((r) => r.id)).toEqual([2, 4])
   })
 })
