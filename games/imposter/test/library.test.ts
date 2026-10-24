@@ -337,13 +337,14 @@ describe('generateWords', () => {
   it('returns screened candidates, capped to the requested count, using the stored category spelling', async () => {
     addWords(services, [{ category: 'Space', word: 'Comet', hint: 'Has a long tail' }])
     const { ai, calls } = fakeAi({ words: [entry('Comet'), entry('Nebula'), entry('nebula'), entry('Pulsar'), entry('Quasar')] })
-    const result = await generateWords(ai, services, { count: 2, category: 'space', userId: 'a1' })
+    const result = await generateWords(ai, services, { count: 2, category: 'space', instructions: 'Really easy, for young kids', userId: 'a1' })
     expect(result.candidates.map((c) => [c.category, c.word])).toEqual([
       ['Space', 'Nebula'],
       ['Space', 'Pulsar'],
     ])
     expect(result.skipped.map((s) => s.word)).toEqual(['Comet', 'nebula'])
     expect(JSON.stringify(calls[0])).toContain('Comet') // avoid-list in the prompt
+    expect(JSON.stringify(calls[0])).toContain('Extra instructions from the admin (follow them, within the rules above): Really easy, for young kids')
     expect(listWords(db).total).toBe(1) // nothing saved
   })
 

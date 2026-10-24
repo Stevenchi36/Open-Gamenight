@@ -148,7 +148,7 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 | `imposter_create_category` | Create an empty category `{ name }`. Rarely needed: `add_words` creates missing ones. |
 | `imposter_rename_category` | Rename `{ id, name }`. Its words stay in it. |
 | `imposter_delete_category` | Delete an empty category `{ id }`. Refused while it has words: move them with `update_word` or remove them first. |
-| `imposter_generate_words` | **Only registered when `ANTHROPIC_API_KEY` is set where the MCP server runs.** Generates with the server-side API and saves directly, within the daily token cap. Hints are one word unless you pass `hintStyle` (e.g. "short phrases"). Costs API credits; you usually don't need it from Claude Code. |
+| `imposter_generate_words` | **Only registered when `ANTHROPIC_API_KEY` is set where the MCP server runs.** Generates with the server-side API and saves directly, within the daily token cap. Hints are one word unless you pass `hintStyle` (e.g. "short phrases"); any other wishes go in `instructions` (e.g. "really easy, for young kids"). Costs API credits; you usually don't need it from Claude Code. |
 
 **Rules for a word** (enforced by the tools and the admin page):
 - `word`: 1-3 words, under 30 characters.
@@ -168,11 +168,11 @@ Flock's question library works the same way, with its own categories:
 | `flock_update_question` | Edit one question `{ id, categoryId? \| category?, question? }`: move it or fix its text. |
 | `flock_remove_questions` | Remove by `{ ids: [...] }` (ids from `search_questions`). |
 | `flock_create_category` / `flock_rename_category` / `flock_delete_category` | Same as the imposter ones. |
-| `flock_generate_questions` | **Only with `ANTHROPIC_API_KEY`.** Generates `{ count, category? }` with the server-side API and saves directly. |
+| `flock_generate_questions` | **Only with `ANTHROPIC_API_KEY`.** Generates `{ count, category?, instructions? }` with the server-side API and saves directly. `instructions` is free text for the generator, e.g. "really easy, for young kids". |
 
 **Rules for a question:** 5-120 characters, category under 40. A good question has many possible answers but a few obvious favourites, answered in a word or short phrase ("Name a breakfast cereal", "What is the best pizza topping?"), not trivia with one right answer. Questions aren't secret, so Claude may list them.
 
-Ballpark's question library has the same tools under `ballpark_*` (`ballpark_list_categories`, `ballpark_search_questions`, `ballpark_add_questions`, `ballpark_update_question`, `ballpark_remove_questions`, the three category tools, and `ballpark_generate_questions` with an API key). Each question is `{ category, question, answer, unit, fact? }`; `update_question` also takes `answer`, `unit` and `fact` (null removes a unit or fact).
+Ballpark's question library has the same tools under `ballpark_*` (`ballpark_generate_questions` takes `instructions` too) (`ballpark_list_categories`, `ballpark_search_questions`, `ballpark_add_questions`, `ballpark_update_question`, `ballpark_remove_questions`, the three category tools, and `ballpark_generate_questions` with an API key). Each question is `{ category, question, answer, unit, fact? }`; `update_question` also takes `answer`, `unit` and `fact` (null removes a unit or fact).
 
 **Rules for a Ballpark question:** 5-160 characters ending in "?", with one well-documented numeric answer that won't change soon (no populations, prices or breakable records). The question never names its unit: the game shows it beside the question and converts it for imperial rooms. `unit` is a metric code for measurements (`mm`, `cm`, `m`, `km`, `m2`, `km2`, `g`, `kg`, `t`, `ml`, `l`, `km/h`, `C`), a code that reads the same in both systems (`%`, `s`, `min`, `h`, `days`, `years`), or null for counts and calendar years. `fact` (optional, up to 200 characters, no measurements) is shown with the answer. **Answers are secret**, so Claude reports only counts and categories after adding or generating, as with Imposter's words.
 

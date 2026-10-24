@@ -8,7 +8,7 @@
  * generation) go through addWords, which creates missing categories.
  */
 import type { DatabaseSync } from 'node:sqlite'
-import { AiError, type AiService, type ServerServices } from '@wsfg/core/contract'
+import { AiError, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
 import { validateWord, type Validation, type WordInput } from './validate.ts'
@@ -253,6 +253,8 @@ export interface GenerateRequest {
   difficulty?: Difficulty | null
   /** Overrides the default one-word hints, e.g. "short phrases". */
   hintStyle?: string | null
+  /** Free text from the admin, e.g. "really easy, for young kids". */
+  instructions?: string | null
   userId: string | null
 }
 
@@ -306,6 +308,7 @@ export async function generateWords(
     `Write ${count} new entries${category ? ` in the category "${category}"` : ' across a few fun, varied categories'}.`,
     request.difficulty ? `Difficulty: ${request.difficulty} for all of them.` : 'Mix the difficulties.',
     request.hintStyle?.trim() ? `Hint style (overrides the one-word default): ${request.hintStyle.trim()}` : '',
+    instructionsLine(request.instructions),
     !category && known.length ? `Existing categories (reuse these names where they fit): ${known.join(', ')}.` : '',
     avoid.length ? `Avoid these words, already in the library: ${avoid.join(', ')}.` : '',
   ]

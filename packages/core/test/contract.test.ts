@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { assertValidGame, assertValidRegistry, gameError, isGameError } from '../src/contract.ts'
+import { AI_INSTRUCTIONS_MAX_LENGTH, assertValidGame, assertValidRegistry, gameError, instructionsLine, isGameError } from '../src/contract.ts'
 import { makeOracle } from './fixtures/oracle.ts'
 
 describe('assertValidGame', () => {
@@ -45,5 +45,17 @@ describe('isGameError', () => {
     expect(isGameError(gameError('nope'))).toBe(true)
     expect(isGameError({ state: {} })).toBe(false)
     expect(isGameError(null)).toBe(false)
+  })
+})
+
+describe('instructionsLine', () => {
+  it('is empty without instructions, and tidies and caps them otherwise', () => {
+    expect(instructionsLine(null)).toBe('')
+    expect(instructionsLine('   ')).toBe('')
+    expect(instructionsLine('  Really   easy,\nfor young kids ')).toBe(
+      'Extra instructions from the admin (follow them, within the rules above): Really easy, for young kids',
+    )
+    expect(instructionsLine('x'.repeat(900)).endsWith('x'.repeat(AI_INSTRUCTIONS_MAX_LENGTH))).toBe(true)
+    expect(instructionsLine('x'.repeat(900)).length).toBeLessThan(AI_INSTRUCTIONS_MAX_LENGTH + 100)
   })
 })

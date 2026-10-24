@@ -255,10 +255,11 @@ describe('generateQuestions', () => {
         entry('How wide is Pluto?'),
       ],
     })
-    const result = await generateQuestions(ai, services, { count: 2, category: 'space', userId: 'a1' })
+    const result = await generateQuestions(ai, services, { count: 2, category: 'space', instructions: 'Really easy, for young kids', userId: 'a1' })
     expect(result.candidates).toEqual([entry('How wide is Mars?'), entry('How wide is Venus?')])
     expect(result.skipped.map((s) => s.question)).toEqual(['How far is the Moon?', 'how wide is MARS?'])
     expect(JSON.stringify(calls[0])).toContain('How far is the Moon?') // avoid-list in the prompt
+    expect(JSON.stringify(calls[0])).toContain('Extra instructions from the admin (follow them, within the rules above): Really easy, for young kids')
     expect(listQuestions(db).total).toBe(1) // nothing saved
   })
 

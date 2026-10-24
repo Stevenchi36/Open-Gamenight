@@ -4,7 +4,7 @@
  * them needs no API key. ballpark_generate_questions exists only when the AI
  * service does (ANTHROPIC_API_KEY set) and saves directly, within the daily cap.
  */
-import type { McpToolDef, ServerServices } from '@wsfg/core/contract'
+import { AI_INSTRUCTIONS_MAX_LENGTH, type McpToolDef, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
 import {
   addQuestions,
@@ -67,6 +67,11 @@ const updateSchema = z.object({
 const generateSchema = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
   category: z.string().optional(),
+  instructions: z
+    .string()
+    .max(AI_INSTRUCTIONS_MAX_LENGTH)
+    .optional()
+    .describe('Any other wishes from the user, passed to the generator as written, e.g. "really easy, for young kids"'),
 })
 
 export function mcpTools(services: ServerServices): McpToolDef[] {
@@ -132,8 +137,13 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         SECRET_REPLY_RULE,
       inputSchema: generateSchema,
       handler: async (args) => {
-        const { count, category } = generateSchema.parse(args)
-        const { candidates, skipped } = await generateQuestions(ai, services, { count, category: category ?? null, userId: null })
+        const { count, category, instructions } = generateSchema.parse(args)
+        const { candidates, skipped } = await generateQuestions(ai, services, {
+          count,
+          category: category ?? null,
+          instructions: instructions ?? null,
+          userId: null,
+        })
         const saved = addQuestions(services, candidates, 'claude')
         return { ...saved, skipped: [...skipped, ...saved.skipped], note: SECRET_REPLY_RULE }
       },

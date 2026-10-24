@@ -153,6 +153,19 @@ export class AiError extends Error {
   }
 }
 
+/** Longest free-text "extra instructions" an admin can add to a generation request. */
+export const AI_INSTRUCTIONS_MAX_LENGTH = 500
+
+/**
+ * The prompt line for an admin's extra instructions ("make them really easy, for
+ * young kids"), or '' when there are none. They shape the content but sit under the
+ * game's system rules, and the output is validated as usual either way.
+ */
+export function instructionsLine(instructions: string | null | undefined): string {
+  const text = instructions?.trim().replace(/\s+/g, ' ').slice(0, AI_INSTRUCTIONS_MAX_LENGTH)
+  return text ? `Extra instructions from the admin (follow them, within the rules above): ${text}` : ''
+}
+
 /** Shared AI service, already bound to the calling game's id. */
 export interface AiService {
   generate<T>(request: { userId: string | null; system: string; prompt: string; tool: AiToolSpec<T> }): Promise<T>

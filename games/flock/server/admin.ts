@@ -2,7 +2,7 @@
  * /api/admin/flock/* (mounted by the core behind requireAdmin + Origin check).
  * Generation returns candidates only; the admin reviews them and saves via POST /questions.
  */
-import { AiError, type AdminUser, type ServerServices } from '@wsfg/core/contract'
+import { AI_INSTRUCTIONS_MAX_LENGTH, AiError, type AdminUser, type ServerServices } from '@wsfg/core/contract'
 import express, { type Response, type Router } from 'express'
 import { z } from 'zod'
 import {
@@ -37,6 +37,7 @@ const patchBody = z.object({
 const generateBody = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
   category: z.string().trim().max(39).nullish(),
+  instructions: z.string().max(AI_INSTRUCTIONS_MAX_LENGTH).nullish(),
 })
 
 const AI_STATUS: Record<AiError['code'], number> = { cap: 429, rate_limited: 429, refused: 422, invalid: 502, api: 502 }
@@ -95,7 +96,8 @@ export function adminRouter(services: ServerServices): Router {
     if (!body.success) return invalid(res, body.error)
     const admin = res.locals.user as AdminUser
     try {
-      res.json(await generateQuestions(ai, services, { count: body.data.count, category: body.data.category ?? null, userId: admin.id }))
+      const { count, category, instructions } = body.data
+      res.json(await generateQuestions(ai, services, { count, category: category ?? null, instructions: instructions ?? null, userId: admin.id }))
     } catch (error) {
       if (!(error instanceof AiError)) throw error
       res.status(AI_STATUS[error.code]).json({ error: error.code, message: error.message })

@@ -246,10 +246,11 @@ describe('generateQuestions', () => {
     const { ai, calls } = fakeAi({
       questions: [entry('Name a planet'), entry('Name a famous astronaut'), entry('name a famous ASTRONAUT'), entry('Name a star'), entry('Name a moon')],
     })
-    const result = await generateQuestions(ai, services, { count: 2, category: 'space', userId: 'a1' })
+    const result = await generateQuestions(ai, services, { count: 2, category: 'space', instructions: 'Really easy, for young kids', userId: 'a1' })
     expect(result.candidates).toEqual([entry('Name a famous astronaut'), entry('Name a star')])
     expect(result.skipped.map((s) => s.question)).toEqual(['Name a planet', 'name a famous ASTRONAUT'])
     expect(JSON.stringify(calls[0])).toContain('Name a planet') // avoid-list in the prompt
+    expect(JSON.stringify(calls[0])).toContain('Extra instructions from the admin (follow them, within the rules above): Really easy, for young kids')
     expect(listQuestions(db).total).toBe(1) // nothing saved
   })
 

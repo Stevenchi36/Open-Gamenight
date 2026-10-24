@@ -125,6 +125,16 @@
           <div v-if="!candidates" class="d-flex flex-wrap ga-3 align-center">
             <v-combobox v-model="gen.category" :items="categoryNames" label="Category (empty = mixed)" clearable style="min-width: 220px" />
             <v-text-field v-model.number="gen.count" type="number" min="1" max="50" label="How many" style="max-width: 120px" />
+            <v-textarea
+              v-model="gen.instructions"
+              label="Extra instructions (optional)"
+              placeholder="e.g. Really easy, for young kids"
+              rows="2"
+              auto-grow
+              maxlength="500"
+              counter
+              class="w-100"
+            />
             <div class="text-caption text-medium-emphasis w-100">Nothing is saved until you review the results.</div>
           </div>
           <template v-else>
@@ -324,7 +334,7 @@ async function deleteEditing() {
 // ---- generate -> review -> save
 const generating = ref(false)
 const busy = ref(false)
-const gen = reactive({ category: null as string | null, count: 20 })
+const gen = reactive({ category: null as string | null, count: 20, instructions: '' })
 const candidates = ref<Candidate[] | null>(null)
 const skippedCount = ref(0)
 const keepCount = computed(() => candidates.value?.filter((c) => c.keep).length ?? 0)
@@ -339,7 +349,7 @@ async function generate() {
   try {
     const result = await api<{ candidates: Omit<Candidate, 'keep'>[]; skipped: unknown[] }>('/questions/generate', {
       method: 'POST',
-      body: { count: gen.count, category: gen.category || null },
+      body: { count: gen.count, category: gen.category || null, instructions: gen.instructions.trim() || null },
     })
     candidates.value = result.candidates.map((c) => ({ ...c, keep: true }))
     skippedCount.value = result.skipped.length

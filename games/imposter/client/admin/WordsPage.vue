@@ -142,6 +142,16 @@
             <v-combobox v-model="gen.category" :items="categoryNames" label="Category (empty = mixed)" clearable style="min-width: 220px" />
             <v-select v-model="gen.difficulty" :items="[{ title: 'Mixed', value: null }, ...difficulties.map((d) => ({ title: d, value: d }))]" label="Difficulty" style="max-width: 160px" />
             <v-text-field v-model.number="gen.count" type="number" min="1" max="50" label="How many" style="max-width: 120px" />
+            <v-textarea
+              v-model="gen.instructions"
+              label="Extra instructions (optional)"
+              placeholder="e.g. Really easy, for young kids"
+              rows="2"
+              auto-grow
+              maxlength="500"
+              counter
+              class="w-100"
+            />
             <v-checkbox
               v-model="gen.blind"
               label="Save without showing me the words (no spoilers)"
@@ -378,7 +388,7 @@ async function deleteEditing() {
 // ---- generate -> review -> save
 const generating = ref(false)
 const busy = ref(false)
-const gen = reactive({ category: null as string | null, difficulty: null as Difficulty | null, count: 20, blind: false })
+const gen = reactive({ category: null as string | null, difficulty: null as Difficulty | null, count: 20, blind: false, instructions: '' })
 const candidates = ref<Candidate[] | null>(null)
 const summary = ref<BlindSummary | null>(null)
 const skippedCount = ref(0)
@@ -397,14 +407,14 @@ async function generate() {
       // The server saves and returns counts only; the words never reach the browser.
       summary.value = await api<BlindSummary>('/words/generate', {
         method: 'POST',
-        body: { count: gen.count, category: gen.category || null, difficulty: gen.difficulty, save: true },
+        body: { count: gen.count, category: gen.category || null, difficulty: gen.difficulty, instructions: gen.instructions.trim() || null, save: true },
       })
       await refresh()
       return
     }
     const result = await api<{ candidates: Omit<Candidate, 'keep'>[]; skipped: unknown[] }>('/words/generate', {
       method: 'POST',
-      body: { count: gen.count, category: gen.category || null, difficulty: gen.difficulty },
+      body: { count: gen.count, category: gen.category || null, difficulty: gen.difficulty, instructions: gen.instructions.trim() || null },
     })
     candidates.value = result.candidates.map((c) => ({ ...c, keep: true }))
     skippedCount.value = result.skipped.length

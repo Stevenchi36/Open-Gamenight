@@ -8,7 +8,7 @@
  * generation) go through addQuestions, which creates missing categories.
  */
 import type { DatabaseSync } from 'node:sqlite'
-import { AiError, type AiService, type ServerServices } from '@wsfg/core/contract'
+import { AiError, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
 import { UNIT_CODES, UNITS, type UnitCode } from '../shared/units.ts'
@@ -249,6 +249,8 @@ export interface GenerateRequest {
   count: number
   /** Category name; may be new (it's created when the candidates are saved). */
   category?: string | null
+  /** Free text from the admin, e.g. "really easy, for young kids". */
+  instructions?: string | null
   userId: string | null
 }
 
@@ -302,6 +304,7 @@ export async function generateQuestions(
 
   const prompt = [
     `Write ${count} new questions${category ? ` in the category "${category}"` : ' across a few fun, varied categories'}.`,
+    instructionsLine(request.instructions),
     !category && known.length ? `Existing categories (reuse these names where they fit): ${known.join(', ')}.` : '',
     avoid.length ? `Avoid these questions, already in the library:\n${avoid.join('\n')}` : '',
   ]

@@ -4,7 +4,7 @@
  * words needs no API key. imposter_generate_words exists only when the AI
  * service does (ANTHROPIC_API_KEY set) and saves directly, within the daily cap.
  */
-import type { McpToolDef, ServerServices } from '@wsfg/core/contract'
+import { AI_INSTRUCTIONS_MAX_LENGTH, type McpToolDef, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
 import {
   addWords,
@@ -63,6 +63,11 @@ const generateSchema = z.object({
     .max(200)
     .optional()
     .describe('Only when the user asks for something other than one-word hints, e.g. "short phrases"'),
+  instructions: z
+    .string()
+    .max(AI_INSTRUCTIONS_MAX_LENGTH)
+    .optional()
+    .describe('Any other wishes from the user, passed to the generator as written, e.g. "really easy, for young kids"'),
 })
 
 export function mcpTools(services: ServerServices): McpToolDef[] {
@@ -125,12 +130,13 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         SECRET_REPLY_RULE,
       inputSchema: generateSchema,
       handler: async (args) => {
-        const { count, category, difficulty, hintStyle } = generateSchema.parse(args)
+        const { count, category, difficulty, hintStyle, instructions } = generateSchema.parse(args)
         const { candidates, skipped } = await generateWords(ai, services, {
           count,
           category: category ?? null,
           difficulty: difficulty ?? null,
           hintStyle: hintStyle ?? null,
+          instructions: instructions ?? null,
           userId: null,
         })
         const saved = addWords(services, candidates, 'claude')

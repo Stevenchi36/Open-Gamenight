@@ -4,7 +4,7 @@
  * With `save: true` it saves directly and returns counts only, so an admin who
  * also plays never sees the answers.
  */
-import { AiError, type AdminUser, type ServerServices } from '@wsfg/core/contract'
+import { AI_INSTRUCTIONS_MAX_LENGTH, AiError, type AdminUser, type ServerServices } from '@wsfg/core/contract'
 import express, { type Response, type Router } from 'express'
 import { z } from 'zod'
 import {
@@ -49,6 +49,7 @@ const patchBody = z.object({
 const generateBody = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
   category: z.string().trim().max(39).nullish(),
+  instructions: z.string().max(AI_INSTRUCTIONS_MAX_LENGTH).nullish(),
   save: z.boolean().default(false),
 })
 
@@ -108,7 +109,12 @@ export function adminRouter(services: ServerServices): Router {
     if (!body.success) return invalid(res, body.error)
     const admin = res.locals.user as AdminUser
     try {
-      const generated = await generateQuestions(ai, services, { count: body.data.count, category: body.data.category ?? null, userId: admin.id })
+      const generated = await generateQuestions(ai, services, {
+        count: body.data.count,
+        category: body.data.category ?? null,
+        instructions: body.data.instructions ?? null,
+        userId: admin.id,
+      })
       if (!body.data.save) {
         res.json(generated)
         return
