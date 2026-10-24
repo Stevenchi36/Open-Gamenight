@@ -58,6 +58,8 @@ export const settingsSchema = z.object({
   scoring: scoringSchema,
   /** hidden: only who has bet is shown until the reveal. */
   bets: betVisibilitySchema,
+  /** 'recent' plays the newest added batch first, then older questions (core library.ts). */
+  questionSource: z.enum(['all', 'recent']),
   /** null = any category. */
   category: z.string().trim().min(1).max(40).nullable(),
   /** Seconds for guessing, and again for betting; null = off. On expiry the game moves on with what's in. */
@@ -72,6 +74,7 @@ export const defaultSettings: BallparkSettings = {
   winRule: 'over',
   scoring: 'odds',
   bets: 'hidden',
+  questionSource: 'all',
   category: null,
   timerSeconds: null,
 }

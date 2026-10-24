@@ -37,6 +37,7 @@ Each spot pays **odds**: the middle guess pays **×2**, and each step towards th
 - **Win rule:** without going over, or closest.
 - **Scoring:** odds, chips or flat.
 - **Bets:** hidden (you only see who has bet) or public (tokens show as they land).
+- **Questions from:** all (least-played first), or recent (the newest questions added first, then older ones).
 - **Category:** any, or one category of questions.
 - **Timer:** off, or 30 to 120 seconds for guessing and again for betting.
 

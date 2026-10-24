@@ -10,6 +10,7 @@
 import type { DatabaseSync } from 'node:sqlite'
 import { duplicateReason, findMatch, matchKey } from '@wsfg/core/categories'
 import { AiError, categoryScope, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
+import { recentOrder, resolveBatch } from '@wsfg/core/library'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
 import { UNIT_CODES, UNITS, type UnitCode } from '../shared/units.ts'
@@ -33,6 +34,8 @@ export interface QuestionRow {
   times_used: number
   last_used_at: string | null
   created_at: string
+  /** Which add it came from (core library.ts); null for questions from before batches. */
+  batch: number | null
 }
 
 export interface CategoryStats {
@@ -45,10 +48,11 @@ export interface CategoryStats {
 /** Categories with fewer unused questions than this are flagged as running low. */
 export const LOW_STOCK_THRESHOLD = 5
 export const MAX_PAGE_SIZE = 200
+export const TABLE = 'ballpark_questions'
 
 const FROM = `FROM ballpark_questions q JOIN categories c ON c.id = q.category_id AND c.game_id = '${GAME_ID}'`
 const SELECT_QUESTION = `SELECT q.id, q.category_id, c.name AS category, q.question, q.answer, q.unit, q.fact, q.source,
-  q.times_used, q.last_used_at, q.created_at ${FROM}`
+  q.times_used, q.last_used_at, q.created_at, q.batch ${FROM}`
 
 function categoryFilter(where: string[], params: (string | number)[], options: { categoryId?: number | null; category?: string | null }) {
   if (options.categoryId) {
@@ -121,6 +125,8 @@ export interface AddResult {
   createdCategories: string[]
   /** Inserted count per category (stored spelling). */
   insertedByCategory: Record<string, number>
+  /** The batch the inserted questions joined; null when nothing was inserted. */
+  batch: number | null
 }
 
 /** The question in this category worded the same as `question` apart from spelling (core matchKey), else null. */
@@ -135,15 +141,17 @@ function similarQuestion(db: DatabaseSync, categoryId: number, question: string,
 /**
  * Validate, de-dupe (same category + question, spelled alike: core matchKey) and insert.
  * Duplicates are skipped, not errors. Unknown category names are created.
+ * The questions form a new batch, or join `batch` when questions already carry it.
  */
-export function addQuestions(lib: Library, inputs: QuestionInput[], source: QuestionSource = 'manual'): AddResult {
+export function addQuestions(lib: Library, inputs: QuestionInput[], source: QuestionSource = 'manual', batch?: number | null): AddResult {
   const { db, categories } = lib
   const insert = db.prepare(
-    'INSERT INTO ballpark_questions (category_id, question, answer, unit, fact, source) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO ballpark_questions (category_id, question, answer, unit, fact, source, batch) VALUES (?, ?, ?, ?, ?, ?, ?)',
   )
-  const result: AddResult = { inserted: 0, skipped: [], createdCategories: [], insertedByCategory: {} }
+  const result: AddResult = { inserted: 0, skipped: [], createdCategories: [], insertedByCategory: {}, batch: null }
   db.exec('BEGIN IMMEDIATE')
   try {
+    const stamp = resolveBatch(db, TABLE, batch)
     for (const input of inputs) {
       const checked = validateQuestion(input)
       if (!checked.ok) {
@@ -162,8 +170,9 @@ export function addQuestions(lib: Library, inputs: QuestionInput[], source: Ques
         result.skipped.push({ question, category: category.name, reason: duplicateReason(question, match) })
         continue
       }
-      insert.run(category.id, question, answer, unit, fact, source)
+      insert.run(category.id, question, answer, unit, fact, source, stamp)
       result.inserted++
+      result.batch = stamp
       result.insertedByCategory[category.name] = (result.insertedByCategory[category.name] ?? 0) + 1
     }
     db.exec('COMMIT')
@@ -228,9 +237,13 @@ export function removeQuestions(db: DatabaseSync, ids: number[]): number {
 /**
  * The least-used question (random among ties), optionally in one category (by
  * name, as stored in room settings), skipping ids already used in this room.
+ * `recent` prefers the newest batch among the least used (core recentOrder).
  * Marks it used. null if nothing matches.
  */
-export function pickQuestion(db: DatabaseSync, options: { category?: string | null; excludeIds?: number[] } = {}): QuestionRow | null {
+export function pickQuestion(
+  db: DatabaseSync,
+  options: { category?: string | null; excludeIds?: number[]; recent?: boolean } = {},
+): QuestionRow | null {
   const where: string[] = []
   const params: (string | number)[] = []
   categoryFilter(where, params, { category: options.category ?? null })
@@ -240,7 +253,8 @@ export function pickQuestion(db: DatabaseSync, options: { category?: string | nu
     params.push(...exclude)
   }
   const clause = where.length ? `WHERE ${where.join(' AND ')}` : ''
-  const row = db.prepare(`${SELECT_QUESTION} ${clause} ORDER BY q.times_used ASC, random() LIMIT 1`).get(...params) as
+  const order = options.recent ? recentOrder('q') : 'q.times_used ASC, random()'
+  const row = db.prepare(`${SELECT_QUESTION} ${clause} ORDER BY ${order} LIMIT 1`).get(...params) as
     | QuestionRow
     | undefined
   if (!row) return null

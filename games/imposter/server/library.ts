@@ -10,6 +10,7 @@
 import type { DatabaseSync } from 'node:sqlite'
 import { duplicateReason, findMatch, matchKey } from '@wsfg/core/categories'
 import { AiError, categoryScope, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
+import { recentOrder, resolveBatch } from '@wsfg/core/library'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
 import { validateWord, type Validation, type WordInput } from './validate.ts'
@@ -32,6 +33,8 @@ export interface WordRow {
   times_used: number
   last_used_at: string | null
   created_at: string
+  /** Which add it came from (core library.ts); null for words from before batches. */
+  batch: number | null
 }
 
 export interface CategoryStats {
@@ -44,10 +47,11 @@ export interface CategoryStats {
 /** Categories with fewer unused words than this are flagged in the admin page. */
 export const LOW_STOCK_THRESHOLD = 5
 export const MAX_PAGE_SIZE = 200
+export const TABLE = 'imposter_words'
 
 const FROM = `FROM imposter_words w JOIN categories c ON c.id = w.category_id AND c.game_id = '${GAME_ID}'`
 const SELECT_WORD = `SELECT w.id, w.category_id, c.name AS category, w.word, w.hint, w.difficulty, w.source,
-  w.times_used, w.last_used_at, w.created_at ${FROM}`
+  w.times_used, w.last_used_at, w.created_at, w.batch ${FROM}`
 
 function categoryFilter(where: string[], params: (string | number)[], options: { categoryId?: number | null; category?: string | null }) {
   if (options.categoryId) {
@@ -121,6 +125,8 @@ export interface AddResult {
   createdCategories: string[]
   /** Inserted count per category (stored spelling). */
   insertedByCategory: Record<string, number>
+  /** The batch the inserted words joined; null when nothing was inserted. */
+  batch: number | null
 }
 
 /** The word in this category that means the same as `word` ("Dogs" for "dog", core matchKey), else null. */
@@ -135,13 +141,15 @@ function similarWord(db: DatabaseSync, categoryId: number, word: string, exceptI
 /**
  * Validate, de-dupe (same category + word, spelled alike: core matchKey) and insert.
  * Duplicates are skipped, not errors. Unknown category names are created.
+ * The words form a new batch, or join `batch` when words already carry it.
  */
-export function addWords(lib: Library, inputs: WordInput[], source: WordSource = 'manual'): AddResult {
+export function addWords(lib: Library, inputs: WordInput[], source: WordSource = 'manual', batch?: number | null): AddResult {
   const { db, categories } = lib
-  const insert = db.prepare('INSERT INTO imposter_words (category_id, word, hint, difficulty, source) VALUES (?, ?, ?, ?, ?)')
-  const result: AddResult = { inserted: 0, skipped: [], createdCategories: [], insertedByCategory: {} }
+  const insert = db.prepare('INSERT INTO imposter_words (category_id, word, hint, difficulty, source, batch) VALUES (?, ?, ?, ?, ?, ?)')
+  const result: AddResult = { inserted: 0, skipped: [], createdCategories: [], insertedByCategory: {}, batch: null }
   db.exec('BEGIN IMMEDIATE')
   try {
+    const stamp = resolveBatch(db, TABLE, batch)
     for (const input of inputs) {
       const checked = validateWord(input)
       if (!checked.ok) {
@@ -160,8 +168,9 @@ export function addWords(lib: Library, inputs: WordInput[], source: WordSource =
         result.skipped.push({ word, category: category.name, reason: duplicateReason(word, match) })
         continue
       }
-      insert.run(category.id, word, hint, difficulty, source)
+      insert.run(category.id, word, hint, difficulty, source, stamp)
       result.inserted++
+      result.batch = stamp
       result.insertedByCategory[category.name] = (result.insertedByCategory[category.name] ?? 0) + 1
     }
     db.exec('COMMIT')
@@ -223,11 +232,12 @@ export function removeWords(db: DatabaseSync, ids: number[]): number {
 /**
  * The least-used word (random among ties), optionally in one category (by
  * name, as stored in room settings), skipping ids already used in this room.
- * `customOnly` skips the seeded starter words. Marks it used. null if nothing matches.
+ * `customOnly` skips the seeded starter words; `recent` prefers the newest batch
+ * among the least used (core recentOrder). Marks it used. null if nothing matches.
  */
 export function pickWord(
   db: DatabaseSync,
-  options: { category?: string | null; excludeIds?: number[]; customOnly?: boolean } = {},
+  options: { category?: string | null; excludeIds?: number[]; customOnly?: boolean; recent?: boolean } = {},
 ): WordRow | null {
   const where: string[] = []
   const params: (string | number)[] = []
@@ -239,7 +249,8 @@ export function pickWord(
     params.push(...exclude)
   }
   const clause = where.length ? `WHERE ${where.join(' AND ')}` : ''
-  const row = db.prepare(`${SELECT_WORD} ${clause} ORDER BY w.times_used ASC, random() LIMIT 1`).get(...params) as
+  const order = options.recent ? recentOrder('w') : 'w.times_used ASC, random()'
+  const row = db.prepare(`${SELECT_WORD} ${clause} ORDER BY ${order} LIMIT 1`).get(...params) as
     | WordRow
     | undefined
   if (!row) return null

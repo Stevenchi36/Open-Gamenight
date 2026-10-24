@@ -317,7 +317,7 @@ claude mcp add ws-family-games \
 | Rotations | 2 | 1-5 |
 | Round player order | `rotate` | `rotate` (random first round; each later round the next player in line goes first, same order; leavers drop out, newcomers join the end; the host can tick **Randomize player order** on Play again for a one-off reshuffle) / `random` (reshuffled every round) |
 | Imposter hint | `category` | `none` / `category` / `category+hint` |
-| Word source | `all` | `all` (whole library) / `custom` ("Added only": skips the seeded starter words, falls back to them when it runs out). Both fall back to `builtin-words.ts` if nothing matches |
+| Word source | `all` | `all` (whole library) / `custom` ("Added only": skips the seeded starter words, falls back to them when it runs out) / `recent` ("Recently added": the newest batch first, then older words; see `@wsfg/core/library`). All fall back to `builtin-words.ts` if nothing matches |
 | Category | Any | categories from the library that have words in the chosen source, plus "Any" |
 | Clue mode | `typed` | `typed` / `spoken` (players speak; the app tracks turns, voting, score) |
 | Imposter guess | `bonus` | `bonus` / `steal` / `off` |
@@ -407,7 +407,7 @@ CREATE TABLE IF NOT EXISTS imposter_words (
 ```
 (Imposter's migration `002_category_ids` moved the original text `category` column into `categories`.)
 - `library.ts`: `listWords`, `listCategories` (total + unused counts), `addWords` (validate, de-dupe, insert, return `{ inserted, skipped }`), `removeWords`, `pickWord`, `generateWords` (via the core AI service).
-- **`pickWord({ category?, excludeIds, customOnly? })`** (run by the runner in `prepareRound`, so the reducer stays pure): least-used word, random among ties, optionally filtered by category (and to non-starter words for "Added only"), skipping words already used in this room; increments `times_used`/`last_used_at`. If the library is empty or nothing matches, fall back to `builtin-words.ts` and send the host a `notice`. A game must always be able to start.
+- **`pickWord({ category?, excludeIds, customOnly?, recent? })`** (run by the runner in `prepareRound`, so the reducer stays pure): least-used word, random among ties (with `recent`, the newest batch among the least used), optionally filtered by category (and to non-starter words for "Added only"), skipping words already used in this room; increments `times_used`/`last_used_at`. If the library is empty or nothing matches, fall back to `builtin-words.ts` and send the host a `notice`. A game must always be able to start.
 - Categories with fewer than ~5 unused words are flagged in the admin page ("running low on Foods").
 
 **Admin routes** (`/api/admin/imposter/*`, guarded by core):
@@ -508,6 +508,7 @@ The third game: everyone answers the same question and tries to give the answer 
 | Score limit | unlimited | `null` / 5 / 8 / 10 / 12 / 15 / 20 |
 | Black sheep | on | |
 | Check matches | on | host merges near-misses before scoring |
+| Question source | `all` | `all` (least-played first) / `recent` ("Recently added": the newest batch first, then older questions, with a host notice; see `@wsfg/core/library`) |
 | Category | Any | categories from the library that have questions, plus "Any" |
 | Answer timer | off | 30 / 45 / 60 / 90 / 120 seconds; on expiry, reveal with the answers in |
 
@@ -746,6 +747,7 @@ With `n` distinct guesses sorted lowest first, the middle slot pays **2**, and e
 | Win rule | `over` | `over` (without going over, with All too high) / `closest` |
 | Scoring | `odds` | `odds` / `chips` / `flat` |
 | Bets | `hidden` | `hidden` (who has bet is public, not on what) / `public` (tokens show as they land) |
+| Question source | `all` | `all` (least-played first) / `recent` ("Recently added": the newest batch first, then older questions, with a host notice; see `@wsfg/core/library`) |
 | Category | Any | categories from the library that have questions, plus "Any" |
 | Timer | off | 30 / 45 / 60 / 90 / 120 seconds, separately for guessing and for betting; on expiry, move on with what's in |
 

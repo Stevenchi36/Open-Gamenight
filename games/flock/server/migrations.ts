@@ -30,6 +30,16 @@ export const migrations: Migration[] = [
     id: '002_default_questions',
     sql: seedSql(),
   },
+  {
+    // Which add each question came from, for "Recently added" (core library.ts).
+    // Existing questions stay NULL and play after every batch. (003 was the
+    // squashed herd -> flock rename; its record stays in older databases.)
+    id: '004_batches',
+    sql: `
+      ALTER TABLE flock_questions ADD COLUMN batch INTEGER;
+      CREATE INDEX flock_questions_batch ON flock_questions (batch);
+    `,
+  },
 ]
 
 function text(s: string): string {

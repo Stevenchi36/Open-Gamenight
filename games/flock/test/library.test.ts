@@ -215,6 +215,18 @@ describe('prepareRound', () => {
     }
   })
 
+  it('"Recently added" plays the newest batch first, then older questions with a notice', async () => {
+    const [cereal, topping, pet] = questions
+    const first = addQuestions(services, [cereal!])
+    addQuestions(services, [topping!], 'claude', first.batch) // joins the first batch
+    addQuestions(services, [pet!])
+    const a = (await prepare({ questionSource: 'recent' }, { trigger: 'init' })) as { id: number; text: string; notice?: string }
+    expect(a.text).toBe(pet!.question)
+    expect(a).not.toHaveProperty('notice')
+    const b = await prepare({ questionSource: 'recent' }, { trigger: 'action', state: state([a.id]), action: { type: 'next_round' }, actorId: 'p1' })
+    expect(b).toMatchObject({ category: 'Food', notice: 'The newest added questions have all been played, so older ones are used.' })
+  })
+
   it('falls back to starter questions with a notice', async () => {
     expect(await prepare({}, { trigger: 'init' })).toEqual({
       builtin: true,

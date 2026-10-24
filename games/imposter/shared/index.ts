@@ -34,8 +34,11 @@ export const settingsSchema = z.object({
   rotations: z.number().int().min(1).max(5),
   playerOrder: playerOrderSchema,
   imposterHint: z.enum(['none', 'category', 'category+hint']),
-  /** 'custom' skips the seeded starter words (source 'builtin'), falling back to them when it runs out. */
-  wordSource: z.enum(['all', 'custom']),
+  /**
+   * 'custom' skips the seeded starter words (source 'builtin'), falling back to them when it runs out.
+   * 'recent' plays the newest added batch first, then older words (core library.ts).
+   */
+  wordSource: z.enum(['all', 'custom', 'recent']),
   /** null = any category. */
   category: z.string().trim().min(1).max(40).nullable(),
   clueMode: z.enum(['typed', 'spoken']),

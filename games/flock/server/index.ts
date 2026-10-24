@@ -4,11 +4,12 @@
  * a public categories route for the lobby, admin routes, and MCP tools.
  */
 import { defineGame } from '@wsfg/core/contract'
+import { newestBatch, newestBatchStats } from '@wsfg/core/library'
 import express from 'express'
 import { adminRouter } from './admin.ts'
 import { DEFAULT_CATEGORIES } from './default-questions.ts'
 import { flock as game, type FlockState, type FlockTimer, type PreparedQuestion } from './game.ts'
-import { categoryUsage, countQuestions, pickQuestion, playableCategories } from './library.ts'
+import { categoryUsage, countQuestions, pickQuestion, playableCategories, TABLE } from './library.ts'
 import { mcpTools } from './mcp.ts'
 import { migrations } from './migrations.ts'
 import type { ClientAction, FlockSettings, FlockView } from '../shared/index.ts'
@@ -25,8 +26,17 @@ export const flock = defineGame<FlockState, ClientAction, FlockTimer, FlockView,
     if (!newRound) return undefined
 
     const excludeIds = request.trigger === 'action' ? request.state.usedQuestionIds : []
-    const row = pickQuestion(services.db, { category: settings.category, excludeIds })
-    if (row) return { id: row.id, category: row.category, text: row.question }
+    const recent = settings.questionSource === 'recent'
+    const row = pickQuestion(services.db, { category: settings.category, excludeIds, recent })
+    if (row) {
+      const question = { id: row.id, category: row.category, text: row.question }
+      if (!recent) return question
+      const categoryId = settings.category ? services.categories.findByName(settings.category)?.id : null
+      const newest = newestBatch(services.db, TABLE, categoryId)
+      if (newest === null || row.batch === newest) return question
+      const where = settings.category ? ` in ${settings.category}` : ''
+      return { ...question, notice: `The newest added questions${where} have all been played, so older ones are used.` }
+    }
 
     const notice =
       countQuestions(services.db) === 0
@@ -44,6 +54,7 @@ export const flock = defineGame<FlockState, ClientAction, FlockTimer, FlockView,
       res.json({
         // only categories with questions are worth picking in the lobby
         library: playableCategories(services.db),
+        recent: newestBatchStats(services.db, TABLE),
         builtin: DEFAULT_CATEGORIES,
       })
     })

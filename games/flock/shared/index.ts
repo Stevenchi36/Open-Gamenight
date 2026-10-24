@@ -36,6 +36,8 @@ export const settingsSchema = z.object({
   blackSheep: z.boolean(),
   /** The host merges near-miss answers before scoring. */
   checkMatches: z.boolean(),
+  /** 'recent' plays the newest added batch first, then older questions (core library.ts). */
+  questionSource: z.enum(['all', 'recent']),
   /** null = any category. */
   category: z.string().trim().min(1).max(40).nullable(),
   /** Seconds to answer; null = off. On expiry the answers in so far are revealed. */
@@ -48,6 +50,7 @@ export const defaultSettings: FlockSettings = {
   scoreLimit: null,
   blackSheep: true,
   checkMatches: true,
+  questionSource: 'all',
   category: null,
   answerTimerSeconds: null,
 }

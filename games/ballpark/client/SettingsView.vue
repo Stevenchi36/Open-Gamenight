@@ -44,6 +44,14 @@
       :disabled="!isHost"
       @update:model-value="(v: unknown) => set('bets', v as BetVisibility)"
     />
+    <SettingToggle
+      label="Questions from"
+      :model-value="settings.questionSource"
+      :items="sources"
+      :hint="sourceHint"
+      :disabled="!isHost"
+      @update:model-value="(v: unknown) => set('questionSource', v as BallparkSettings['questionSource'])"
+    />
     <SettingSelect
       label="Category"
       :model-value="settings.category"
@@ -114,14 +122,32 @@ const SCORING_HINTS: Record<Scoring, string> = {
 }
 const scoringHint = computed(() => SCORING_HINTS[props.settings.scoring])
 
+const sources = [
+  { title: 'All', value: 'all' },
+  { title: 'Recent', value: 'recent' },
+]
+const sourceHint = computed(() => {
+  if (props.settings.questionSource === 'all') return 'Least-played questions first'
+  const r = recent.value
+  return r
+    ? `The latest batch added first (${r.unused} of ${r.total} unplayed), then older questions`
+    : 'The most recently added questions first'
+})
+
 const library = ref<{ category: string; total: number }[]>([])
+const recent = ref<{ total: number; unused: number } | null>(null)
 const builtin = ref<string[]>([])
 onMounted(async () => {
   try {
     const res = await fetch('/api/games/ballpark/categories')
     if (res.ok) {
-      const data = (await res.json()) as { library: { category: string; total: number }[]; builtin: string[] }
+      const data = (await res.json()) as {
+        library: { category: string; total: number }[]
+        recent: { total: number; unused: number } | null
+        builtin: string[]
+      }
       library.value = data.library
+      recent.value = data.recent
       builtin.value = data.builtin
     }
   } catch {

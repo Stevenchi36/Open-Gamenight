@@ -40,11 +40,7 @@
       label="Words from"
       :model-value="settings.wordSource"
       :items="sources"
-      :hint="
-        settings.wordSource === 'all'
-          ? 'Built-in starter words plus everything added since'
-          : 'Skips the built-in starter words (used only if added words run out)'
-      "
+      :hint="sourceHint"
       :disabled="!isHost"
       @update:model-value="(v: unknown) => setSource(v as ImposterSettings['wordSource'])"
     />
@@ -136,8 +132,9 @@ const hintModes = [
   { title: 'Category + hint', value: 'category+hint' },
 ]
 const sources = [
-  { title: 'All words', value: 'all' },
-  { title: 'Added only', value: 'custom' },
+  { title: 'All', value: 'all' },
+  { title: 'Added', value: 'custom' },
+  { title: 'Recent', value: 'recent' },
 ]
 const guessModes = [
   { title: 'Bonus', value: 'bonus' },
@@ -147,13 +144,19 @@ const guessModes = [
 const timerItems = [{ title: 'Off', value: null as number | null }, ...[15, 30, 45, 60, 90].map((s) => ({ title: `${s} seconds`, value: s as number | null }))]
 
 const library = ref<{ category: string; total: number; custom: number }[]>([])
+const recent = ref<{ total: number; unused: number } | null>(null)
 const builtin = ref<string[]>([])
 onMounted(async () => {
   try {
     const res = await fetch('/api/games/imposter/categories')
     if (res.ok) {
-      const data = (await res.json()) as { library: { category: string; total: number; custom: number }[]; builtin: string[] }
+      const data = (await res.json()) as {
+        library: { category: string; total: number; custom: number }[]
+        recent: { total: number; unused: number } | null
+        builtin: string[]
+      }
       library.value = data.library
+      recent.value = data.recent
       builtin.value = data.builtin
     }
   } catch {
@@ -174,6 +177,15 @@ const categoryItems = computed(() => {
   const current = props.settings.category
   if (current && !names.some((n) => n.value === current)) names.push({ title: current, value: current })
   return [{ title: 'Any category', value: null as string | null }, ...names]
+})
+
+const sourceHint = computed(() => {
+  if (props.settings.wordSource === 'all') return 'Built-in starter words plus everything added since'
+  if (props.settings.wordSource === 'custom') return 'Skips the built-in starter words (used only if added words run out)'
+  const r = recent.value
+  return r
+    ? `The latest batch added first (${r.unused} of ${r.total} unplayed), then older words`
+    : 'The most recently added words first'
 })
 
 const timerHint = computed(() => {

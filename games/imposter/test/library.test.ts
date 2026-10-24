@@ -70,12 +70,30 @@ describe('migration 002: categories move to the shared table', () => {
       { name: 'Food' },
       { name: 'Space' },
     ])
-    expect(listWords(old).words.map((w) => [w.id, w.category, w.word, w.times_used])).toEqual([
+    // Plain SQL: listWords expects columns from later migrations.
+    const rows = old
+      .prepare('SELECT w.id, c.name, w.word, w.times_used FROM imposter_words w JOIN categories c ON c.id = w.category_id ORDER BY c.name, w.word')
+      .all()
+    expect(rows.map((w) => Object.values(w))).toEqual([
       [9, 'Food', 'Pizza', 1],
       [7, 'Space', 'Comet', 3],
       [8, 'Space', 'Saturn', 0],
     ])
     expect(old.prepare("SELECT name FROM sqlite_master WHERE name = 'imposter_words_new'").get()).toBeUndefined()
+  })
+})
+
+describe('migration 005: batches', () => {
+  it('leaves existing words unbatched; the next add starts batch 1', () => {
+    const d = new DatabaseSync(':memory:')
+    d.exec('PRAGMA foreign_keys = ON')
+    d.exec(CATEGORIES_MIGRATION.sql)
+    for (const m of migrations.slice(0, -1)) if (m.id !== SEED_ID) d.exec(m.sql)
+    const lib = { db: d, categories: createCategoryService(d, 'imposter') }
+    d.exec(`INSERT INTO imposter_words (category_id, word, hint) VALUES (${lib.categories.create('Space').id}, 'Comet', 'Tail')`)
+    d.exec(migrations.at(-1)!.sql)
+    expect(listWords(d).words.map((w) => w.batch)).toEqual([null])
+    expect(addWords(lib, [{ category: 'Space', word: 'Saturn', hint: 'Rings' }]).batch).toBe(1)
   })
 })
 
@@ -149,6 +167,7 @@ describe('addWords', () => {
       skipped: [],
       createdCategories: ['Animals', 'Food'],
       insertedByCategory: { Animals: 2, Food: 1 },
+      batch: 1,
     })
     const again = addWords(services, [
       { category: 'animals', word: 'PENGUIN', hint: 'Different hint' },
@@ -163,6 +182,7 @@ describe('addWords', () => {
       ],
       createdCategories: [],
       insertedByCategory: { Food: 1 },
+      batch: 2,
     })
     expect(services.categories.list().map((c) => c.name)).toEqual(['Animals', 'Food'])
   })
@@ -324,6 +344,36 @@ describe('prepareRound', () => {
     })
     // "All words" plays starter words without a notice
     expect(await prepare({ wordSource: 'all' }, next)).not.toHaveProperty('notice')
+  })
+
+  it('"Recently added" plays the newest batch first, then older words with a notice', async () => {
+    addWords(services, [{ category: 'Animals', word: 'Otter', hint: 'River' }], 'builtin')
+    const first = addWords(services, [{ category: 'Animals', word: 'Penguin', hint: 'Tuxedo' }], 'claude')
+    // a second call of the same request joins its batch
+    const second = addWords(services, [{ category: 'Food', word: 'Pizza', hint: 'Slice' }], 'claude', first.batch)
+    addWords(services, [{ category: 'Animals', word: 'Giraffe', hint: 'Tall' }], 'claude')
+    expect([first.batch, second.batch]).toEqual([2, 2])
+
+    const played: string[] = []
+    const usedWordIds: number[] = []
+    for (let i = 0; i < 4; i++) {
+      const request = i === 0 ? ({ trigger: 'init' } as const) : ({ trigger: 'action', state: { usedWordIds } as never, action: { type: 'next_round' }, actorId: 'p1' } as const)
+      const word = (await prepare({ wordSource: 'recent' }, request)) as { id: number; word: string; notice?: string }
+      played.push(word.notice ? `${word.word}!` : word.word)
+      usedWordIds.push(word.id)
+    }
+    // "!" marks the host notice: past the newest batch (Giraffe), every round says so
+    expect(played[0]).toBe('Giraffe')
+    expect(new Set(played.slice(1, 3))).toEqual(new Set(['Penguin!', 'Pizza!']))
+    expect(played[3]).toBe('Otter!')
+  })
+
+  it('"Recently added" in a category looks at that category\'s newest batch', async () => {
+    addWords(services, [{ category: 'Animals', word: 'Penguin', hint: 'Tuxedo' }])
+    addWords(services, [{ category: 'Food', word: 'Pizza', hint: 'Slice' }])
+    expect(await prepare({ wordSource: 'recent', category: 'Animals' }, { trigger: 'init' })).toEqual(
+      expect.not.objectContaining({ notice: expect.anything() }),
+    )
   })
 
   it('lists playable categories with their non-starter counts', () => {

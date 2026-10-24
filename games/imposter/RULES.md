@@ -25,7 +25,7 @@ The host can play more rounds; scores carry on, and each round has a new word an
 - **Rotations:** how many times clues go around (1 to 5).
 - **Clue mode:** typed (one word each) or spoken (say it out loud, then tap Done).
 - **Imposter gets:** nothing, the category, or the category and a hint.
-- **Category** and **word source:** which words are used.
+- **Category** and **words from:** which words are used. All, added only (skips the starter words), or recent (the newest words added first, then older ones).
 - **Clue timer:** optional time limit per turn.
 - **Imposter's guess:** bonus, steal or off, and the points for each outcome.
 

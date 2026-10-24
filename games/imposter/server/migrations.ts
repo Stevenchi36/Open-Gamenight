@@ -68,6 +68,15 @@ export const migrations: Migration[] = [
     id: '004_vague_default_hints',
     sql: vagueHintsSql(),
   },
+  {
+    // Which add each word came from, for "Recently added" (core library.ts).
+    // Existing words stay NULL and play after every batch.
+    id: '005_batches',
+    sql: `
+      ALTER TABLE imposter_words ADD COLUMN batch INTEGER;
+      CREATE INDEX imposter_words_batch ON imposter_words (batch);
+    `,
+  },
 ]
 
 function text(s: string): string {

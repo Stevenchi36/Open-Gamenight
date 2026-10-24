@@ -28,6 +28,7 @@ If exactly one player is the odd one out (the only answer nobody matched), they 
 - **Score limit:** unlimited, or first to 5, 8, 10, 12, 15 or 20.
 - **Black sheep:** on or off.
 - **Check matches:** the host merges near-misses before scoring, or scoring follows the automatic matches.
+- **Questions from:** all (least-played first), or recent (the newest questions added first, then older ones).
 - **Category:** any, or one category of questions.
 - **Answer timer:** off, or 30 to 120 seconds.
 

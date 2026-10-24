@@ -6,6 +6,7 @@
  */
 import { AI_INSTRUCTIONS_MAX_LENGTH, type McpToolDef, type ServerServices } from '@wsfg/core/contract'
 import { CATEGORY_REUSE_RULE } from '@wsfg/core/categories'
+import { BATCH_RULE, batchField } from '@wsfg/core/library'
 import { z } from 'zod'
 import {
   addWords,
@@ -36,7 +37,7 @@ const wordInput = z.object({
 const SECRET_REPLY_RULE =
   "Keep the words secret in your reply: the person may be playing. Report only counts and category names; don't list the words or hints unless they explicitly ask to see them."
 
-const addSchema =z.object({ words: z.array(wordInput).min(1).max(200) })
+const addSchema = z.object({ words: z.array(wordInput).min(1).max(200), batch: batchField })
 const searchSchema = z.object({
   categoryId: z.number().int().optional().describe('Category id from list_categories (takes precedence over category)'),
   category: z.string().optional().describe('Category name, case-insensitive'),
@@ -69,6 +70,7 @@ const generateSchema = z.object({
     .max(AI_INSTRUCTIONS_MAX_LENGTH)
     .optional()
     .describe('Any other wishes from the user, passed to the generator as written, e.g. "really easy, for young kids"'),
+  batch: batchField,
 })
 
 export function mcpTools(services: ServerServices): McpToolDef[] {
@@ -82,9 +84,14 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         CATEGORY_REUSE_RULE +
         ' ' +
         'Duplicates (same category + word, ignoring case, punctuation and plural "s", so "T Rex" matches "T-Rex") and invalid entries are skipped and reported. ' +
+        BATCH_RULE +
+        ' ' +
         SECRET_REPLY_RULE,
       inputSchema: addSchema,
-      handler: async (args) => ({ ...addWords(services, addSchema.parse(args).words, 'claude'), note: SECRET_REPLY_RULE }),
+      handler: async (args) => {
+        const { words, batch } = addSchema.parse(args)
+        return { ...addWords(services, words, 'claude', batch), note: SECRET_REPLY_RULE }
+      },
     },
     {
       name: 'list_categories',
@@ -129,10 +136,12 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
       description:
         'Generate words with the server-side Claude API and save them directly (counts against the daily AI token cap). ' +
         'Usually unnecessary from Claude Code/Desktop: you can write words yourself and call add_words. ' +
+        BATCH_RULE +
+        ' ' +
         SECRET_REPLY_RULE,
       inputSchema: generateSchema,
       handler: async (args) => {
-        const { count, category, difficulty, hintStyle, instructions } = generateSchema.parse(args)
+        const { count, category, difficulty, hintStyle, instructions, batch } = generateSchema.parse(args)
         const { candidates, skipped } = await generateWords(ai, services, {
           count,
           category: category ?? null,
@@ -141,7 +150,7 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
           instructions: instructions ?? null,
           userId: null,
         })
-        const saved = addWords(services, candidates, 'claude')
+        const saved = addWords(services, candidates, 'claude', batch)
         return { ...saved, skipped: [...skipped, ...saved.skipped], note: SECRET_REPLY_RULE }
       },
     })

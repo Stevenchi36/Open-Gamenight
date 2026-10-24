@@ -160,6 +160,8 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 - A category name that differs from an existing one only in case, accents, punctuation, "&" vs "and", a leading "the" or a plural "s" goes into the existing category instead of creating a new one ("sport and games" → "Sports & Games"), in every game and in the admin panel too. For different wording ("Athletics" vs "Sports & Games"), the tool descriptions ask Claude to check `list_categories` first and reuse what fits.
 - The generate tools take `instructions` that can name the categories ("5 each for Dinosaurs and Space") when `category` is left out.
 
+**Batches ("Recently added").** Every add and generate call, in every game, saves its entries as one batch and returns its number as `batch` (`null` if nothing was saved). The lobby's **Recently added** source (Imposter's *Words from*, Ballpark's and Flock's *Questions from*) plays the newest batch first, then older batches, then entries from before batches. When one request takes several calls (say one per category), Claude passes the first call's `batch` to the later ones so they play as one batch; the tool descriptions tell it to. A number that no entry carries yet starts a new batch instead. Adds from the admin page are batches too.
+
 Flock's question library works the same way, with its own categories:
 
 | Tool | What it does |
