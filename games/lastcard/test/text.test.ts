@@ -35,6 +35,7 @@ describe('moveText', () => {
     expect(moveText({ ...draw, count: 4, penalty: true }, 'a', name, false)).toBe('You had to draw 4 cards.')
     expect(moveText({ ...draw, count: 0 }, 'c', name, false)).toBe('A had nothing left to draw.')
     expect(moveText({ ...draw, away: true }, 'c', name, false)).toBe('A was away, so drew 1 card.')
+    expect(moveText({ ...draw, count: 0, away: true }, 'a', name, false)).toBe('You were away, and there was nothing left to draw.')
     expect(moveText({ kind: 'pass', playerId: 'a', away: false }, 'c', name, false)).toBe('A kept the card.')
     expect(moveText({ kind: 'call', playerId: 'a' }, 'c', name, false)).toBe('A called Last card! just in time.')
     expect(moveText({ kind: 'catch', playerId: 'b', targetId: 'a', count: 2 }, 'a', name, false)).toBe('B caught you without a Last card! call: 2 cards.')

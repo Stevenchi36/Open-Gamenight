@@ -16,7 +16,7 @@ Everyone is dealt **7 cards**. The rest go face down as the **draw pile**, and t
 2. **Wilds** go on anything; you pick the colour to play next. A **Wild Draw Four** only when you have no card of the colour in play.
 3. **Or draw** a card (you may, even if you could play). If the card you drew fits, you can play it straight away, or **Keep it**. Either way your turn ends.
 
-When the draw pile runs out, the discard pile (all but its top card) is shuffled into a new one.
+When the draw pile runs out, the discard pile (all but its top card) is shuffled into a new one. If there's nothing left to shuffle either, you draw what there is (perhaps nothing) and play moves on.
 
 ## Action cards
 

@@ -44,8 +44,9 @@ export function moveText(move: Move, me: PlayerId, name: (id: PlayerId) => strin
     }
     case 'draw': {
       const cards = `${move.count} ${move.count === 1 ? 'card' : 'cards'}`
-      if (move.away) return `${actor} ${move.playerId === me ? 'were' : 'was'} away, so drew ${cards}.`
-      if (move.count === 0) return `${actor} had nothing left to draw.`
+      const wasAway = `${actor} ${move.playerId === me ? 'were' : 'was'} away`
+      if (move.count === 0) return move.away ? `${wasAway}, and there was nothing left to draw.` : `${actor} had nothing left to draw.`
+      if (move.away) return `${wasAway}, so drew ${cards}.`
       return move.penalty ? `${actor} had to draw ${cards}.` : `${actor} drew ${cards}.`
     }
     case 'pass':

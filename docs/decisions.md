@@ -223,6 +223,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **A disconnected player's turn is taken after the 15s grace: they take a pending stack, keep a drawn card, or else draw one; nobody plays a card for them.** Skipping without a draw would reward disconnecting, and choosing a card to play would be an arbitrary move.
 - **A leaver's hand is shuffled into the draw pile and a stack waiting on them is dropped; fewer than 2 players left ends the round with no points.** As in Gone Fishin'; nobody else should take a penalty aimed at someone who left.
 - **Hands are revealed on the results screen.** In points scoring they are what the winner scores, so the table can check the count, as when hands are turned up at a real table.
+- **With the draw pile and the reshufflable discard both empty, a draw takes what there is (perhaps nothing), penalties included, and play moves on.** It only happens when the hands hold nearly the whole deck; stalling the round or adding a second deck would be worse, and every play puts a card back to reshuffle later.
 - **Jump-in reuses `play` from a player whose turn it isn't; the room's action queue settles races and a late jump-in is refused because the top card changed.** No timers or claim windows: first to send wins, as at a table.
 
 ## Deployment

@@ -207,6 +207,17 @@ describe('drawing', () => {
     expect(sim.state.turn).toBe(b)
     expect(sim.view(b!).log.at(-1)).toMatchObject({ kind: 'draw', count: 0 })
   })
+
+  it('cuts a Draw Two short when only one card is left anywhere', () => {
+    const sim = newGame()
+    const [a, b, c] = setTable(sim, { hands: [['r+2', 'g6'], ['r1'], ['y1']], top: 'r5' })
+    playCode(sim, a!, 'r+2')
+    // The only card that can be reshuffled is the r5 under the Draw Two.
+    expect(sim.state.hands[b!]).toEqual(cards('r1', 'r5'))
+    expect(sim.state.discard).toEqual(cards('r+2'))
+    expect(sim.state.turn).toBe(c)
+    expect(sim.view(c!).log.at(-1)).toMatchObject({ kind: 'draw', playerId: b, count: 1, penalty: true })
+  })
 })
 
 describe('stacking', () => {
@@ -430,6 +441,16 @@ describe('disconnects and leavers', () => {
     expect(sim.state.turn).toBe(b)
     expect(sim.state.hands[a!]).toEqual(cards('r9', 'g6', 'r3'))
     expect(sim.view(b!).log.at(-1)).toEqual({ kind: 'draw', playerId: a, count: 1, penalty: false, away: true })
+  })
+
+  it('passes a disconnected player on when there is nothing left to draw', () => {
+    const sim = newGame()
+    const [a, b] = setTable(sim, { hands: [['r9', 'g6'], ['r1'], ['y1']], top: 'r5' })
+    sim.disconnect(a!)
+    sim.advance(DISCONNECT_GRACE_MS)
+    expect(sim.state.turn).toBe(b)
+    expect(sim.state.hands[a!]).toEqual(cards('r9', 'g6'))
+    expect(sim.view(b!).log.at(-1)).toEqual({ kind: 'draw', playerId: a, count: 0, penalty: false, away: true })
   })
 
   it('keeps a drawn card, or takes a stack, for a disconnected player', () => {
