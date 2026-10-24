@@ -6,7 +6,7 @@
       <v-btn variant="text" prepend-icon="mdi-shape-outline" :to="{ name: 'admin-categories', params: { gameId: 'ballpark' } }">
         Categories
       </v-btn>
-      <v-btn variant="tonal" prepend-icon="mdi-plus" :disabled="categories.length === 0" @click="openAdd">Add question</v-btn>
+      <v-btn variant="tonal" prepend-icon="mdi-plus" @click="openAdd">Add question</v-btn>
       <v-btn v-if="aiEnabled" color="primary" prepend-icon="mdi-creation" @click="openGenerate()">Generate</v-btn>
     </div>
 
@@ -18,7 +18,7 @@
     </v-alert>
 
     <v-alert v-if="categories.length === 0" type="info" variant="tonal" density="compact" class="mb-4">
-      No categories yet. Add some under Categories (or generate questions into a new one). Until the library has questions, games use
+      No categories yet. Add a question with a new category name, set some up under Categories, or generate questions into a new one. Until the library has questions, games use
       the starter list.
     </v-alert>
 
@@ -83,7 +83,7 @@
     <v-dialog v-model="adding" max-width="560">
       <v-card title="Add a question">
         <v-card-text>
-          <v-select v-model="draft.categoryId" :items="categories" item-title="category" item-value="id" label="Category" />
+          <v-combobox v-model="draft.category" :items="categoryNames" label="Category" hint="Pick one, or type a new name" persistent-hint class="mb-2" />
           <v-text-field
             v-model="draft.question"
             label="Question"
@@ -102,7 +102,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn @click="adding = false">Cancel</v-btn>
-          <v-btn color="primary" :disabled="!draft.categoryId || !draft.question || draft.answer === ''" @click="saveDraft">Save</v-btn>
+          <v-btn color="primary" :disabled="!draft.category?.trim() || !draft.question || draft.answer === ''" @click="saveDraft">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -148,7 +148,7 @@
             </div>
           </div>
           <div v-else-if="!candidates" class="d-flex flex-wrap ga-3 align-center">
-            <v-combobox v-model="gen.category" :items="categoryNames" label="Category (empty = mixed)" clearable style="min-width: 220px" />
+            <v-combobox v-model="gen.category" :items="categoryNames" label="Category (empty: mixed, or as the instructions say)" clearable style="min-width: 220px" />
             <v-text-field v-model.number="gen.count" type="number" min="1" max="50" label="How many" style="max-width: 120px" />
             <v-textarea
               v-model="gen.instructions"
@@ -364,15 +364,15 @@ async function removeSelected() {
 
 // ---- add one
 const adding = ref(false)
-const draft = reactive({ categoryId: null as number | null, question: '', answer: '', unit: null as UnitCode | null, fact: '' })
+const draft = reactive({ category: '' as string | null, question: '', answer: '', unit: null as UnitCode | null, fact: '' })
 function openAdd() {
-  Object.assign(draft, { categoryId: filter.categoryId ?? categories.value[0]?.id ?? null, question: '', answer: '', unit: null, fact: '' })
+  Object.assign(draft, { category: nameOf(filter.categoryId) ?? categories.value[0]?.category ?? '', question: '', answer: '', unit: null, fact: '' })
   adding.value = true
 }
 async function saveDraft() {
   try {
     const question = {
-      category: nameOf(draft.categoryId) ?? '',
+      category: draft.category?.trim() ?? '',
       question: draft.question,
       answer: toNumber(draft.answer),
       unit: draft.unit,

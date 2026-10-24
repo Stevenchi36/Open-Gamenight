@@ -166,6 +166,17 @@ export function instructionsLine(instructions: string | null | undefined): strin
   return text ? `Extra instructions from the admin (follow them, within the rules above): ${text}` : ''
 }
 
+/**
+ * Where generated entries go, finishing "Write 20 new questions...": the chosen category,
+ * or, with none chosen, the categories the admin's instructions name ("5 each for
+ * Dinosaurs and Space"), falling back to a varied mix.
+ */
+export function categoryScope(category: string | null, instructions: string | null | undefined): string {
+  if (category) return ` in the category "${category}"`
+  if (instructions?.trim()) return ' in the categories the extra instructions name, or across a few fun, varied categories if they name none'
+  return ' across a few fun, varied categories'
+}
+
 /** Shared AI service, already bound to the calling game's id. */
 export interface AiService {
   generate<T>(request: { userId: string | null; system: string; prompt: string; tool: AiToolSpec<T> }): Promise<T>

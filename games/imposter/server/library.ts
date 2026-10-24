@@ -8,7 +8,7 @@
  * generation) go through addWords, which creates missing categories.
  */
 import type { DatabaseSync } from 'node:sqlite'
-import { AiError, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
+import { AiError, categoryScope, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
 import { validateWord, type Validation, type WordInput } from './validate.ts'
@@ -142,7 +142,7 @@ export function addWords(lib: Library, inputs: WordInput[], source: WordSource =
         continue
       }
       const { category: name, word, hint, difficulty } = checked.value
-      let category = categories.findByName(name)
+      let category = categories.resolve(name)
       if (!category) {
         category = categories.create(name)
         result.createdCategories.push(category.name)
@@ -300,12 +300,12 @@ export async function generateWords(
   const count = Math.min(Math.max(1, Math.floor(request.count)), MAX_GENERATE)
   const requested = request.category?.trim() || null
   // Use the stored spelling when the category already exists.
-  const category = requested ? (categories.findByName(requested)?.name ?? requested) : null
+  const category = requested ? (categories.resolve(requested)?.name ?? requested) : null
   const avoid = category ? listWords(db, { category, limit: MAX_PAGE_SIZE }).words.map((w) => w.word) : []
   const known = categories.list().map((c) => c.name)
 
   const prompt = [
-    `Write ${count} new entries${category ? ` in the category "${category}"` : ' across a few fun, varied categories'}.`,
+    `Write ${count} new entries${categoryScope(category, request.instructions)}.`,
     request.difficulty ? `Difficulty: ${request.difficulty} for all of them.` : 'Mix the difficulties.',
     request.hintStyle?.trim() ? `Hint style (overrides the one-word default): ${request.hintStyle.trim()}` : '',
     instructionsLine(request.instructions),
@@ -332,7 +332,7 @@ export async function generateWords(
       }
       throw error
     }
-    const result = screenCandidates(db, output.words, category)
+    const result = screenCandidates(lib, output.words, category)
     if (result.candidates.length > 0) {
       return { candidates: result.candidates.slice(0, count), skipped: result.skipped }
     }
@@ -343,10 +343,11 @@ export async function generateWords(
 
 /** Validate generated entries, drop ones already in the library or repeated in the batch. */
 export function screenCandidates(
-  db: DatabaseSync,
+  lib: Library,
   entries: WordInput[],
   category: string | null,
 ): { candidates: Candidate[]; skipped: AddResult['skipped'] } {
+  const { db, categories } = lib
   const exists = db.prepare(`SELECT 1 ${FROM} WHERE c.name = ? COLLATE NOCASE AND w.word = ? COLLATE NOCASE`)
   const seen = new Set<string>()
   const candidates: Candidate[] = []
@@ -357,14 +358,16 @@ export function screenCandidates(
       skipped.push({ word: String(entry.word ?? ''), category: String(entry.category ?? ''), reason: checked.error })
       continue
     }
-    const { word, category: cat } = checked.value
+    const { word } = checked.value
+    // Generated names land on the existing category they mean ("Animal" -> "Animals").
+    const cat = categories.resolve(checked.value.category)?.name ?? checked.value.category
     const key = `${cat}|${word}`.toLowerCase()
     if (seen.has(key) || exists.get(cat, word)) {
       skipped.push({ word, category: cat, reason: 'Already in the library' })
       continue
     }
     seen.add(key)
-    candidates.push(checked.value)
+    candidates.push({ ...checked.value, category: cat })
   }
   return { candidates, skipped }
 }

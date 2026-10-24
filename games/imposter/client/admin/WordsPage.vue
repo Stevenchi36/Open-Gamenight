@@ -6,7 +6,7 @@
       <v-btn variant="text" prepend-icon="mdi-shape-outline" :to="{ name: 'admin-categories', params: { gameId: 'imposter' } }">
         Categories
       </v-btn>
-      <v-btn variant="tonal" prepend-icon="mdi-plus" :disabled="categories.length === 0" @click="openAdd">Add word</v-btn>
+      <v-btn variant="tonal" prepend-icon="mdi-plus" @click="openAdd">Add word</v-btn>
       <v-btn v-if="aiEnabled" color="primary" prepend-icon="mdi-creation" @click="openGenerate()">Generate</v-btn>
     </div>
 
@@ -18,7 +18,7 @@
     </v-alert>
 
     <v-alert v-if="categories.length === 0" type="info" variant="tonal" density="compact" class="mb-4">
-      No categories yet. Add some under Categories (or generate words into a new one). Until the library has words, games use the
+      No categories yet. Add a word with a new category name, set some up under Categories, or generate words into a new one. Until the library has words, games use the
       built-in list.
     </v-alert>
 
@@ -88,7 +88,7 @@
     <v-dialog v-model="adding" max-width="460">
       <v-card title="Add a word">
         <v-card-text>
-          <v-select v-model="draft.categoryId" :items="categories" item-title="category" item-value="id" label="Category" />
+          <v-combobox v-model="draft.category" :items="categoryNames" label="Category" hint="Pick one, or type a new name" persistent-hint class="mb-2" />
           <v-text-field v-model="draft.word" label="Word" maxlength="29" counter />
           <v-text-field v-model="draft.hint" label="Hint for the imposter" hint="Vague; must not contain the word" persistent-hint maxlength="119" />
           <v-select v-model="draft.difficulty" :items="difficulties" label="Difficulty" class="mt-2" />
@@ -96,7 +96,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn @click="adding = false">Cancel</v-btn>
-          <v-btn color="primary" :disabled="!draft.categoryId || !draft.word || !draft.hint" @click="saveDraft">Save</v-btn>
+          <v-btn color="primary" :disabled="!draft.category?.trim() || !draft.word || !draft.hint" @click="saveDraft">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -139,7 +139,7 @@
             </div>
           </div>
           <div v-else-if="!candidates" class="d-flex flex-wrap ga-3 align-center">
-            <v-combobox v-model="gen.category" :items="categoryNames" label="Category (empty = mixed)" clearable style="min-width: 220px" />
+            <v-combobox v-model="gen.category" :items="categoryNames" label="Category (empty: mixed, or as the instructions say)" clearable style="min-width: 220px" />
             <v-select v-model="gen.difficulty" :items="[{ title: 'Mixed', value: null }, ...difficulties.map((d) => ({ title: d, value: d }))]" label="Difficulty" style="max-width: 160px" />
             <v-text-field v-model.number="gen.count" type="number" min="1" max="50" label="How many" style="max-width: 120px" />
             <v-textarea
@@ -334,9 +334,9 @@ async function removeSelected() {
 
 // ---- add one
 const adding = ref(false)
-const draft = reactive({ categoryId: null as number | null, word: '', hint: '', difficulty: 'medium' as Difficulty })
+const draft = reactive({ category: '' as string | null, word: '', hint: '', difficulty: 'medium' as Difficulty })
 function openAdd() {
-  Object.assign(draft, { categoryId: filter.categoryId ?? categories.value[0]?.id ?? null, word: '', hint: '', difficulty: 'medium' })
+  Object.assign(draft, { category: nameOf(filter.categoryId) ?? categories.value[0]?.category ?? '', word: '', hint: '', difficulty: 'medium' })
   adding.value = true
 }
 async function saveDraft() {
@@ -344,7 +344,7 @@ async function saveDraft() {
     const result = await api<{ inserted: number; skipped: { reason: string }[] }>('/words', {
       method: 'POST',
       body: {
-        words: [{ category: nameOf(draft.categoryId) ?? '', word: draft.word, hint: draft.hint, difficulty: draft.difficulty }],
+        words: [{ category: draft.category?.trim() ?? '', word: draft.word, hint: draft.hint, difficulty: draft.difficulty }],
         source: 'manual',
       },
     })

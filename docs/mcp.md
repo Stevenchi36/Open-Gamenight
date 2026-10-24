@@ -157,6 +157,8 @@ All tools are prefixed with the game id. The `*_category` tools come from the co
 - `difficulty`: `easy` | `medium` | `hard` (default `medium`).
 - A word that's already in the same category (ignoring case) is skipped.
 - Categories are shared rows (`categories` table), managed with the `*_category` tools or in the admin panel (Admin → Word Imposter → Categories). A category that still has words can't be deleted; move or delete its words first.
+- A category name that differs from an existing one only in case, accents, punctuation, "&" vs "and", a leading "the" or a plural "s" goes into the existing category instead of creating a new one ("sport and games" → "Sports & Games"), in every game and in the admin panel too. For different wording ("Athletics" vs "Sports & Games"), the tool descriptions ask Claude to check `list_categories` first and reuse what fits.
+- The generate tools take `instructions` that can name the categories ("5 each for Dinosaurs and Space") when `category` is left out.
 
 Flock's question library works the same way, with its own categories:
 

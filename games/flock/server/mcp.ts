@@ -5,6 +5,7 @@
  * service does (ANTHROPIC_API_KEY set) and saves directly, within the daily cap.
  */
 import { AI_INSTRUCTIONS_MAX_LENGTH, type McpToolDef, type ServerServices } from '@wsfg/core/contract'
+import { CATEGORY_REUSE_RULE } from '@wsfg/core/categories'
 import { z } from 'zod'
 import {
   addQuestions,
@@ -18,7 +19,7 @@ import {
 } from './library.ts'
 
 const questionInput = z.object({
-  category: z.string().describe('Category, e.g. "Food & Drink". Reuse existing category names where they fit.'),
+  category: z.string().describe('Category, e.g. "Food & Drink". Reuse an existing category (see list_categories) when one means the same thing.'),
   question: z
     .string()
     .describe(
@@ -41,12 +42,12 @@ const updateSchema = z.object({
   category: z
     .string()
     .optional()
-    .describe('Or move to the category with this name (created if it does not exist); ignored when categoryId is given'),
+    .describe('Or move to the category with this name, matched to an existing one where only the spelling differs, otherwise created; ignored when categoryId is given'),
   question: z.string().optional().describe('New question text'),
 })
 const generateSchema = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
-  category: z.string().optional(),
+  category: z.string().optional().describe('One category for everything; reuse an existing one (see list_categories) when it fits. Omit it to let instructions name the categories, or for a mix.'),
   instructions: z
     .string()
     .max(AI_INSTRUCTIONS_MAX_LENGTH)
@@ -63,7 +64,8 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
         'Add questions to the Flock library. Players all answer the same question and score by matching the most popular answer, ' +
         'so good questions have a few obvious answers most people reach for ("Name a breakfast cereal", "What is the best pizza topping?"), ' +
         'answered in a word or short phrase. Avoid trivia with one correct answer. ' +
-        'Categories that do not exist yet are created (reported in createdCategories); prefer existing names from list_categories. ' +
+        CATEGORY_REUSE_RULE +
+        ' ' +
         'Duplicates (same category + question) and invalid entries are skipped and reported.',
       inputSchema: addSchema,
       handler: async (args) => addQuestions(services, addSchema.parse(args).questions, 'claude'),

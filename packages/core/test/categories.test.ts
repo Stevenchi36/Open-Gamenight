@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { CATEGORIES_MIGRATION, CategoryError, createCategoryService, type CategoryService } from '../src/categories.ts'
+import { CATEGORIES_MIGRATION, CategoryError, categoryKey, createCategoryService, type CategoryService } from '../src/categories.ts'
 
 let db: DatabaseSync
 let mine: CategoryService
@@ -44,6 +44,33 @@ describe('createCategoryService', () => {
     const a = mine.ensure('Animals')
     expect(mine.ensure('animals').id).toBe(a.id)
     expect(mine.list()).toHaveLength(1)
+  })
+
+  it('resolves differently spelled names to the existing category', () => {
+    const sport = mine.create('Sports & Games')
+    const animals = mine.create('Animals')
+    for (const name of ['sports & games', 'Sport and Games', 'sport and game!', 'The Sports & Games']) {
+      expect(mine.resolve(name)?.id).toBe(sport.id)
+    }
+    expect(mine.resolve('Animal')?.id).toBe(animals.id)
+    expect(mine.resolve('Athletics')).toBeNull()
+    expect(mine.ensure('animal').id).toBe(animals.id)
+    expect(mine.list()).toHaveLength(2)
+  })
+
+  it('refuses to create or rename into a near-duplicate', () => {
+    const animals = mine.create('Animals')
+    const food = mine.create('Food & Drink')
+    expect(code(() => mine.create('Animal'))).toBe('exists')
+    expect(() => mine.create('Animal')).toThrow('Animal is too close to the existing category Animals')
+    expect(code(() => mine.rename(animals.id, 'Food and Drinks'))).toBe('exists')
+    expect(mine.rename(food.id, 'Food and Drink').name).toBe('Food and Drink') // its own key: fine
+  })
+
+  it('works out matching keys', () => {
+    expect(categoryKey('  Crème Brûlée & Cakes ')).toBe('creme brulee and cake')
+    expect(categoryKey('Glass, Cactus & Paris')).toBe('glass cactus and paris')
+    expect(categoryKey('The Movies')).toBe('movie')
   })
 
   it('renames, refusing clashes; case-only renames are fine', () => {

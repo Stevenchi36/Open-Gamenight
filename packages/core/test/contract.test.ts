@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { AI_INSTRUCTIONS_MAX_LENGTH, assertValidGame, assertValidRegistry, gameError, instructionsLine, isGameError } from '../src/contract.ts'
+import {
+  AI_INSTRUCTIONS_MAX_LENGTH,
+  assertValidGame,
+  assertValidRegistry,
+  categoryScope,
+  gameError,
+  instructionsLine,
+  isGameError,
+} from '../src/contract.ts'
 import { makeOracle } from './fixtures/oracle.ts'
 
 describe('assertValidGame', () => {
@@ -57,5 +65,13 @@ describe('instructionsLine', () => {
     )
     expect(instructionsLine('x'.repeat(900)).endsWith('x'.repeat(AI_INSTRUCTIONS_MAX_LENGTH))).toBe(true)
     expect(instructionsLine('x'.repeat(900)).length).toBeLessThan(AI_INSTRUCTIONS_MAX_LENGTH + 100)
+  })
+})
+
+describe('categoryScope', () => {
+  it('names the chosen category, else defers to the instructions, else asks for a mix', () => {
+    expect(categoryScope('Space', 'easy ones')).toBe(' in the category "Space"')
+    expect(categoryScope(null, '5 each for Dinosaurs and Space')).toContain('the categories the extra instructions name')
+    expect(categoryScope(null, '  ')).toBe(' across a few fun, varied categories')
   })
 })

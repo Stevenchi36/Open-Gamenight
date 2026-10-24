@@ -5,6 +5,7 @@
  * service does (ANTHROPIC_API_KEY set) and saves directly, within the daily cap.
  */
 import { AI_INSTRUCTIONS_MAX_LENGTH, type McpToolDef, type ServerServices } from '@wsfg/core/contract'
+import { CATEGORY_REUSE_RULE } from '@wsfg/core/categories'
 import { z } from 'zod'
 import {
   addWords,
@@ -18,7 +19,7 @@ import {
 } from './library.ts'
 
 const wordInput = z.object({
-  category: z.string().describe('Category, e.g. "Animals". Reuse existing category names where they fit.'),
+  category: z.string().describe('Category, e.g. "Animals". Reuse an existing category (see list_categories) when one means the same thing.'),
   word: z.string().describe('The secret word: concrete, widely known, 1-3 words, under 30 characters.'),
   hint: z
     .string()
@@ -49,14 +50,14 @@ const updateSchema = z.object({
   category: z
     .string()
     .optional()
-    .describe('Or move to the category with this name (created if it does not exist); ignored when categoryId is given'),
+    .describe('Or move to the category with this name, matched to an existing one where only the spelling differs, otherwise created; ignored when categoryId is given'),
   word: z.string().optional(),
   hint: z.string().optional().describe('One vague word by default, unless the user asks otherwise. Must not contain the word'),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
 })
 const generateSchema = z.object({
   count: z.number().int().min(1).max(MAX_GENERATE),
-  category: z.string().optional(),
+  category: z.string().optional().describe('One category for everything; reuse an existing one (see list_categories) when it fits. Omit it to let instructions name the categories, or for a mix.'),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   hintStyle: z
     .string()
@@ -78,7 +79,8 @@ export function mcpTools(services: ServerServices): McpToolDef[] {
       description:
         'Add words to the Word Imposter library. Each needs a category name, the word, and a vague hint for the imposter: ' +
         'one loosely related word by default (the imposter must be able to bluff, not deduce the word), unless the user asks for longer or more specific hints. ' +
-        'Categories that do not exist yet are created (reported in createdCategories); prefer existing names from list_categories. ' +
+        CATEGORY_REUSE_RULE +
+        ' ' +
         'Duplicates (same category + word) and invalid entries are skipped and reported. ' +
         SECRET_REPLY_RULE,
       inputSchema: addSchema,

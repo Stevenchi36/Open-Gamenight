@@ -104,6 +104,17 @@ describe('addQuestions', () => {
   })
 })
 
+describe('category spelling', () => {
+  it('adds to an existing category spelled differently instead of creating another', () => {
+    addQuestions(services, [{ category: 'Food & Drink', question: 'Name a breakfast cereal' }])
+    expect(addQuestions(services, [{ category: 'food and drinks', question: 'Name a fizzy drink' }])).toMatchObject({
+      inserted: 1,
+      createdCategories: [],
+      insertedByCategory: { 'Food & Drink': 1 },
+    })
+  })
+})
+
 describe('listing, editing and removing', () => {
   beforeEach(() => void addQuestions(services, questions))
 
@@ -266,6 +277,12 @@ describe('generateQuestions', () => {
     const capped = fakeAi(new AiError('cap', 'budget'))
     await expect(generateQuestions(capped.ai, services, { count: 5, userId: null })).rejects.toMatchObject({ code: 'cap' })
     expect(capped.calls).toHaveLength(1)
+  })
+
+  it('maps generated category names onto existing categories', async () => {
+    services.categories.create('Space')
+    const { ai } = fakeAi({ questions: [entry('Name a star', 'spaces')] })
+    expect((await generateQuestions(ai, services, { count: 1, userId: null })).candidates[0]!.category).toBe('Space')
   })
 
   it('the MCP generate tool saves what it generates', async () => {

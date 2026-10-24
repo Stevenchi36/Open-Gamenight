@@ -8,7 +8,7 @@
  * generation) go through addQuestions, which creates missing categories.
  */
 import type { DatabaseSync } from 'node:sqlite'
-import { AiError, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
+import { AiError, categoryScope, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
 import { validateQuestion, type QuestionInput, type Validation } from './validate.ts'
@@ -135,7 +135,7 @@ export function addQuestions(lib: Library, inputs: QuestionInput[], source: Ques
         continue
       }
       const { category: name, question } = checked.value
-      let category = categories.findByName(name)
+      let category = categories.resolve(name)
       if (!category) {
         category = categories.create(name)
         result.createdCategories.push(category.name)
@@ -256,12 +256,12 @@ export async function generateQuestions(
   const count = Math.min(Math.max(1, Math.floor(request.count)), MAX_GENERATE)
   const requested = request.category?.trim() || null
   // Use the stored spelling when the category already exists.
-  const category = requested ? (categories.findByName(requested)?.name ?? requested) : null
+  const category = requested ? (categories.resolve(requested)?.name ?? requested) : null
   const avoid = category ? listQuestions(db, { category, limit: MAX_PAGE_SIZE }).questions.map((q) => q.question) : []
   const known = categories.list().map((c) => c.name)
 
   const prompt = [
-    `Write ${count} new questions${category ? ` in the category "${category}"` : ' across a few fun, varied categories'}.`,
+    `Write ${count} new questions${categoryScope(category, request.instructions)}.`,
     instructionsLine(request.instructions),
     !category && known.length ? `Existing categories (reuse these names where they fit): ${known.join(', ')}.` : '',
     avoid.length ? `Avoid these questions, already in the library:\n${avoid.join('\n')}` : '',
@@ -286,7 +286,7 @@ export async function generateQuestions(
       }
       throw error
     }
-    const result = screenCandidates(db, output.questions, category)
+    const result = screenCandidates(lib, output.questions, category)
     if (result.candidates.length > 0) return { candidates: result.candidates.slice(0, count), skipped: result.skipped }
     lastError = new AiError('invalid', 'The generated questions were all invalid or already in the library.')
   }
@@ -295,10 +295,11 @@ export async function generateQuestions(
 
 /** Validate generated entries, drop ones already in the library or repeated in the batch. */
 export function screenCandidates(
-  db: DatabaseSync,
+  lib: Library,
   entries: QuestionInput[],
   category: string | null,
 ): { candidates: QuestionInput[]; skipped: AddResult['skipped'] } {
+  const { db, categories } = lib
   const exists = db.prepare(`SELECT 1 ${FROM} WHERE c.name = ? COLLATE NOCASE AND q.question = ? COLLATE NOCASE`)
   const seen = new Set<string>()
   const candidates: QuestionInput[] = []
@@ -309,14 +310,16 @@ export function screenCandidates(
       skipped.push({ question: String(entry.question ?? ''), category: String(entry.category ?? ''), reason: checked.error })
       continue
     }
-    const { question, category: cat } = checked.value
+    const { question } = checked.value
+    // Generated names land on the existing category they mean ("Animal" -> "Animals").
+    const cat = categories.resolve(checked.value.category)?.name ?? checked.value.category
     const key = `${cat}|${question}`.toLowerCase()
     if (seen.has(key) || exists.get(cat, question)) {
       skipped.push({ question, category: cat, reason: 'Already in the library' })
       continue
     }
     seen.add(key)
-    candidates.push(checked.value)
+    candidates.push({ ...checked.value, category: cat })
   }
   return { candidates, skipped }
 }
