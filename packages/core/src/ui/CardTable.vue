@@ -113,11 +113,13 @@ const placed = computed(() => {
   border-style: dashed;
   border-color: rgb(var(--v-theme-primary));
 }
+/* Seats stay opaque so the felt never shows through: the tint is layered over the surface colour,
+   and a dimmed seat fades its contents rather than the whole box. */
 .card-table__seat--selected {
   border-style: solid;
-  background: rgba(var(--v-theme-primary), 0.18);
+  background: linear-gradient(rgba(var(--v-theme-primary), 0.18), rgba(var(--v-theme-primary), 0.18)), rgb(var(--v-theme-surface));
 }
-.card-table__seat--dimmed {
+.card-table__seat--dimmed > * {
   opacity: 0.45;
 }
 .card-table__name {
