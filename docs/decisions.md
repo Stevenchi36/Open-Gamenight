@@ -175,6 +175,16 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Lines longer than the setting count as wins, and the whole line lights up.** Dropping a disc can join two shorter lines into one longer than required; refusing that win would be a strange rule.
 - **Disconnects, leavers, colour swapping and scoring work as in Tic-Tac-Toe.** Same two-player structure, same reasons.
 
+## Ballpark rules
+- **Ballpark is the seventh game (id `ballpark`): Wits & Wagers mechanics under a new name.** Wits & Wagers is trademarked; mechanics are free to use. "Ballpark figure" describes the guessing half in one word.
+- **Win rule, scoring and bet visibility are all settings (defaults: without going over, odds, hidden).** The user wanted each variant available. The defaults are the original game's rules, except hidden bets, which stop players copying the table's best guesser.
+- **Odds by distance from the middle slot (2 up to 5; two central slots pay 3 with an even count; All too high pays 6); writing the winning guess scores 3.** That's the original betting mat, computed from the slot count rather than fixed spaces.
+- **Bets are 2 tokens each; chips scoring lets a token carry a stake from your score, and a token without a stake still wins its odds.** Tokens alone keep every player in the game even with no chips, as the original's betting markers do; scores never go negative.
+- **Questions are stored with one metric unit (or a unit-free one) and converted for an `imperial` room setting, default metric.** The user asked for it; one stored unit keeps the library single-sourced. The question text never names a unit, so it reads the same in both systems.
+- **A converted answer is rounded before play (whole numbers from 100 up, else 3 significant figures; whole degrees), and scoring uses the rounded value.** "Without going over" must be judged on the number players see, not a hidden 1082.68.
+- **Answers are secret during play, so MCP add/generate tools reply with counts only.** As with Imposter's words: the admin adding questions may be about to play.
+- **A leaving player's guess stays on the board once betting has started.** Others may already have bet on it.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.

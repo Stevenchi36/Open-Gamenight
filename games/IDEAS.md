@@ -15,9 +15,6 @@ Candidates for future games, not yet filtered. Each entry has a one-line pitch, 
 - **Wavelength / Spectrum**: the clue-giver secretly sees a target on a scale ("cold ↔ hot") and gives a clue; the others agree on a slider position and score by how close they get.
   - Needs: a library of scale pairs; a dial/slider component (could go in `@wsfg/core/ui`).
   - Secrets: the target position.
-- **Wits & Wagers** (trivia with numeric answers): everyone guesses a number ("How tall is the Eiffel Tower?"), then bets on which guess is closest. Someone who knows nothing can still win by betting well.
-  - Needs: an AI-generated question library.
-  - Secrets: guesses until everyone has submitted.
 - **Wordle Battle** (speed race, 2–12 players): everyone races to solve the same hidden word, Wordle-style. Your score is your solve time plus a time penalty for each guess, so fewer guesses still pays off. Each player sees every opponent's board as colours only (correct / misplaced / not in word) plus their attempt count.
   - Not limited to 5 letters: the word's length varies per round, maybe with min/max length settings for the host. The board takes its width from the word.
   - The word's category is shown as a hint, using the core `categories` table with this game's own categories.
