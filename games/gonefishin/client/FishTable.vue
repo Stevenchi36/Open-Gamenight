@@ -60,6 +60,8 @@ const byId = computed(() => Object.fromEntries(props.view.seats.map((s) => [s.id
 .book-tag {
   min-width: 1.6em;
   padding: 0 3px;
+  /* Its own centring: list rows are left-aligned, and a one-character rank would hug the left edge. */
+  text-align: center;
   border-radius: 4px;
   background: rgba(var(--v-theme-success), 0.2);
   border: 1px solid rgba(var(--v-theme-success), 0.6);
