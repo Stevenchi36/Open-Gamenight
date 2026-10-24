@@ -825,6 +825,77 @@ CREATE TABLE ballpark_questions (
 - **Admin** (`/api/admin/ballpark/*`, page `/admin/ballpark/questions`): browse/search, add, edit/move, delete, Clear used, and AI generation (review, then save, with Imposter's "no spoilers" option), like Flock's questions.
 - **MCP tools:** `ballpark_add_questions`, `ballpark_list_categories`, `ballpark_search_questions`, `ballpark_update_question`, `ballpark_remove_questions`, `ballpark_generate_questions` (only with `ANTHROPIC_API_KEY`), plus the core `ballpark_*_category` tools. Add and generate reply with counts only, as Imposter's do: answers are spoilers.
 
+## 7g. Gone Fishin' (`games/gonefishin`)
+
+The eighth game and the first card game: the classic ask-for-a-rank game under a new name. It adds deck helpers to `kit` and a card table (seats around an oval) to `ui`, both for later card games.
+
+### Rules
+1. **2-6 players**, one standard 52-card deck (13 ranks, 4 suits; suits are only for show). Deal **7 cards each with 2-3 players, 5 with 4-6**; the rest is the face-down **pond**.
+2. **Books.** Whenever a player holds all four cards of a rank, the book is laid down face up at once, automatically (including books dealt in the opening hand).
+3. **A turn.** Players take turns in seat order, clockwise. On your turn you **ask** one other player who holds cards for a rank you hold at least one of.
+   - If they have any of that rank, they hand **all** of them to you and you **ask again**.
+   - If not, they say "Gone fishin'!" and you draw the top card of the pond. With **Lucky catch** (default on), drawing the rank you asked for is shown to everyone and you ask again. Otherwise the turn passes to the next seat.
+4. **Empty hands.** If your hand is empty when your turn starts, or empties during it, you draw one card from the pond and carry on. With an empty hand and an empty pond, you're done for the game and your turns are skipped.
+5. **Nobody to ask.** If you hold cards but no other player does, you draw from the pond instead of asking (counted as fishing, so Lucky catch can't apply) and the turn passes.
+6. **End.** The game ends when all 13 books are down. Whoever has the most books wins and scores **1 point**; tied players each score 1. Scores carry across games.
+7. **Next game.** The host starts it. Seats stay where they are and the first turn moves on one seat, so everyone keeps their place at the table.
+
+### Settings (host, lobby only)
+| Setting | Default | Notes |
+|---|---|---|
+| Lucky catch | on | drawing the asked-for rank from the pond lets you ask again |
+
+### State machine
+```
+PLAYING -> RESULTS -> new_game -> PLAYING
+```
+- `PLAYING`: `turn` is the player to ask. Draws for empty hands (rule 4) and the forced draw (rule 5) happen inside the reducer when the turn reaches that player, so `turn` always names someone who can `ask`. A disconnected player's turn passes to the next seat after the 15s grace (`DISCONNECT_GRACE_MS`); their hand stays, and others can still ask them.
+- `RESULTS`: the books per seat, the winners, the scoreboard. Host: **New game** (`new_game`, needs 2 players) or **Back to lobby**.
+- A player leaving mid-game: their hand is shuffled into the pond (`ctx.rng`), their books stay down (they can't win), and a notice says so. If fewer than 2 players remain, the game ends as `abandoned` with no points. Late joiners wait for the next game.
+
+### Actions
+| action | payload | Who |
+|---|---|---|
+| `ask` | `{ targetId, rank }` | the player to ask; `rank` in their hand, `targetId` another seated player holding cards |
+| `new_game` | `{}` | host, `RESULTS`, 2+ players present |
+
+### View (per player)
+```ts
+type Rank = 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K'
+type Suit = 'S' | 'H' | 'D' | 'C'
+type Card = { rank: Rank; suit: Suit }
+type Move = {                               // public: what the table saw and heard
+  askerId, targetId: PlayerId | null,       // null: a forced draw (rule 5)
+  rank: Rank | null,
+  given: number,                            // cards handed over (0 = gone fishin')
+  lucky: boolean,                           // drew the asked rank and showed it
+  books: Rank[],                            // books laid down as a result
+  next: PlayerId | null,                    // whose turn it is afterwards
+}
+{
+  phase, game, luckyCatch,
+  you: { status: 'playing' | 'waiting', hand: Card[] },  // your cards only, sorted by rank
+  seats: [{ id, cards: number, books: Rank[], left: boolean }],  // seat order, clockwise
+  pond: number,                             // cards left
+  turn: PlayerId | null,                    // PLAYING only
+  last: Move | null,
+  log: Move[],                              // this game's moves, oldest first
+  outcome: 'win' | 'abandoned' | null,      // RESULTS only
+  winnerIds: PlayerId[],
+  scores,
+}
+```
+`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other players' hands, or between another hand and the pond, and the viewer's view must not change), and the pond's order is visible to nobody. A card drawn while fishing isn't in `Move` unless it was a lucky catch. Everything in `Move` is public because at a real table it's said out loud. The leak test covers both Lucky catch settings, a leaver, and RESULTS.
+
+### Your hand
+Shown openly, not behind `HoldToReveal`: you need it on every turn, and a hand of cards is held, not left on the table. Cards are grouped by rank; tapping a rank selects it for the next ask.
+
+### The table (`@wsfg/core/ui`)
+- **`PlayingCard`**: one card, face up (rank and suit pip) or face down, in a few sizes. Red suits use a theme colour that holds up in dark mode.
+- **`CardTable`**: an oval with the seats in order around it, rotated so the viewer sits at the bottom; slots for each seat (name, connection icon, turn highlight, a face-down fan with a count, books), the middle (the pond and the latest move) and the viewer's area. Seats emit a tap, so a game can make them targets. On narrow portrait screens the seats shrink to compact chips around the oval; with 2 players the other seat sits at the top.
+- **Asking**: tap a rank in your hand, then a seat that holds cards (or the other way round), then **Ask**. Only valid targets are tappable.
+- **Kit**: `standardDeck()` (52 `Card`s, a fixed order to shuffle with `ctx.rng.shuffle`) and `deal(deck, players, count)` returning hands and the rest, with core tests. The `Card`, `Rank` and `Suit` types live in kit too.
+
 ## 8. Vue client (`apps/client`)
 
 ### Setup

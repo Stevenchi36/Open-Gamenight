@@ -193,6 +193,21 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Core `ScoreBoard` shows negative round points as a red "−N".** Chips scoring can lose points; showing "+-3" in green would be wrong for every future game that can lose points too.
 - **Guesses are typed into a decimal keypad field with a ± button.** Phone number pads often have no minus key, and some answers (record low temperatures) are negative. Commas and spaces typed as digit grouping are ignored.
 
+## Gone Fishin' rules
+- **Gone Fishin' is the eighth game (id `gonefishin`): the classic ask-for-a-rank card game under its own name.** The user asked for it and chose the name to avoid any trademark question over the traditional one; a distinct name also matches Flock, Drop Line and Ballpark.
+- **Deck helpers (`standardDeck`, `deal`, `Card`) go in `kit`, and `PlayingCard` and `CardTable` in `ui`.** Every card game in `games/IDEAS.md` needs them, and Liar's Dice could move onto the table too.
+- **Seats sit around an oval table, rotated so you're at the bottom.** The user asked for a poker-style table; turn order then matches where people appear, and you see everyone's card count at a glance.
+- **2-6 players, 7 cards each with 2-3 players and 5 with 4-6.** The usual rules; with more than 6, one deck leaves too small a pond.
+- **Books are laid down automatically.** Spotting four of a kind takes no skill, and a forgotten book would only stall the game.
+- **Lucky catch (draw the asked rank, ask again) is a setting, on by default.** It's the most common house rule and some tables play without it.
+- **An empty hand draws one card from the pond and carries on; with the pond empty too, you're done.** That keeps players in the game as long as cards remain, and the turn never names someone who can't ask.
+- **Most books wins 1 point; ties each score 1. Scores carry across games.** Same match-point scoring as Liar's Dice; a book count would favour bigger tables.
+- **Seats stay put between games and the first turn moves on one seat.** Players keep their place at the table, and a different player starts each game.
+- **Every ask and its result are public, in a log of the game's moves.** At a real table they're said out loud, and remembering who asked for what is the skill of the game.
+- **A disconnected player's turn passes after the 15s grace; nobody asks for them.** As in Liar's Dice: an automatic ask would be an arbitrary choice.
+- **A leaver's hand is shuffled into the pond and their books stay down; fewer than 2 players left ends the game with no points.** All 13 books stay reachable without inventing a new end rule.
+- **Your hand isn't behind `HoldToReveal`.** You read it every turn, and cards are held in the hand rather than left on the table.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.
