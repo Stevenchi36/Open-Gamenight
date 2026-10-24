@@ -3,14 +3,18 @@ import type { PlayerInfo } from '../src/contract.ts'
 import {
   addPoints,
   carryScores,
+  deal,
   dropBallots,
   isConnected,
   isPresent,
   nextTurnOrder,
   pickConnected,
   secretBallots,
+  sortCards,
+  standardDeck,
   tallyVotes,
   withoutPlayer,
+  type Card,
 } from '../src/kit.ts'
 import { createRng } from '../src/rng.ts'
 
@@ -130,5 +134,35 @@ describe('secretBallots', () => {
     expect(secret.visibleTo(state, 'a')).toBe(false)
     const variants = secret.variants!(state, 'a')
     expect(variants.map((v) => v.ballots)).toEqual([{ a: 'b', b: 'a' }])
+  })
+})
+
+describe('cards', () => {
+  it('standardDeck has 52 distinct cards, 4 of each rank', () => {
+    const deck = standardDeck()
+    expect(deck).toHaveLength(52)
+    expect(new Set(deck.map((c) => c.rank + c.suit)).size).toBe(52)
+    expect(deck.filter((c) => c.rank === 'Q')).toHaveLength(4)
+  })
+
+  it('sortCards orders by rank (ace low), then suit, without changing the input', () => {
+    const hand: Card[] = [
+      { rank: 'K', suit: 'S' },
+      { rank: '10', suit: 'H' },
+      { rank: 'A', suit: 'C' },
+      { rank: '10', suit: 'S' },
+    ]
+    expect(sortCards(hand).map((c) => c.rank + c.suit)).toEqual(['AC', '10S', '10H', 'KS'])
+    expect(hand[0]).toEqual({ rank: 'K', suit: 'S' })
+  })
+
+  it('deal hands out one card at a time from the top and returns the rest', () => {
+    const { hands, rest } = deal([1, 2, 3, 4, 5, 6, 7], ['a', 'b'], 3)
+    expect(hands).toEqual({ a: [1, 3, 5], b: [2, 4, 6] })
+    expect(rest).toEqual([7])
+  })
+
+  it('deal refuses to deal more cards than the deck holds', () => {
+    expect(() => deal([1, 2, 3], ['a', 'b'], 2)).toThrow(RangeError)
   })
 })

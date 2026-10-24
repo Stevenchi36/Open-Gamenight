@@ -1,5 +1,5 @@
 /**
- * Pure building blocks for game reducers: player presence, turn order, scores, votes.
+ * Pure building blocks for game reducers: player presence, turn order, scores, votes, cards.
  * Everything takes what it needs from ctx explicitly and returns new values,
  * so it is safe inside init / reduce / view / lifecycle hooks.
  */
@@ -136,4 +136,38 @@ export function secretBallots<S>(spec: {
         })
     },
   }
+}
+
+// ---------------------------------------------------------------- cards
+
+/** Low to high, ace low. */
+export const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] as const
+export const SUITS = ['S', 'H', 'D', 'C'] as const
+export const rankSchema = z.enum(RANKS)
+export type Rank = (typeof RANKS)[number]
+export type Suit = (typeof SUITS)[number]
+
+export interface Card {
+  rank: Rank
+  suit: Suit
+}
+
+/** The 52 cards in a fixed order; shuffle with `ctx.rng.shuffle`. */
+export function standardDeck(): Card[] {
+  return SUITS.flatMap((suit) => RANKS.map((rank) => ({ rank, suit })))
+}
+
+/** A copy sorted by rank, then suit, as a hand is shown. */
+export function sortCards(cards: readonly Card[]): Card[] {
+  const order = (c: Card) => RANKS.indexOf(c.rank) * SUITS.length + SUITS.indexOf(c.suit)
+  return [...cards].sort((a, b) => order(a) - order(b))
+}
+
+/** Deals `count` cards to each player one at a time from the top (index 0), like a real deal. */
+export function deal<C>(deck: readonly C[], players: readonly PlayerId[], count: number): { hands: Record<PlayerId, C[]>; rest: C[] } {
+  if (players.length * count > deck.length) throw new RangeError(`deal: ${players.length} × ${count} cards from a deck of ${deck.length}`)
+  const hands: Record<PlayerId, C[]> = {}
+  for (const id of players) hands[id] = []
+  for (let i = 0; i < players.length * count; i++) hands[players[i % players.length]!]!.push(deck[i]!)
+  return { hands, rest: deck.slice(players.length * count) }
 }

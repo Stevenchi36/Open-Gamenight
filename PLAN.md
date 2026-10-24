@@ -868,9 +868,9 @@ type Move = {                               // public: what the table saw and he
   askerId, targetId: PlayerId | null,       // null: a forced draw (rule 5)
   rank: Rank | null,
   given: number,                            // cards handed over (0 = gone fishin')
+  drew: boolean,                            // a card came from the pond (false: it was empty)
   lucky: boolean,                           // drew the asked rank and showed it
   books: Rank[],                            // books laid down as a result
-  next: PlayerId | null,                    // whose turn it is afterwards
 }
 {
   phase, game, luckyCatch,
@@ -878,8 +878,7 @@ type Move = {                               // public: what the table saw and he
   seats: [{ id, cards: number, books: Rank[], left: boolean }],  // seat order, clockwise
   pond: number,                             // cards left
   turn: PlayerId | null,                    // PLAYING only
-  last: Move | null,
-  log: Move[],                              // this game's moves, oldest first
+  log: Move[],                              // this game's moves, oldest first; the last is the latest
   outcome: 'win' | 'abandoned' | null,      // RESULTS only
   winnerIds: PlayerId[],
   scores,
@@ -894,7 +893,7 @@ Shown openly, not behind `HoldToReveal`: you need it on every turn, and a hand o
 - **`PlayingCard`**: one card, face up (rank and suit pip) or face down, in a few sizes. Red suits use a theme colour that holds up in dark mode.
 - **`CardTable`**: an oval with the seats in order around it, rotated so the viewer sits at the bottom; slots for each seat (name, connection icon, turn highlight, a face-down fan with a count, books), the middle (the pond and the latest move) and the viewer's area. Seats emit a tap, so a game can make them targets. On narrow portrait screens the seats shrink to compact chips around the oval; with 2 players the other seat sits at the top.
 - **Asking**: tap a rank in your hand, then a seat that holds cards (or the other way round), then **Ask**. Only valid targets are tappable.
-- **Kit**: `standardDeck()` (52 `Card`s, a fixed order to shuffle with `ctx.rng.shuffle`) and `deal(deck, players, count)` returning hands and the rest, with core tests. The `Card`, `Rank` and `Suit` types live in kit too.
+- **Kit**: `standardDeck()` (52 `Card`s, a fixed order to shuffle with `ctx.rng.shuffle`), `deal(deck, players, count)` returning hands and the rest, and `sortCards` (by rank, ace low, then suit), with core tests. `Card`, `Rank`, `Suit`, `RANKS`, `SUITS` and `rankSchema` live in kit too.
 
 ## 8. Vue client (`apps/client`)
 
