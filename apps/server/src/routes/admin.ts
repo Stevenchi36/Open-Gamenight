@@ -94,6 +94,15 @@ export function createAdminRouter({ config, auth, games, ai, rooms, servicesFor,
     res.end()
   })
 
+  /** New chat: drop the old conversation now instead of after it idles out. Only your own. */
+  router.delete('/chat/:id', (req, res) => {
+    if (!chat?.end(sessionUser(res).id, req.params.id)) {
+      res.status(404).json({ error: 'not_found', message: 'No such chat' })
+      return
+    }
+    res.status(204).end()
+  })
+
   router.use('/categories', createCategoriesRouter(games, servicesFor))
 
   for (const game of games) {

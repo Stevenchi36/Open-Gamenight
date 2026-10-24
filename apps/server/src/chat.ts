@@ -32,6 +32,8 @@ export interface ChatRefusal {
 export interface AdminChat {
   /** Checks limits and ownership; returns the turn to run, or why it can't. */
   start(userId: string, conversationId: string | null, text: string): ChatRefusal | { run(emit: (event: ChatEvent) => void): Promise<void> }
+  /** Forget one of this admin's conversations (New chat). False if there's no such idle one. */
+  end(userId: string, conversationId: string): boolean
 }
 
 export const CHAT_MESSAGE_MAX_LENGTH = 4000
@@ -177,6 +179,12 @@ export function createAdminChat(deps: {
   }
 
   return {
+    end(userId, conversationId) {
+      const conversation = conversations.get(conversationId)
+      // A running turn still appends to it; the page only offers New chat when idle.
+      if (!conversation || conversation.userId !== userId || conversation.busy) return false
+      return conversations.delete(conversationId)
+    },
     start(userId, conversationId, text) {
       const now = Date.now()
       sweepIdle(now)

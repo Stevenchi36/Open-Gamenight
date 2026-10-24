@@ -109,6 +109,8 @@ watch(
 onMounted(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight }))
 
 function newChat(): void {
+  // Best effort: the server also drops chats after 2 idle hours.
+  if (conversationId.value) void fetch(`/api/admin/chat/${encodeURIComponent(conversationId.value)}`, { method: 'DELETE' }).catch(() => {})
   conversationId.value = null
   items.value = []
   remove(STORAGE_KEY)

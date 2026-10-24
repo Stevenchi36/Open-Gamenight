@@ -273,7 +273,7 @@ ai.generate({ gameId, userId, system, prompt, tool }) -> Promise<ToolInput>
 ### Admin Assistant (`apps/server/src/chat.ts`, `/admin/chat`)
 - `POST /api/admin/chat { conversationId?, message }` behind the Origin check and `requireAdmin`; answers with NDJSON events (`text`, `tool`, `error`, then `done` with the conversation id).
 - Claude (`ANTHROPIC_CHAT_MODEL`) gets every game's MCP tools under the same names (core `gameMcpTools`), without `generate_*`, and a system prompt listing the games. It asks before removing anything.
-- Conversations are kept server-side in memory (5 per admin, 2 idle hours); the history is append-only so thinking blocks stay valid. At most 12 model calls per admin message.
+- Conversations are kept server-side in memory (5 per admin, 2 idle hours; New chat deletes the old one with `DELETE /api/admin/chat/:id`, owner only); the history is append-only so thinking blocks stay valid. At most 12 model calls per admin message.
 - The API key lives only in the server environment; never sent to the browser.
 
 ### MCP server (`apps/mcp`, stdio)

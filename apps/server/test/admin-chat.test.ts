@@ -112,6 +112,22 @@ describe('POST /api/admin/chat', () => {
     expect((await send(t, { conversationId: 'gone', message: 'Hi' }, { cookie: admin })).status).toBe(404)
   })
 
+  it('deletes a chat on New chat, only for its owner', async () => {
+    fake.reply({ content: [text('Hello!')] })
+    const start = await events(await send(t, { message: 'Hi' }, { cookie: admin }))
+    const conversationId = (start.at(-1) as { conversationId: string }).conversationId
+    const remove = (cookie?: string, headers?: Record<string, string>) =>
+      t.fetch(`/api/admin/chat/${conversationId}`, { method: 'DELETE', cookie, headers })
+
+    expect((await remove()).status).toBe(401)
+    expect((await remove(user)).status).toBe(403)
+    expect((await remove(admin, { origin: 'https://evil.example' })).status).toBe(403)
+    expect((await remove(otherAdmin)).status).toBe(404)
+    expect((await remove(admin)).status).toBe(204)
+    expect((await remove(admin)).status).toBe(404)
+    expect((await send(t, { conversationId, message: 'Still there?' }, { cookie: admin })).status).toBe(404)
+  })
+
   it('shows AI errors in the stream and limits messages per admin per hour', async () => {
     fake.reply(new Error('network down'))
     const failed = await events(await send(t, { message: 'Hi' }, { cookie: otherAdmin }))
