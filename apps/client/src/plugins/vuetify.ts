@@ -2,7 +2,7 @@
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
-import { load } from '../lib/storage.ts'
+import { load } from '@wsfg/core/ui/storage'
 
 export const THEME_KEY = 'wsfg.theme'
 

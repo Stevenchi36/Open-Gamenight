@@ -53,7 +53,7 @@ import { useTheme } from 'vuetify'
 import { authClient } from './lib/auth-client.ts'
 import { config } from './lib/config.ts'
 import { refreshSession, roomState, toasts } from './lib/room.ts'
-import { save } from './lib/storage.ts'
+import { save } from '@wsfg/core/ui/storage'
 import { THEME_KEY } from './plugins/vuetify.ts'
 
 const route = useRoute()

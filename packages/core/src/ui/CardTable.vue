@@ -1,6 +1,13 @@
 <template>
   <div class="card-table-wrap">
-    <div class="card-table">
+    <div class="d-flex justify-end mb-1">
+      <v-btn-toggle :model-value="layout" density="compact" variant="outlined" divided mandatory aria-label="Layout" @update:model-value="setLayout">
+        <v-btn value="table" size="small" prepend-icon="mdi-circle-outline">Table</v-btn>
+        <v-btn value="list" size="small" prepend-icon="mdi-format-list-bulleted">List</v-btn>
+      </v-btn-toggle>
+    </div>
+
+    <div v-if="layout === 'table'" class="card-table">
       <div class="card-table__felt">
         <slot name="center" />
       </div>
@@ -10,12 +17,7 @@
         :key="seat.id"
         :type="isTappable(seat.id) ? 'button' : undefined"
         class="card-table__seat"
-        :class="{
-          'card-table__seat--turn': seat.id === turn,
-          'card-table__seat--tappable': isTappable(seat.id),
-          'card-table__seat--selected': seat.id === selected,
-          'card-table__seat--dimmed': dimmed.includes(seat.id),
-        }"
+        :class="seatClasses(seat.id)"
         :style="{ left: `${seat.x}%`, top: `${seat.y}%` }"
         :aria-pressed="isTappable(seat.id) ? seat.id === selected : undefined"
         @click="isTappable(seat.id) && emit('select', seat.id)"
@@ -27,16 +29,38 @@
         <slot name="seat" :id="seat.id" />
       </component>
     </div>
+
+    <div v-else class="card-list">
+      <div class="card-list__center"><slot name="center" /></div>
+      <component
+        :is="isTappable(id) ? 'button' : 'div'"
+        v-for="id in listed"
+        :key="id"
+        :type="isTappable(id) ? 'button' : undefined"
+        class="card-table__seat card-list__row"
+        :class="seatClasses(id)"
+        :aria-pressed="isTappable(id) ? id === selected : undefined"
+        @click="isTappable(id) && emit('select', id)"
+      >
+        <div class="card-table__name card-list__name">
+          <v-icon v-if="!isConnected(room, id) && !dimmed.includes(id)" size="x-small" class="mr-1">mdi-wifi-off</v-icon>
+          <span class="text-truncate">{{ id === me ? 'You' : nameOf(room, id) }}</span>
+        </div>
+        <div class="card-list__content"><slot name="seat" :id="id" /></div>
+      </component>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Players round an oval table in seat order, clockwise, turned so the viewer sits at the bottom.
-// The game fills each seat (`seat` slot) and the middle (`center`); seats in `tappable` can be picked.
-import { computed } from 'vue'
+// Players round an oval table in seat order, clockwise, turned so the viewer sits at the bottom;
+// or, by each player's choice, a plain list in seat order. The game fills each seat (`seat` slot)
+// and the middle (`center`); seats in `tappable` can be picked.
+import { computed, ref } from 'vue'
 import type { PlayerId } from '../contract.ts'
 import type { RoomView } from '../protocol.ts'
 import { isConnected, nameOf } from './helpers.ts'
+import { load, save } from './storage.ts'
 
 const props = withDefaults(
   defineProps<{
@@ -56,7 +80,28 @@ const props = withDefaults(
 )
 const emit = defineEmits<{ select: [id: PlayerId] }>()
 
+type Layout = 'table' | 'list'
+const LAYOUT_KEY = 'cardTableLayout'
+// Until a player picks, phones get the list: six seats round an oval are tight there.
+const layout = ref<Layout>(load<Layout>(LAYOUT_KEY) ?? (window.matchMedia('(max-width: 520px)').matches ? 'list' : 'table'))
+function setLayout(value: Layout) {
+  layout.value = value
+  save(LAYOUT_KEY, value)
+}
+
 const isTappable = (id: PlayerId) => props.tappable.includes(id)
+const seatClasses = (id: PlayerId) => ({
+  'card-table__seat--turn': id === props.turn,
+  'card-table__seat--tappable': isTappable(id),
+  'card-table__seat--selected': id === props.selected,
+  'card-table__seat--dimmed': props.dimmed.includes(id),
+})
+
+// The list starts with the viewer, then goes on in turn order, as the table does clockwise from the bottom.
+const listed = computed(() => {
+  const from = Math.max(0, props.seats.indexOf(props.me))
+  return [...props.seats.slice(from), ...props.seats.slice(0, from)]
+})
 
 // Positions in % of the table box: an ellipse a little inside the edges so seats don't overflow.
 // Screen y grows downwards, so increasing angles from the bottom run clockwise.
@@ -130,6 +175,44 @@ const placed = computed(() => {
   font-weight: 500;
   min-width: 0;
 }
+
+/* List layout: one row per seat, name on the left and the game's seat content on the right. */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.card-list__center {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(var(--v-theme-success), 0.16);
+}
+.card-table__seat.card-list__row {
+  position: static;
+  transform: none;
+  width: 100%;
+  max-width: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  text-align: left;
+}
+.card-list__name {
+  flex: 0 1 40%;
+  justify-content: flex-start;
+}
+.card-list__content {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  column-gap: 8px;
+}
+
 /* Phones: a squarer table and smaller seats, so six seats still fit round it. */
 @container (max-width: 520px) {
   .card-table {
@@ -138,12 +221,12 @@ const placed = computed(() => {
   .card-table__felt {
     inset: 18% 15%;
   }
-  .card-table__seat {
+  .card-table__seat:not(.card-list__row) {
     /* Side seats sit at 13%, so 26% wide just reaches the edge. */
     width: 26%;
     padding: 2px 4px;
   }
-  .card-table__name {
+  .card-table__name:not(.card-list__name) {
     font-size: 0.75rem;
   }
 }

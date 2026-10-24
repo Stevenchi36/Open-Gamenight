@@ -4,6 +4,7 @@
  * The dev multi-player page (dev-players.html) names each iframe `wsfg-p<n>`. Same-origin frames share
  * localStorage, so keys get that name as a prefix to keep each frame's room token and name its own.
  * `window.name` survives in-frame navigation, so no URL plumbing is needed.
+ * It lives in core ui so play-view components (CardTable's layout choice) can keep per-player preferences too.
  */
 const prefix = /^wsfg-p\d+$/.test(window.name) ? `${window.name}:` : ''
 

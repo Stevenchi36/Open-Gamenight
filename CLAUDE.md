@@ -6,7 +6,7 @@ Multiplayer party-game platform (pnpm workspace, TypeScript, Node 26). Word Impo
 - `games/<id>/RULES.md`: each game's player-facing rules, shown in the room's How to play dialog. Update it with any rule or setting change.
 - `docs/decisions.md`: every design decision with its reason. Check it before changing behaviour. When you make or change a decision, add or edit its one-line entry there in the same change.
 - `docs/mcp.md`: read before touching MCP tools, or when working with the word library through the `ws-family-games` MCP server.
-- `docs/dev-testing.md`: manual testing in dev, including the dev-players page (several players in one window) and the `.env` origin it needs. Keep it current when changing `dev-players.html`, `lib/storage.ts` or room join/reconnect behaviour.
+- `docs/dev-testing.md`: manual testing in dev, including the dev-players page (several players in one window) and the `.env` origin it needs. Keep it current when changing `dev-players.html`, `packages/core/src/ui/storage.ts` or room join/reconnect behaviour.
 
 ## Invariants
 

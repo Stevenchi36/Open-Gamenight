@@ -15,7 +15,8 @@
     "./testing": "./src/testing/index.ts",
     "./categories": "./src/categories.ts",
     "./library": "./src/library.ts",
-    "./ui": "./src/ui/index.ts"
+    "./ui": "./src/ui/index.ts",
+    "./ui/storage": "./src/ui/storage.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

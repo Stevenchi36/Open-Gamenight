@@ -6,7 +6,7 @@
   Frame 1 (host) loads from this page's origin and so shares your sign-in. Guest frames load from
   another host for the same dev server (default [::1]), so they get no session cookie: signed-in
   frames would all merge into one seat. Each frame's name keeps its localStorage keys apart (see
-  src/lib/storage.ts). The guest origin must be in ALLOWED_ORIGINS.
+  packages/core/src/ui/storage.ts). The guest origin must be in ALLOWED_ORIGINS.
 -->
 <html lang="en">
   <head>
@@ -118,7 +118,7 @@
           const header = document.createElement('header')
           header.innerHTML = `<b>P${i}</b><span>${host ? 'host · your session' : 'guest'} · ${origin}</span>`
           const iframe = document.createElement('iframe')
-          // The frame's name becomes its window.name: the storage prefix in src/lib/storage.ts.
+          // The frame's name becomes its window.name: the storage prefix in packages/core/src/ui/storage.ts.
           iframe.name = `wsfg-p${i}`
           iframe.src = origin + path()
           const reload = document.createElement('button')

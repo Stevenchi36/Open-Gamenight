@@ -9,7 +9,7 @@
 import type { ClientMessage, RoomView, ServerMessage, SessionUser } from '@wsfg/core/protocol'
 import { parseServerMessage } from '@wsfg/core/protocol'
 import { reactive } from 'vue'
-import { load, remove, save } from './storage.ts'
+import { load, remove, save } from '@wsfg/core/ui/storage'
 
 const SAVED_KEY = 'wsfg.room'
 const NAME_KEY = 'wsfg.name'

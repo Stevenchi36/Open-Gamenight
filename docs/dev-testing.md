@@ -46,7 +46,7 @@ Reloading the page reconnects every frame to its seat. URL options: `n` (players
 
 - **P1 loads from `localhost`** and gets your sign-in cookie.
 - **Guests load from `[::1]`**, the IPv6 address for this computer. It reaches the same dev server, but the browser treats it as a different site, so guests get no cookie and join as anonymous players. If every frame were signed in as you, the server would give them all your one seat.
-- **Each frame keeps its own storage.** Every iframe is named `wsfg-p<n>`, and `apps/client/src/lib/storage.ts` prefixes its localStorage keys with that name, so frames on the same origin don't overwrite each other's room token.
+- **Each frame keeps its own storage.** Every iframe is named `wsfg-p<n>`, and `packages/core/src/ui/storage.ts` prefixes its localStorage keys with that name, so frames on the same origin don't overwrite each other's room token.
 - **Dev only.** The page isn't a Vite build input and the app-bar button is imported only under `import.meta.env.DEV`, so neither ships.
 
 ### Things to know

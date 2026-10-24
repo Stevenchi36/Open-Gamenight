@@ -68,7 +68,7 @@
 <script setup lang="ts">
 // The server runs the conversation (POST /api/admin/chat, admin-only); this page only shows it.
 import { nextTick, onMounted, ref, watch } from 'vue'
-import { load, remove, save } from '../../lib/storage.ts'
+import { load, remove, save } from '@wsfg/core/ui/storage'
 
 type Item =
   | { kind: 'user' | 'assistant' | 'error'; text: string }
