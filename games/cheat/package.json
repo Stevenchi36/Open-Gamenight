@@ -1,0 +1,19 @@
+{
+  "name": "@wsfg/game-cheat",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./server/index.ts",
+    "./shared": "./shared/index.ts",
+    "./client": "./client/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@wsfg/core": "workspace:*",
+    "vue": "^3.5.44",
+    "zod": "^4.6.7"
+  }
+}
