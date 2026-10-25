@@ -153,6 +153,7 @@ interface GameClientModule {
   rules: () => Promise<string>             // games/<id>/RULES.md via `?raw`; the room's "How to play" dialog renders it
   adminPages?: { path: string; title: string; component: () => Promise<Component> }[]  // mounted under /admin/<id>/
   needsAction?(view, me, room): boolean   // pure; true shows the shell's pulsing "your move" screen-edge glow
+  SpectatorView?: () => Promise<Component> // props: { view, room, settings, serverNow }; the watch page's display (section 3)
 }
 ```
 The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Play views build on `@wsfg/core/ui`: helpers (`nameOf`, `isConnected`, `isHost`, `useCountdown`) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `ProgressCount`, `TurnOrder`, `CountdownTimer`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, `OrderList`). The "your move" glow is the shell's, driven by the module's `needsAction`. Each game's player-facing rules live in `games/<id>/RULES.md`: plain Markdown that the shell's **How to play** button (room header, in the lobby and during play) renders, and that people and Claude can read directly. A game's section of this plan is its spec; `RULES.md` is the short version for players. Auto-generating settings forms from zod is deferred until there are 3+ games.
@@ -171,6 +172,16 @@ The client shell provides small shared Vuetify field components (`SettingSlider`
 - **Room state is in memory.** Restarting the server ends all rooms. On `SIGTERM` the server broadcasts `notice { kind: 'server_restarting' }`, closes sockets cleanly, then exits; clients show "The server is restarting, rejoin in a moment" instead of spinning on "reconnecting...". Deploy when nobody is playing. (State is plain data, so persisting rooms remains possible later.)
 - Rooms expire after ~1h idle; max players is the game's `maxPlayers` (cap 12).
 
+### Spectators (watch page)
+A spectator is a screen that shows a room's game without taking part: a TV everyone in the room can see, or someone watching from elsewhere. Both are the same role; only the layout differs, and that's the client's business.
+- **Not a player.** Spectators live in `room.spectators`, never in `room.players`: they don't count toward `minPlayers`/`maxPlayers`, are never dealt in, can't become host, don't trigger lifecycle hooks, and don't keep a room alive (the empty-room rule counts connected players only). At most `MAX_SPECTATORS` (8) per room.
+- **Joining:** `spectate_room { code }`, guests allowed, no name or token. It counts against the join rate limit (code guessing). After a drop the client just sends it again. If the connection was a player, it's detached from its seat as if its socket dropped: the seat and its saved token stay, so going back to the room page reconnects.
+- **What they see:** the game's `view(state, SPECTATOR_ID)`, built once per broadcast and sent to every spectator. `SPECTATOR_ID` (`'spectator'`, in `protocol.ts`) never matches a player id (`p_...`), so every game already treats it as an outsider, like a late joiner. `RoomView.you.id` is `SPECTATOR_ID`.
+- **What they can send:** only `leave`. Anything else gets `forbidden`. Game notices go to players only.
+- **Secrecy:** the leak test checks `SPECTATOR_ID` as a viewer in every state, and adds a rule: a secret visible to the spectator must be visible to every player. A spectator only ever sees what's public at that moment.
+- **Players see a watcher count** (`RoomView.spectators`) in the room header. The host can't remove spectators; they hold nothing secret.
+- **Client:** `/watch/:code` (and `/watch` to enter a code; linked from the home page and from the room header's **TV** button, which shares the watch link). The page is wide, display-only, with the room code and join link always shown, a full-screen button, and a screen wake lock while open. In the lobby it shows the game and the players; during play it renders the game's `SpectatorView`, or, for a game without one, the player list and a note that the game has no TV view yet. `CardTable` takes a `layout` prop so a spectator view can fix it to the table and hide the toggle.
+
 ## 4. WebSocket protocol (`packages/core/protocol.ts`)
 
 JSON messages `{ type, ...payload }`, every one validated with zod. Connect to `/ws` (same origin; the session cookie rides along on the upgrade request).
@@ -186,7 +197,8 @@ JSON messages `{ type, ...payload }`, every one validated with zod. Connect to `
 | `create_room` | `{ gameId?, name? }` | **session required** |
 | `join_room` | `{ code, name }` | guests allowed |
 | `reconnect` | `{ code, token }` | guests allowed |
-| `leave` | `{}` | player |
+| `spectate_room` | `{ code }` (watch without a seat, section 3) | guests allowed |
+| `leave` | `{}` | player or spectator |
 | `set_name` | `{ name }` (lobby only) | player |
 | `select_game` | `{ gameId }` (lobby only; resets settings + scores) | host |
 | `update_settings` | `{ settings }` (validated by the game's `settingsSchema`; lobby only) | host |
@@ -210,7 +222,8 @@ RoomView = {
   code, phase: 'lobby' | 'playing', hostId,
   game: { id, name, settings }, availableGames: [{ id, name, description, minPlayers, maxPlayers }],
   players: [{ id, name, connected, isHost, isLoggedIn }],
-  you: { id }
+  spectators,   // how many are watching
+  you: { id }   // SPECTATOR_ID on a spectator's connection
 }
 GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 ```
@@ -1191,7 +1204,7 @@ Nothing about the domain, branding or deployment is hard-coded; everything self-
 ## 10. Testing (Vitest)
 - **Reducer unit tests** per game with seeded `rng` and fixed `now`. For Imposter: role assignment, both clue modes, clue validation (secret word, duplicates), turn skipping, voting and ties, judge selection (including host-is-imposter and judge disconnect), all three guess modes plus configurable points, a disconnected imposter during voting and guess check, timers in typed vs spoken mode.
 - **Core tests:** room lifecycle, reconnect, host transfer and automatic migration, game switching resets settings/scores, caps, rate limits, heartbeat termination of unresponsive sockets (marks the player disconnected), `maxPayload` rejection, and upgrade rejection for a bad Origin or path.
-- **Generic leak test** (`packages/core/testing/leak.ts`): for any game, play random action sequences (moves supplied by the game's test, plus random disconnects and timer firings) and, after every step, check each viewer who may not see a secret: (a) **value check**, no string or object key in their `view()` equals a forbidden value (e.g. the secret word); (b) **variant check**, their `view()` is identical across states that differ only in the secret (e.g. who the imposter is, which a string search can't catch). Run for every registered game.
+- **Generic leak test** (`packages/core/testing/leak.ts`): for any game, play random action sequences (moves supplied by the game's test, plus random disconnects and timer firings) and, after every step, check each viewer who may not see a secret: (a) **value check**, no string or object key in their `view()` equals a forbidden value (e.g. the secret word); (b) **variant check**, their `view()` is identical across states that differ only in the secret (e.g. who the imposter is, which a string search can't catch). The viewers are every player plus `SPECTATOR_ID`, and (c) **spectator check**: a secret visible to the spectator must be visible to every player. Run for every registered game.
 - **Auth route tests:** guest 401, user 403, admin 200 on core and game admin routes; game routers can't escape the guard.
 - **Integration simulation:** boot the real server on a random port with temp SQLite files, drive real `ws` clients (1 logged-in host + 3 guests) through a full typed round and a full spoken round. Assert guests cannot `create_room`, only the judge can `judge_guess`, `submit_clue` is rejected in spoken mode, the imposter's messages **never** contain the secret word before RESULTS, and the SIGTERM notice is sent.
 - No browser E2E (Playwright) in v1.
@@ -1219,7 +1232,7 @@ The VPS already runs Laravel apps. **Assumed setup, to verify at deploy time:** 
 10. **Deploy and docs:** nginx/Supervisor/Cloudflare setup, README (setup, env vars, create-admin, MCP registration, reverse proxy, writing a game against `packages/core`).
 
 ## 13. Out of scope for v1
-Spectators, multiple imposters, OAuth/social login, email (password reset, invites), persisting rooms across restarts, remote HTTP MCP, Docker image, license choice (pick deliberately before open-sourcing: MIT vs AGPL), auto-generated settings forms, browser E2E tests.
+Multiple imposters, OAuth/social login, email (password reset, invites), persisting rooms across restarts, remote HTTP MCP, Docker image, license choice (pick deliberately before open-sourcing: MIT vs AGPL), auto-generated settings forms, browser E2E tests.
 
 ## 14. Handoff prompt for Claude Code
 

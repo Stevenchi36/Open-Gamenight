@@ -41,6 +41,12 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Joining mid-game is allowed; the game decides what a late joiner sees.** Imposter shows a waiting view until the next round.
 - **Over-size frames close the socket with 1009 instead of returning `error { validation }`.** `ws` enforces `maxPayload` by closing; there is no frame to answer. Invalid JSON and schema failures still get the error message.
 - **Defaults: 30 websocket connections per IP, 10 messages/sec per socket, 20 join/reconnect attempts per minute per IP.** A family behind one NAT stays well under; code guessing doesn't.
+- **One spectator role for a shared TV and for remote watchers; display only, no host controls.** What they may see is the same either way, and two roles would mean two secrecy boundaries to get right; layout is the client's job. A TV that runs the room would raise who-may-press-what questions, so the host keeps those on their phone.
+- **Spectators are kept apart from players (`room.spectators`) and see `view(state, SPECTATOR_ID)`, a reserved id no player has.** Games already show outsiders (late joiners) only public data, so no game needed changes, and spectators can never be dealt in, counted, made host or passed to lifecycle hooks.
+- **The leak test checks `SPECTATOR_ID` in every state, and fails a secret that's visible to the spectator but hidden from some player.** A `visibleTo` written as "anyone except X" would otherwise quietly let the spectator in, and the harness skips viewers `visibleTo` allows.
+- **Anyone with the code can watch (guests too, rate-limited like joins, at most 8 per room); players see a watcher count, and the host can't remove spectators.** The code already gates joining, which shows more; a spectator holds nothing secret, and the count keeps watching visible.
+- **Spectators don't keep a room alive, and switching a tab from playing to watching detaches its seat instead of leaving.** A TV left on shouldn't hold a creator's room slot; the person whose browser it is keeps their seat to go back to.
+- **Games opt into the watch page with an optional `SpectatorView` (no `send` or `me`); without one it shows the player list.** A play view's "you'll be dealt in next game" outsider screen is wrong on a TV, and props without `send` make a display-only view by construction.
 
 ## Stack
 - **TypeScript everywhere, pnpm workspaces.** Shared protocol and view types can't drift between server and client.
