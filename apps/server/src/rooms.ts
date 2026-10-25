@@ -538,6 +538,7 @@ export class RoomManager {
         id: g.id,
         name: g.name,
         description: g.description,
+        styles: g.styles,
         minPlayers: g.minPlayers,
         maxPlayers: this.maxPlayers(g),
       })),

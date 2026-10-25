@@ -17,6 +17,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: 'Word Imposter',
   description: 'Everyone gets the secret word except the imposter. Give clues, find the faker.',
+  styles: ['deduction', 'word', 'party'],
   minPlayers: MIN_PLAYERS,
   maxPlayers: MAX_PLAYERS,
 }

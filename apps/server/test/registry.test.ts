@@ -3,10 +3,11 @@ import { clientGames } from '@wsfg/games/client'
 import { games } from '@wsfg/games/server'
 import { describe, expect, it } from 'vitest'
 
-const metaOf = (g: { id: string; name: string; description: string; minPlayers: number; maxPlayers: number }) => ({
+const metaOf = (g: { id: string; name: string; description: string; styles: readonly string[]; minPlayers: number; maxPlayers: number }) => ({
   id: g.id,
   name: g.name,
   description: g.description,
+  styles: g.styles,
   minPlayers: g.minPlayers,
   maxPlayers: g.maxPlayers,
 })

@@ -16,6 +16,7 @@ const coin = defineGame<CoinState, CoinAction, CoinTimer, CoinState, { sides: nu
   id: 'coin',
   name: 'Coin',
   description: 'Flip it',
+  styles: ['party'],
   minPlayers: 1,
   maxPlayers: 2,
   settingsSchema: z.object({ sides: z.number().int().min(2).max(3) }),

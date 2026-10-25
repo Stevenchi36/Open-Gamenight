@@ -17,6 +17,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: 'Ballpark',
   description: 'Everyone guesses a number for a trivia question, then bets on whose guess is closest. Knowing nothing is fine if you bet well.',
+  styles: ['trivia', 'party'],
   minPlayers: MIN_PLAYERS,
   maxPlayers: MAX_PLAYERS,
 }

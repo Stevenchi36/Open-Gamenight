@@ -17,6 +17,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: "Gone Fishin'",
   description: 'Ask around the table for cards and collect books of four.',
+  styles: ['card'],
   minPlayers: MIN_PLAYERS,
   maxPlayers: MAX_PLAYERS,
 }

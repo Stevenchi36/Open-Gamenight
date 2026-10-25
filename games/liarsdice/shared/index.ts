@@ -17,6 +17,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: "Liar's Dice",
   description: 'Roll in secret, bid on what everyone holds, and call out the liars.',
+  styles: ['dice', 'deduction'],
   minPlayers: MIN_PLAYERS,
   maxPlayers: MAX_PLAYERS,
 }

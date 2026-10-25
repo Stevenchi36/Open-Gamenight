@@ -12,6 +12,14 @@
         style="min-width: 200px"
       />
       <v-select
+        v-model="style"
+        :items="styleItems"
+        label="Style"
+        hide-details
+        density="comfortable"
+        style="min-width: 150px; max-width: 220px"
+      />
+      <v-select
         v-model="players"
         :items="playerItems"
         label="Players"
@@ -25,6 +33,7 @@
       <v-card-title class="d-flex align-center flex-wrap ga-2 px-5 pt-4">
         {{ game.name }}
         <v-chip size="small" variant="tonal" prepend-icon="mdi-account-group" class="players-chip">{{ playersText(game) }}</v-chip>
+        <v-chip v-for="s in game.styles" :key="s" size="small" variant="outlined" @click="style = s">{{ GAME_STYLE_LABELS[s] }}</v-chip>
       </v-card-title>
       <v-card-text class="px-5">{{ game.description }}</v-card-text>
       <!-- 12px inset so the lg (8px) buttons' corners sit concentric with the card's 20px ones -->
@@ -48,7 +57,9 @@
 </template>
 
 <script setup lang="ts">
-// Every game: browse, filter by name and player count, read the rules; signed-in players can start a room.
+// Every game: browse, filter by name, style and player count, read the rules; signed-in players can start a room.
+import type { GameStyle } from '@wsfg/core/contract'
+import { GAME_STYLE_LABELS } from '@wsfg/core/contract'
 import type { AvailableGame } from '@wsfg/core/protocol'
 import { clientGames } from '@wsfg/games/client'
 import { computed, ref } from 'vue'
@@ -59,7 +70,19 @@ defineProps<{ signedIn: boolean }>()
 const emit = defineEmits<{ start: [gameId: string] }>()
 
 const search = ref<string | null>('')
+const style = ref<GameStyle | null>(null)
 const players = ref<number | null>(null)
+
+// Only styles some game has, alphabetical by label.
+const styleItems = computed(() => {
+  const present = [...new Set(config.games.flatMap((g) => g.styles))]
+  return [
+    { title: 'Any style', value: null as GameStyle | null },
+    ...present
+      .map((s) => ({ title: GAME_STYLE_LABELS[s], value: s as GameStyle | null }))
+      .sort((a, b) => a.title.localeCompare(b.title)),
+  ]
+})
 
 // Only counts some game can be played with.
 const playerItems = computed(() => {
@@ -78,6 +101,7 @@ const filtered = computed(() => {
     .filter(
       (g) =>
         (!q || g.name.toLowerCase().includes(q)) &&
+        (style.value === null || g.styles.includes(style.value)) &&
         (players.value === null || (g.minPlayers <= players.value && players.value <= g.maxPlayers)),
     )
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -88,6 +112,7 @@ const playersText = (g: AvailableGame) => (g.minPlayers === g.maxPlayers ? `${g.
 
 function clearFilters() {
   search.value = ''
+  style.value = null
   players.value = null
 }
 </script>

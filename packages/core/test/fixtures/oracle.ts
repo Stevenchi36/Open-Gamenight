@@ -38,6 +38,7 @@ export function makeOracle(options: { leak?: 'word' | 'oracle' } = {}) {
     id: 'oracle',
     name: 'Oracle',
     description: 'Test game',
+    styles: ['party'],
     minPlayers: 2,
     maxPlayers: 6,
     settingsSchema: z.object({ rounds: z.number().int().min(1).max(3) }),

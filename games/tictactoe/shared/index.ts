@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: 'Tic-Tac-Toe',
   description: 'Two players, X and O: get three in a row first.',
+  styles: ['board'],
   minPlayers: PLAYERS,
   maxPlayers: PLAYERS,
 }

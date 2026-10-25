@@ -16,6 +16,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: 'Color Mix',
   description: 'A few paint colours appear. Pick the colour they make when mixed: the closest guess scores.',
+  styles: ['trivia', 'party'],
   minPlayers: MIN_PLAYERS,
   maxPlayers: MAX_PLAYERS,
 }

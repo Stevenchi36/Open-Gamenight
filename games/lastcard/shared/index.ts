@@ -19,6 +19,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: 'Last Card',
   description: 'Match the colour or number, dodge the draw cards, and be first to empty your hand.',
+  styles: ['card'],
   minPlayers: MIN_PLAYERS,
   maxPlayers: MAX_PLAYERS,
 }

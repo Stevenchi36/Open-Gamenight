@@ -68,7 +68,7 @@ describe('parseServerMessage', () => {
         phase: 'lobby',
         hostId: 'p1',
         game: { id: 'imposter', name: 'Word Imposter', settings: {} },
-        availableGames: [{ id: 'imposter', name: 'Word Imposter', description: '', minPlayers: 3, maxPlayers: 12 }],
+        availableGames: [{ id: 'imposter', name: 'Word Imposter', description: '', styles: ['deduction'], minPlayers: 3, maxPlayers: 12 }],
         players: [{ id: 'p1', name: 'Sam', connected: true, isHost: true, isLoggedIn: true }],
         you: { id: 'p1' },
       },

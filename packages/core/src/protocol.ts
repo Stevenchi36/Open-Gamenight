@@ -5,7 +5,7 @@
  * with the game's own actionSchema; game settings with its settingsSchema.
  */
 import { z } from 'zod'
-import { GAME_ID_PATTERN } from './contract.ts'
+import { GAME_ID_PATTERN, GAME_STYLES } from './contract.ts'
 
 export const MAX_PAYLOAD_BYTES = 16 * 1024
 export const NAME_MAX_LENGTH = 16
@@ -105,6 +105,7 @@ export const availableGameSchema = z.object({
   id: gameId,
   name: z.string(),
   description: z.string(),
+  styles: z.array(z.enum(GAME_STYLES)).readonly(),
   minPlayers: z.number().int(),
   maxPlayers: z.number().int(),
 })

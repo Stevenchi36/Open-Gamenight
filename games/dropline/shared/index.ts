@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: 'Drop Line',
   description: 'Two players drop discs in turn: first to line them up wins.',
+  styles: ['board'],
   minPlayers: PLAYERS,
   maxPlayers: PLAYERS,
 }

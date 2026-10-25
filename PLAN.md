@@ -993,7 +993,7 @@ type Move =                                              // public: what the tab
 | Route | Who | What |
 |---|---|---|
 | `/login` | public | Email + password sign-in, no sign-up, "ask an admin" reset note |
-| `/` | public | Two tabs. **Join** (default): join form (code + name), plus **Create room** (with game picker) when logged in. **Game Library** (`?tab=library`): every game in alphabetical order with its description and player range, filterable by name and player count, a **How to play** button (the game's `RULES.md`), and **Start a room** when logged in |
+| `/` | public | Two tabs. **Join** (default): join form (code + name), plus **Create room** (with game picker) when logged in. **Game Library** (`?tab=library`): every game in alphabetical order with its description, style tags and player range, filterable by name, style (`GAME_STYLES` in `contract.ts`; clicking a tag filters by it) and player count, a **How to play** button (the game's `RULES.md`), and **Start a room** when logged in |
 | `/room/:code` | public | Core room shell: lobby (players, game picker, game `SettingsView`, Start) or the game's `PlayView` |
 | `/admin` | admin | Admin shell with nav |
 | `/admin/users` | admin | List, create (email, name, password, role), set role, ban/unban, reset password |

@@ -21,6 +21,8 @@ describe('assertValidGame', () => {
     ['minPlayers < 1', { minPlayers: 0 }, /minPlayers/],
     ['maxPlayers over the cap', { maxPlayers: 13 }, /maxPlayers/],
     ['maxPlayers < minPlayers', { minPlayers: 4, maxPlayers: 3 }, /maxPlayers/],
+    ['no styles', { styles: [] }, /styles/],
+    ['a repeated style', { styles: ['card', 'card'] as const }, /styles/],
     ['defaults fail the schema', { defaultSettings: { rounds: 9 } }, /defaultSettings/],
     [
       'duplicate migration ids',

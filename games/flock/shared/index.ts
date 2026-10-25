@@ -16,6 +16,7 @@ export const meta: GameMeta = {
   id: GAME_ID,
   name: 'Flock',
   description: 'Everyone answers the same question. Think like the flock: you score when you match the most popular answer.',
+  styles: ['party', 'word'],
   minPlayers: MIN_PLAYERS,
   maxPlayers: MAX_PLAYERS,
 }

@@ -92,6 +92,7 @@ export function createApp(deps: AppDeps): Express {
         id: g.id,
         name: g.name,
         description: g.description,
+        styles: g.styles,
         minPlayers: g.minPlayers,
         maxPlayers: Math.min(g.maxPlayers, MAX_PLAYERS_CAP),
       })),

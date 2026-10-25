@@ -225,8 +225,23 @@ export interface GameMeta {
   id: string
   name: string
   description: string
+  /** The Game Library's style filter and tags. At least one. */
+  styles: readonly GameStyle[]
   minPlayers: number
   maxPlayers: number
+}
+
+/** A fixed list, so the library's filter stays short and every game uses the same words. A game can have several. */
+export const GAME_STYLES = ['board', 'card', 'deduction', 'dice', 'party', 'trivia', 'word'] as const
+export type GameStyle = (typeof GAME_STYLES)[number]
+export const GAME_STYLE_LABELS: Record<GameStyle, string> = {
+  board: 'Board',
+  card: 'Card',
+  deduction: 'Deduction & bluffing',
+  dice: 'Dice',
+  party: 'Party',
+  trivia: 'Trivia & guessing',
+  word: 'Word',
 }
 
 /**
@@ -313,6 +328,9 @@ export function assertValidGame(game: AnyGameModule): void {
   }
   if (!Number.isInteger(game.maxPlayers) || game.maxPlayers < game.minPlayers || game.maxPlayers > MAX_PLAYERS_CAP) {
     throw new Error(`${where}: maxPlayers must be an integer between minPlayers and ${MAX_PLAYERS_CAP}`)
+  }
+  if (game.styles.length === 0 || new Set(game.styles).size !== game.styles.length || game.styles.some((s) => !GAME_STYLES.includes(s))) {
+    throw new Error(`${where}: styles must be one or more distinct entries of GAME_STYLES`)
   }
   const settings = game.settingsSchema.safeParse(game.defaultSettings)
   if (!settings.success) {
