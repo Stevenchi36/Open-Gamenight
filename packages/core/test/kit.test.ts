@@ -9,6 +9,7 @@ import {
   isPresent,
   nextTurnOrder,
   pickConnected,
+  rankName,
   secretBallots,
   sortCards,
   standardDeck,
@@ -154,6 +155,12 @@ describe('cards', () => {
     ]
     expect(sortCards(hand).map((c) => c.rank + c.suit)).toEqual(['AC', '10S', '10H', 'KS'])
     expect(hand[0]).toEqual({ rank: 'K', suit: 'S' })
+  })
+
+  it('rankName names ranks in the plural, or singular for one', () => {
+    expect(rankName('6')).toBe('sixes')
+    expect(rankName('A', 1)).toBe('ace')
+    expect(rankName('10', 3)).toBe('tens')
   })
 
   it('deal hands out one card at a time from the top and returns the rest', () => {

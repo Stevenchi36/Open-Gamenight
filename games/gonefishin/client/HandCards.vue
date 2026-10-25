@@ -18,10 +18,9 @@
 
 <script setup lang="ts">
 // Your hand, grouped by rank. While it's your turn a group can be tapped to pick the rank to ask for.
-import type { Card, Rank } from '@wsfg/core/kit'
+import { rankName, type Card, type Rank } from '@wsfg/core/kit'
 import { PlayingCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
-import { rankName } from './text.ts'
 
 const props = defineProps<{ hand: Card[]; selectable: boolean; selected: Rank | null }>()
 const emit = defineEmits<{ select: [rank: Rank] }>()

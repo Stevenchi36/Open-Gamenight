@@ -37,11 +37,11 @@
 <script setup lang="ts">
 // The oval table: each seat's face-down card count and books, the pond in the middle.
 import type { PlayerId } from '@wsfg/core/contract'
+import { rankName } from '@wsfg/core/kit'
 import type { RoomView } from '@wsfg/core/protocol'
 import { CardTable, PlayingCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { GoneFishinView, Seat } from '../shared/index.ts'
-import { rankName } from './text.ts'
 
 const props = withDefaults(
   defineProps<{ view: GoneFishinView; room: RoomView; me: PlayerId; tappable?: PlayerId[]; selected?: PlayerId | null }>(),

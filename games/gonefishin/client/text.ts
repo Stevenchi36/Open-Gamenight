@@ -1,27 +1,6 @@
 import type { PlayerId } from '@wsfg/core/contract'
-import type { Rank } from '@wsfg/core/kit'
+import { rankName } from '@wsfg/core/kit'
 import type { Move } from '../shared/index.ts'
-
-const NAMES: Record<Rank, [string, string]> = {
-  A: ['ace', 'aces'],
-  '2': ['two', 'twos'],
-  '3': ['three', 'threes'],
-  '4': ['four', 'fours'],
-  '5': ['five', 'fives'],
-  '6': ['six', 'sixes'],
-  '7': ['seven', 'sevens'],
-  '8': ['eight', 'eights'],
-  '9': ['nine', 'nines'],
-  '10': ['ten', 'tens'],
-  J: ['jack', 'jacks'],
-  Q: ['queen', 'queens'],
-  K: ['king', 'kings'],
-}
-
-/** "sevens"; "seven" with `count` 1. */
-export function rankName(rank: Rank, count = 2): string {
-  return NAMES[rank][count === 1 ? 0 : 1]
-}
 
 const NUMBERS = ['no', 'one', 'two', 'three']
 

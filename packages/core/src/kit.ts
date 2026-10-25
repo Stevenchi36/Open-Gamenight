@@ -152,6 +152,27 @@ export interface Card {
   suit: Suit
 }
 
+const RANK_NAMES: Record<Rank, [string, string]> = {
+  A: ['ace', 'aces'],
+  '2': ['two', 'twos'],
+  '3': ['three', 'threes'],
+  '4': ['four', 'fours'],
+  '5': ['five', 'fives'],
+  '6': ['six', 'sixes'],
+  '7': ['seven', 'sevens'],
+  '8': ['eight', 'eights'],
+  '9': ['nine', 'nines'],
+  '10': ['ten', 'tens'],
+  J: ['jack', 'jacks'],
+  Q: ['queen', 'queens'],
+  K: ['king', 'kings'],
+}
+
+/** "sevens"; "seven" with `count` 1. */
+export function rankName(rank: Rank, count = 2): string {
+  return RANK_NAMES[rank][count === 1 ? 0 : 1]
+}
+
 /** The 52 cards in a fixed order; shuffle with `ctx.rng.shuffle`. */
 export function standardDeck(): Card[] {
   return SUITS.flatMap((suit) => RANKS.map((rank) => ({ rank, suit })))

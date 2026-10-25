@@ -4,6 +4,7 @@
  */
 import type { AnyGameModule } from '@wsfg/core/contract'
 import { ballpark } from '@wsfg/game-ballpark/server'
+import { cheat } from '@wsfg/game-cheat/server'
 import { colorMix } from '@wsfg/game-colormix/server'
 import { dropLine } from '@wsfg/game-dropline/server'
 import { flock } from '@wsfg/game-flock/server'
@@ -14,4 +15,4 @@ import { lastCard } from '@wsfg/game-lastcard/server'
 import { liarsDice } from '@wsfg/game-liarsdice/server'
 import { ticTacToe } from '@wsfg/game-tictactoe/server'
 
-export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe, dropLine, ballpark, goneFishin, lastCard, inOrder]
+export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe, dropLine, ballpark, goneFishin, lastCard, inOrder, cheat]

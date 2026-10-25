@@ -37,13 +37,13 @@
 
 <script setup lang="ts">
 import type { PlayerId } from '@wsfg/core/contract'
-import type { Rank } from '@wsfg/core/kit'
+import { rankName, type Rank } from '@wsfg/core/kit'
 import { nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import FishTable from '../FishTable.vue'
 import HandCards from '../HandCards.vue'
 import type { PhaseProps } from '../props.ts'
-import { moveText, rankName } from '../text.ts'
+import { moveText } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
 

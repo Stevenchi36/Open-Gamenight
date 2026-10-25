@@ -256,6 +256,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **The winner scores 1 point; scores carry across games.** Same match scoring as Gone Fishin' and Liar's Dice.
 - **The attention glow shows on your turn, never for a callable play.** A cue to call would hint that the play is worth calling.
 - **Your hand isn't behind `HoldToReveal`.** As in Gone Fishin': you read it every turn.
+- **`rankName` ("sevens", "one ace") moved from Gone Fishin' to `kit`.** Cheat needs it too, and it names a kit `Rank`.
 
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)

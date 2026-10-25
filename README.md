@@ -132,6 +132,7 @@ games/
   tictactoe/  Tic-Tac-Toe (2 players, nothing hidden)
   dropline/   Drop Line (2 players, nothing hidden; line length and board size settings)
   inorder/    In Order: co-op, with a theme library like flock/
+  cheat/      Cheat (card game: bluff about the cards you play; no library)
 docs/
   decisions.md   every design decision and why
   dev-testing.md checks, dev-players page (several players in one window)

@@ -1,17 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { moveText, rankName } from '../client/text.ts'
+import { moveText } from '../client/text.ts'
 import type { Move } from '../shared/index.ts'
 
 const name = (id: string) => id.toUpperCase()
 const move = (m: Partial<Move>): Move => ({ askerId: 'a', targetId: 'b', rank: '7', given: 0, drew: true, lucky: false, books: [], ...m })
-
-describe('rankName', () => {
-  it('names ranks in the plural, or singular for one', () => {
-    expect(rankName('6')).toBe('sixes')
-    expect(rankName('A', 1)).toBe('ace')
-    expect(rankName('10')).toBe('tens')
-  })
-})
 
 describe('moveText', () => {
   it('describes a hit, from either side', () => {
