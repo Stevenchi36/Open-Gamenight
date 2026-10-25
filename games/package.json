@@ -15,6 +15,7 @@
     "@wsfg/game-flock": "workspace:*",
     "@wsfg/game-gonefishin": "workspace:*",
     "@wsfg/game-imposter": "workspace:*",
+    "@wsfg/game-inorder": "workspace:*",
     "@wsfg/game-lastcard": "workspace:*",
     "@wsfg/game-liarsdice": "workspace:*",
     "@wsfg/game-tictactoe": "workspace:*"

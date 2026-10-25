@@ -180,6 +180,10 @@ Ballpark's question library has the same tools under `ballpark_*` (`ballpark_gen
 
 **Rules for a Ballpark question:** 5-160 characters ending in "?", with one well-documented numeric answer that won't change soon (no populations, prices or breakable records). The question never names its unit: the game shows it beside the question and converts it for imperial rooms. `unit` is a metric code for measurements (`mm`, `cm`, `m`, `km`, `m2`, `km2`, `g`, `kg`, `t`, `ml`, `l`, `km/h`, `C`), a code that reads the same in both systems (`%`, `s`, `min`, `h`, `days`, `years`), or null for counts and calendar years. `fact` (optional, up to 200 characters, no measurements) is shown with the answer. **Answers are secret**, so Claude reports only counts and categories after adding or generating, as with Imposter's words.
 
+In Order's theme library has the same tools under `inorder_*`: `inorder_list_categories`, `inorder_search_themes` (the query matches the theme or either end), `inorder_add_themes`, `inorder_update_theme`, `inorder_remove_themes`, the three category tools, and `inorder_generate_themes` with an API key. Each theme is `{ category, theme, low, high }`; `update_theme` also takes `low` and `high`.
+
+**Rules for an In Order theme:** `theme` is a scale everyone can picture, phrased as a short question ("How scary is it?"), 5-80 characters; `low` and `high` say what 1 and 100 mean ("Not scary at all", "Terrifying"), up to 30 characters each and different from each other. Good themes have many everyday things along the scale, where people roughly agree on the order but not exactly; avoid exact measurable answers (prices, dates). Themes aren't secret (the numbers are dealt at play time), so Claude may list them.
+
 ## Example prompts
 
 - "List the imposter categories and tell me which are running low."
@@ -194,6 +198,7 @@ Ballpark's question library has the same tools under `ballpark_*` (`ballpark_gen
 - "Add 30 Flock questions in a new Music category."
 - "Look through the Flock questions and remove any that are really trivia with one right answer."
 - "Add 20 Ballpark questions about famous buildings. Don't show me the answers."
+- "Add 15 In Order themes for young kids in a new Kids category."
 
 **Claude keeps new words secret.** After adding or generating words, Claude reports only how many it added and to which categories, so you can still play. Ask "show me the words" if you want to see them. (They are still in the tool call itself; Claude Code shows it collapsed, so don't expand it if you're playing.)
 

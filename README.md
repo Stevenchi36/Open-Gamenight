@@ -1,6 +1,6 @@
 # ws-family-games
 
-A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice**, **Flock** (everyone answers the same question and scores by matching the most popular answer), **Color Mix** (guess the colour a few paints make when mixed), and two 2-player games: **Tic-Tac-Toe** and **Drop Line** (drop discs to make a line of 3 to 6).
+A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice**, **Flock** (everyone answers the same question and scores by matching the most popular answer), **Color Mix** (guess the colour a few paints make when mixed), **In Order** (co-op: describe your secret number to fit a theme, then put the table's clues in order together), and two 2-player games: **Tic-Tac-Toe** and **Drop Line** (drop discs to make a line of 3 to 6).
 
 - **Rooms with a 4-letter code.** Signed-in users create rooms; anyone joins with just a name. Phones that drop off Wi-Fi reconnect into their seat.
 - **The server decides everything.** Each phone only receives its own view of the game, so the imposter's device never gets the secret word. A leak test checks this for every game with hidden information.
@@ -107,6 +107,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 - An account is only needed to **create** rooms. Guests join with a code and a name; the host role can pass to a guest (manually, or automatically after the host has been away for about 2 minutes).
 - **Admin → Word Imposter** has **Categories** (add, rename, delete empty ones) and the **Word library** (browse, add, edit or move words, delete, and generate-then-review when `ANTHROPIC_API_KEY` is set). Categories running low on unused words are flagged.
 - **Admin → Flock** has **Categories** and the **Question library**, the same way.
+- **Admin → In Order** has **Categories** and the **Theme library** (each theme is a scale with what 1 and 100 mean), the same way.
 
 ## Managing words with Claude
 
@@ -130,6 +131,7 @@ games/
   colormix/   Color Mix (no library; paint mixing vendored from spectral.js)
   tictactoe/  Tic-Tac-Toe (2 players, nothing hidden)
   dropline/   Drop Line (2 players, nothing hidden; line length and board size settings)
+  inorder/    In Order: co-op, with a theme library like flock/
 docs/
   decisions.md   every design decision and why
   dev-testing.md checks, dev-players page (several players in one window)

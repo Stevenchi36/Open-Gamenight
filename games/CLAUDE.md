@@ -15,7 +15,7 @@ A game is a description the core runs, not a class to extend. The core already o
 Build from the shared pieces, and grow them rather than copying:
 
 - `@wsfg/core/kit` (`packages/core/src/kit.ts`): pure reducer helpers: presence, `pickConnected`, `nextTurnOrder` + `playerOrderSchema`, scores, `tallyVotes`/`dropBallots`, the `secretBallots` leak spec, `DISCONNECT_GRACE_MS`, and cards (`standardDeck`, `deal`, `sortCards`, `Card`/`Rank`/`Suit`, `rankSchema`).
-- `@wsfg/core/ui` (`packages/core/src/ui/`): play-view helpers (`nameOf`, `isHost`, `useCountdown`, ...) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, `PlayingCard`, `CardTable`, ...).
+- `@wsfg/core/ui` (`packages/core/src/ui/`): play-view helpers (`nameOf`, `isHost`, `useCountdown`, ...) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, `PlayingCard`, `CardTable`, `OrderList`, ...).
 - `@wsfg/core/library` (server only): batches for library games: `resolveBatch` when adding, `recentOrder` for a "Recently added" pick, `newestBatch`/`newestBatchStats`, `removeUsed` for the admin's Clear used, and `BATCH_RULE`/`batchField` for MCP add tools.
 - `SettingSlider`, `SettingSelect`, `SettingToggle`: global components for a `SettingsView`, used without imports.
 

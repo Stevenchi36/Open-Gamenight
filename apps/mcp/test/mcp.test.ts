@@ -74,6 +74,14 @@ describe('MCP server', () => {
       'imposter_rename_category',
       'imposter_search_words',
       'imposter_update_word',
+      'inorder_add_themes',
+      'inorder_create_category',
+      'inorder_delete_category',
+      'inorder_list_categories',
+      'inorder_remove_themes',
+      'inorder_rename_category',
+      'inorder_search_themes',
+      'inorder_update_theme',
     ])
   })
 
@@ -126,7 +134,7 @@ describe('MCP server', () => {
     const result = await client.callTool({ name: 'imposter_remove_words', arguments: { ids: 'all' } }).catch((e) => e)
     expect(result instanceof Error || (result as { isError?: boolean }).isError).toBeTruthy()
     const { tools } = await client.listTools()
-    expect(tools.length).toBe(24)
+    expect(tools.length).toBe(32)
   })
 
   it('manages categories: create, rename, refuse to delete while in use, move words out, delete', async () => {

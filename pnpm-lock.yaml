@@ -331,6 +331,9 @@ importers:
       '@wsfg/game-imposter':
         specifier: workspace:*
         version: link:imposter
+      '@wsfg/game-inorder':
+        specifier: workspace:*
+        version: link:inorder
       '@wsfg/game-lastcard':
         specifier: workspace:*
         version: link:lastcard
