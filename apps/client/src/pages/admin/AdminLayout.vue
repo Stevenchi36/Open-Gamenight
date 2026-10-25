@@ -1,29 +1,26 @@
 <template>
   <v-container class="py-4" style="max-width: 1200px">
+    <!-- Phones: the nav is a slide-out drawer so the page content comes first -->
+    <template v-if="!mdAndUp">
+      <v-navigation-drawer v-model="drawer" temporary>
+        <v-list nav density="comfortable">
+          <template v-for="item in navItems" :key="item.key">
+            <v-list-subheader v-if="item.subheader">{{ item.title }}</v-list-subheader>
+            <v-list-item v-else :prepend-icon="item.icon" :title="item.title" :to="item.to" :exact="item.exact" />
+          </template>
+        </v-list>
+      </v-navigation-drawer>
+      <v-btn variant="tonal" prepend-icon="mdi-menu" class="mb-4" @click="drawer = true">
+        {{ currentTitle ?? 'Admin' }}
+      </v-btn>
+    </template>
     <v-row>
-      <v-col cols="12" md="3">
+      <v-col v-if="mdAndUp" cols="3">
         <v-card>
           <v-list nav density="comfortable">
-            <v-list-subheader>Admin</v-list-subheader>
-            <v-list-item prepend-icon="mdi-view-dashboard-outline" title="Overview" :to="{ name: 'admin' }" exact />
-            <v-list-item v-if="aiEnabled" prepend-icon="mdi-creation-outline" title="Assistant" :to="{ name: 'admin-chat' }" />
-            <v-list-item prepend-icon="mdi-door-open" title="Rooms" :to="{ name: 'admin-rooms' }" />
-            <v-list-item prepend-icon="mdi-account-multiple-outline" title="Users" :to="{ name: 'admin-users' }" />
-            <template v-for="game in gamesWithPages" :key="game.id">
-              <v-list-subheader>{{ game.name }}</v-list-subheader>
-              <v-list-item
-                v-if="withCategories.has(game.id)"
-                prepend-icon="mdi-shape-outline"
-                title="Categories"
-                :to="{ name: 'admin-categories', params: { gameId: game.id } }"
-              />
-              <v-list-item
-                v-for="page in game.adminPages"
-                :key="page.path"
-                prepend-icon="mdi-puzzle-outline"
-                :title="page.title"
-                :to="{ name: 'admin-game', params: { gameId: game.id, page: page.path } }"
-              />
+            <template v-for="item in navItems" :key="item.key">
+              <v-list-subheader v-if="item.subheader">{{ item.title }}</v-list-subheader>
+              <v-list-item v-else :prepend-icon="item.icon" :title="item.title" :to="item.to" :exact="item.exact" />
             </template>
           </v-list>
         </v-card>
@@ -38,7 +35,15 @@
 <script setup lang="ts">
 // UX only: the router guard and this page are conveniences; the server enforces admin on every route.
 import { clientGames } from '@wsfg/games/client'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
+import { useDisplay } from 'vuetify'
+
+const route = useRoute()
+const router = useRouter()
+const { mdAndUp } = useDisplay()
+const drawer = ref(false)
+watch(() => route.fullPath, () => (drawer.value = false))
 
 /** Games that use the shared categories table (reported by the server). */
 const withCategories = ref(new Set<string>())
@@ -52,5 +57,51 @@ onMounted(async () => {
   aiEnabled.value = status.aiEnabled
 })
 
-const gamesWithPages = computed(() => clientGames.filter((g) => g.adminPages?.length || withCategories.value.has(g.id)))
+type NavItem =
+  | { key: string; subheader: true; title: string }
+  | { key: string; subheader?: false; title: string; icon: string; to: RouteLocationRaw; exact?: boolean; game?: string }
+
+// One list for both the desktop card and the phone drawer.
+const navItems = computed<NavItem[]>(() => {
+  const items: NavItem[] = [
+    { key: 'h-admin', subheader: true, title: 'Admin' },
+    { key: 'admin', title: 'Overview', icon: 'mdi-view-dashboard-outline', to: { name: 'admin' }, exact: true },
+  ]
+  if (aiEnabled.value) items.push({ key: 'chat', title: 'Assistant', icon: 'mdi-creation-outline', to: { name: 'admin-chat' } })
+  items.push(
+    { key: 'rooms', title: 'Rooms', icon: 'mdi-door-open', to: { name: 'admin-rooms' } },
+    { key: 'users', title: 'Users', icon: 'mdi-account-multiple-outline', to: { name: 'admin-users' } },
+  )
+  for (const game of clientGames) {
+    const hasCategories = withCategories.value.has(game.id)
+    if (!game.adminPages?.length && !hasCategories) continue
+    items.push({ key: `h-${game.id}`, subheader: true, title: game.name })
+    if (hasCategories) {
+      items.push({
+        key: `${game.id}-categories`,
+        title: 'Categories',
+        icon: 'mdi-shape-outline',
+        game: game.name,
+        to: { name: 'admin-categories', params: { gameId: game.id } },
+      })
+    }
+    for (const page of game.adminPages ?? []) {
+      items.push({
+        key: `${game.id}-${page.path}`,
+        title: page.title,
+        icon: 'mdi-puzzle-outline',
+        game: game.name,
+        to: { name: 'admin-game', params: { gameId: game.id, page: page.path } },
+      })
+    }
+  }
+  return items
+})
+
+/** The phone menu button names the page you're on. */
+const currentTitle = computed(() => {
+  const item = navItems.value.find((i) => !i.subheader && router.resolve(i.to).path === route.path)
+  if (!item || item.subheader) return undefined
+  return item.game ? `${item.game}: ${item.title}` : item.title
+})
 </script>
