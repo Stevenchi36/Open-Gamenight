@@ -12,6 +12,9 @@ export const NAME_MAX_LENGTH = 16
 export const ROOM_CODE_LENGTH = 4
 /** Codes are generated from this alphabet (no I or O, which read like 1 and 0). */
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+/** The viewer id spectators' views are built for. Player ids start with `p_`, so it never matches one. */
+export const SPECTATOR_ID = 'spectator'
+export const MAX_SPECTATORS = 8
 
 // ---------------------------------------------------------------- fields
 
@@ -40,6 +43,7 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('create_room'), gameId: gameId.optional(), name: displayName.optional() }),
   z.object({ type: z.literal('join_room'), code: roomCode, name: displayName }),
   z.object({ type: z.literal('reconnect'), code: roomCode, token: reconnectToken }),
+  z.object({ type: z.literal('spectate_room'), code: roomCode }),
   z.object({ type: z.literal('leave') }),
   z.object({ type: z.literal('set_name'), name: displayName }),
   z.object({ type: z.literal('select_game'), gameId }),
@@ -117,6 +121,9 @@ export const roomViewSchema = z.object({
   game: z.object({ id: gameId, name: z.string(), settings: z.unknown() }),
   availableGames: z.array(availableGameSchema),
   players: z.array(roomPlayerSchema),
+  /** How many are watching on the watch page. */
+  spectators: z.number().int(),
+  /** SPECTATOR_ID on a spectator's connection. */
   you: z.object({ id: playerId }),
 })
 

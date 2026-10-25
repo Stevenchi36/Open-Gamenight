@@ -8,8 +8,10 @@ import { randomBytes, randomInt } from 'node:crypto'
 import { MAX_PLAYERS_CAP, type AnyGameModule, type PlayerInfo, type ServerServices } from '@wsfg/core/contract'
 import {
   displayName,
+  MAX_SPECTATORS,
   ROOM_CODE_ALPHABET,
   ROOM_CODE_LENGTH,
+  SPECTATOR_ID,
   type ClientMessage,
   type NoticeKind,
   type RoomView,
@@ -37,6 +39,7 @@ export interface Conn {
   readonly ip: string
   readonly user: SessionUser | null
   room: Room | null
+  /** Null while `room` is set means this connection is spectating. */
   playerId: string | null
   send(message: ServerMessage): void
 }
@@ -61,6 +64,8 @@ export interface Room {
   hostId: string
   /** Join order. */
   players: Player[]
+  /** Watch-page connections: not players; they get view(state, SPECTATOR_ID). */
+  spectators: Conn[]
   gameId: string
   settings: unknown
   phase: 'lobby' | 'playing'
@@ -83,6 +88,7 @@ export interface RoomSummary {
   createdAt: number
   lastActivity: number
   players: { name: string; connected: boolean; isHost: boolean; isLoggedIn: boolean }[]
+  spectators: number
 }
 
 export interface RoomManagerDeps {
@@ -137,6 +143,8 @@ export class RoomManager {
           return await this.joinRoom(conn, msg.code, msg.name)
         case 'reconnect':
           return await this.reconnect(conn, msg.code, msg.token)
+        case 'spectate_room':
+          return await this.spectate(conn, msg.code)
         default: {
           const room = conn.room
           if (!room || room.closed) throw new RoomError('not_found', 'You are not in a room')
@@ -148,11 +156,12 @@ export class RoomManager {
     }
   }
 
-  /** The socket closed. The player stays in the room, marked disconnected. */
+  /** The socket closed. The player stays in the room, marked disconnected; a spectator is dropped. */
   async disconnected(conn: Conn): Promise<void> {
     const room = conn.room
     if (!room || room.closed) return
     await this.enqueue(room, () => {
+      if (this.dropSpectator(room, conn)) return
       const player = room.players.find((p) => p.conn === conn)
       if (!player) return
       player.conn = null
@@ -191,6 +200,7 @@ export class RoomManager {
           isHost: p.id === room.hostId,
           isLoggedIn: p.userId !== null,
         })),
+        spectators: room.spectators.length,
       }))
   }
 
@@ -206,8 +216,8 @@ export class RoomManager {
   /** SIGTERM: tell everyone, then the transport closes the sockets. */
   shutdown(): void {
     for (const room of this.rooms.values()) {
-      for (const p of room.players) {
-        this.notice(p.conn, 'server_restarting', 'The server is restarting, rejoin in a moment.')
+      for (const conn of [...room.players.map((p) => p.conn), ...room.spectators]) {
+        this.notice(conn, 'server_restarting', 'The server is restarting, rejoin in a moment.')
       }
     }
   }
@@ -234,6 +244,7 @@ export class RoomManager {
       createdAt: now,
       hostId: '',
       players: [],
+      spectators: [],
       gameId: game.id,
       settings: structuredClone(game.defaultSettings),
       phase: 'lobby',
@@ -256,7 +267,7 @@ export class RoomManager {
     if (!this.joinLimiter.consume(conn.ip)) throw new RoomError('rate_limited', 'Too many attempts, wait a minute')
     const room = this.rooms.get(rawCode)
     if (!room || room.closed) throw new RoomError('not_found', 'No room with that code')
-    if (conn.room === room) return this.enqueue(room, () => this.sendJoined(conn, this.playerOf(room, conn)!))
+    if (conn.room === room && conn.playerId) return this.enqueue(room, () => this.sendJoined(conn, this.playerOf(room, conn)!))
     if (conn.room) await this.leave(conn)
 
     await this.enqueue(room, () => {
@@ -275,7 +286,7 @@ export class RoomManager {
     if (!this.joinLimiter.consume(conn.ip)) throw new RoomError('rate_limited', 'Too many attempts, wait a minute')
     const room = this.rooms.get(code)
     if (!room || room.closed) throw new RoomError('not_found', 'That room has closed')
-    if (conn.room && conn.room !== room) await this.leave(conn)
+    if (conn.room && (conn.room !== room || !conn.playerId)) await this.leave(conn)
     await this.enqueue(room, () => {
       const player = room.players.find((p) => p.token === token)
       if (!player) throw new RoomError('not_found', 'You are no longer in that room')
@@ -283,10 +294,25 @@ export class RoomManager {
     })
   }
 
+  /** Watch without a seat. A player's connection is detached first and keeps its seat (see detach). */
+  private async spectate(conn: Conn, code: string): Promise<void> {
+    if (!this.joinLimiter.consume(conn.ip)) throw new RoomError('rate_limited', 'Too many attempts, wait a minute')
+    const room = this.rooms.get(code)
+    if (!room || room.closed) throw new RoomError('not_found', 'No room with that code')
+    if (conn.room) await this.detach(conn)
+    await this.enqueue(room, () => {
+      if (room.spectators.length >= MAX_SPECTATORS) throw new RoomError('room_cap', 'That room has as many watchers as it can take')
+      room.spectators.push(conn)
+      conn.room = room
+      conn.playerId = null
+    })
+  }
+
   private leave(conn: Conn): Promise<void> {
     const room = conn.room
     if (!room) return Promise.resolve()
     return this.enqueue(room, () => {
+      if (this.dropSpectator(room, conn)) return
       const player = this.playerOf(room, conn)
       if (player) this.removePlayer(room, player.id)
     })
@@ -295,6 +321,11 @@ export class RoomManager {
   // ---- in-room messages
 
   private async handleInRoom(room: Room, conn: Conn, msg: ClientMessage): Promise<void> {
+    if (room.spectators.includes(conn)) {
+      if (msg.type !== 'leave') throw new RoomError('forbidden', 'Spectators can only watch')
+      this.dropSpectator(room, conn)
+      return
+    }
     const player = this.playerOf(room, conn)
     if (!player) throw new RoomError('not_found', 'You are not in this room')
     const isHost = player.id === room.hostId
@@ -378,6 +409,7 @@ export class RoomManager {
       case 'create_room':
       case 'join_room':
       case 'reconnect':
+      case 'spectate_room':
         return // handled before the room queue
     }
   }
@@ -441,6 +473,25 @@ export class RoomManager {
     if (room.game) this.runner.hook(room, 'onPlayerRemoved', playerId)
   }
 
+  /**
+   * Take a connection out of its room without giving anything up: a player's seat stays, as if
+   * the socket dropped, so the saved token still reconnects.
+   */
+  private async detach(conn: Conn): Promise<void> {
+    await this.disconnected(conn)
+    conn.room = null
+    conn.playerId = null
+  }
+
+  /** Remove a spectator; false if conn isn't one in this room. */
+  private dropSpectator(room: Room, conn: Conn): boolean {
+    const index = room.spectators.indexOf(conn)
+    if (index === -1) return false
+    room.spectators.splice(index, 1)
+    conn.room = null
+    return true
+  }
+
   private assertNameFree(room: Room, name: string, exceptId: string | null): void {
     const taken = room.players.some((p) => p.id !== exceptId && p.name.toLowerCase() === name.toLowerCase())
     if (taken) throw new RoomError('validation', `Someone in this room is already called ${name}`)
@@ -496,6 +547,10 @@ export class RoomManager {
       p.conn.room = null
       p.conn.playerId = null
     }
+    for (const conn of room.spectators.splice(0)) {
+      this.notice(conn, 'removed', message ?? 'The room closed.')
+      conn.room = null
+    }
     this.rooms.delete(room.code)
     this.logger.info('room closed', { code: room.code })
   }
@@ -525,6 +580,15 @@ export class RoomManager {
         now: this.clock.now(),
       })
     }
+    if (room.spectators.length === 0) return
+    // One view for every spectator: SPECTATOR_ID is nobody's, so it holds only what's public.
+    const message: ServerMessage = {
+      type: 'state',
+      room: this.roomView(room, SPECTATOR_ID),
+      game: this.runner.view(room, SPECTATOR_ID),
+      now: this.clock.now(),
+    }
+    for (const conn of room.spectators) conn.send(message)
   }
 
   roomView(room: Room, playerId: string): RoomView {
@@ -549,6 +613,7 @@ export class RoomManager {
         isHost: p.id === room.hostId,
         isLoggedIn: p.userId !== null,
       })),
+      spectators: room.spectators.length,
       you: { id: playerId },
     }
   }

@@ -1,4 +1,5 @@
 import { defineGame } from '@wsfg/core/contract'
+import { MAX_SPECTATORS, SPECTATOR_ID } from '@wsfg/core/protocol'
 import { games as registry } from '@wsfg/games/server'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
@@ -372,6 +373,116 @@ describe('running a game', () => {
   })
 })
 
+describe('spectators', () => {
+  it('watch with the public view, outside the player list, and players see the count', async () => {
+    const { send, host, code, room } = await roomWith(3)
+    const tv = new FakeConn()
+    await send(tv, { type: 'spectate_room', code: code.toLowerCase() })
+    expect(tv.last('state')!.room).toMatchObject({ code, you: { id: SPECTATOR_ID }, spectators: 1 })
+    expect(tv.last('joined')).toBeUndefined()
+    expect(room.players).toHaveLength(3)
+    expect(host.last('state')!.room.spectators).toBe(1)
+
+    await send(host, { type: 'start_game' })
+    const state = room.game!.state as { secret: { word: string } }
+    expect(tv.last('state')!.game).toMatchObject({ you: { role: 'waiting', word: null } })
+    expect(JSON.stringify(tv.inbox)).not.toContain(state.secret.word)
+  })
+
+  it('can only leave: no lobby, host or game messages', async () => {
+    const { send, host, code, room } = await roomWith(3)
+    const tv = new FakeConn(user('u1'))
+    await send(tv, { type: 'spectate_room', code })
+    for (const msg of [{ type: 'start_game' }, { type: 'set_name', name: 'TV' }, { type: 'action', action: { type: 'x' } }]) {
+      tv.clear()
+      await send(tv, msg)
+      expect(tv.last('error')).toMatchObject({ code: 'forbidden' })
+    }
+    expect(room.phase).toBe('lobby')
+
+    await send(tv, { type: 'leave' })
+    expect(room.spectators).toHaveLength(0)
+    expect(tv.room).toBeNull()
+    expect(host.last('state')!.room.spectators).toBe(0)
+  })
+
+  it("don't count toward max players and are capped per room", async () => {
+    const { send, guests, code, room } = await roomWith(2, { games: [coin] })
+    const watchers = Array.from({ length: MAX_SPECTATORS }, () => new FakeConn())
+    for (const w of watchers) await send(w, { type: 'spectate_room', code })
+    expect(room.spectators).toHaveLength(MAX_SPECTATORS)
+    const extra = new FakeConn()
+    await send(extra, { type: 'spectate_room', code })
+    expect(extra.last('error')).toMatchObject({ code: 'room_cap' })
+    expect(extra.room).toBeNull()
+    expect(guests[0]!.last('state')!.room.players).toHaveLength(2)
+  })
+
+  it('rejects unknown codes and counts against the join limit', async () => {
+    const m = createManager({ games, joinLimit: 1 })
+    const tv = new FakeConn()
+    await m.send(tv, { type: 'spectate_room', code: 'ZZZZ' })
+    expect(tv.last('error')).toMatchObject({ code: 'not_found' })
+    await m.send(tv, { type: 'spectate_room', code: 'ZZZZ' })
+    expect(tv.last('error')).toMatchObject({ code: 'rate_limited' })
+  })
+
+  it('a player switching to watch keeps their seat, and can reconnect to it', async () => {
+    const { send, guests, code, room } = await roomWith(3)
+    const guest = guests[0]!
+    const { playerId, token } = guest.last('joined')!
+    await send(guest, { type: 'spectate_room', code })
+    expect(room.players.find((p) => p.id === playerId)).toMatchObject({ conn: null })
+    expect(room.spectators).toEqual([guest])
+    expect(guest.last('state')!.room.you.id).toBe(SPECTATOR_ID)
+
+    await send(guest, { type: 'reconnect', code, token })
+    expect(room.spectators).toHaveLength(0)
+    expect(guest.last('state')!.room.you.id).toBe(playerId)
+    expect(room.players.find((p) => p.id === playerId)!.conn).toBe(guest)
+  })
+
+  it('a spectator joining as a player stops watching', async () => {
+    const { send, code, room } = await roomWith(2)
+    const tv = new FakeConn()
+    await send(tv, { type: 'spectate_room', code })
+    await send(tv, { type: 'join_room', code, name: 'Late' })
+    expect(room.spectators).toHaveLength(0)
+    expect(room.players.map((p) => p.name)).toContain('Late')
+  })
+
+  it("are dropped on disconnect, told when the room closes, and don't keep it alive", async () => {
+    const a = await roomWith(2)
+    const tv = new FakeConn()
+    await a.send(tv, { type: 'spectate_room', code: a.code })
+    await a.rooms.disconnected(tv)
+    expect(a.room.spectators).toHaveLength(0)
+
+    await a.send(tv, { type: 'spectate_room', code: a.code })
+    await a.rooms.disconnected(a.host)
+    await a.rooms.disconnected(a.guests[0]!)
+    a.clock.advance(ROOM_EMPTY_MS + 1)
+    a.rooms.sweep()
+    expect(a.rooms.rooms.size).toBe(0)
+    expect(tv.last('notice')).toMatchObject({ kind: 'removed', message: 'The room closed.' })
+    expect(tv.room).toBeNull()
+
+    const b = await roomWith(1)
+    const tv2 = new FakeConn()
+    await b.send(tv2, { type: 'spectate_room', code: b.code })
+    await b.send(b.host, { type: 'leave' })
+    expect(tv2.last('notice')).toMatchObject({ kind: 'removed' })
+  })
+
+  it('get the restart notice', async () => {
+    const { send, rooms, code } = await roomWith(2)
+    const tv = new FakeConn()
+    await send(tv, { type: 'spectate_room', code })
+    rooms.shutdown()
+    expect(tv.last('notice')).toMatchObject({ kind: 'server_restarting' })
+  })
+})
+
 describe('cleanup', () => {
   it('closes idle rooms and rooms nobody is connected to', async () => {
     const a = await roomWith(2)
@@ -406,6 +517,7 @@ describe('cleanup', () => {
           { name: 'Host', connected: false, isHost: true, isLoggedIn: true },
           { name: 'Guest1', connected: true, isHost: false, isLoggedIn: false },
         ],
+        spectators: 0,
       },
     ])
   })

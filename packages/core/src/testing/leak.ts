@@ -2,18 +2,23 @@
  * Generic secret-leak harness. For any game with a `secrets` spec, it plays
  * random action sequences and checks, after every step, that each player's
  * view() hides what that player may not see (see SecretDef in contract.ts).
+ * The spectator (SPECTATOR_ID) is checked as a viewer too.
  *
  * Framework-agnostic: it returns leaks; tests assert the list is empty.
  */
 import type { GameModule, PlayerId } from '../contract.ts'
+import { SPECTATOR_ID } from '../protocol.ts'
 import { createRng } from '../rng.ts'
 import { createSim, type GameSim, type SimOptions, type SimPlayer } from './sim.ts'
 
 export interface Leak {
   secret: string
   viewerId: PlayerId
-  /** 'value': a forbidden string appears in the view. 'variant': the view changes with the secret. */
-  kind: 'value' | 'variant'
+  /**
+   * 'value': a forbidden string appears in the view. 'variant': the view changes with the secret.
+   * 'spectator': `visibleTo` lets the spectator see a secret that some player can't.
+   */
+  kind: 'value' | 'variant' | 'spectator'
   detail: string
 }
 
@@ -59,6 +64,25 @@ export function findLeaks<S, A, T, V, Settings, P>(
     }
   }
   return leaks
+}
+
+/**
+ * A spectator may only see what's public: any secret visible to SPECTATOR_ID must be visible to
+ * every player. Catches `visibleTo` rules like "anyone except the imposter", which would let the
+ * spectator in and so skip findLeaks' checks for it.
+ */
+export function findSpectatorLeaks<S, A, T, V, Settings, P>(
+  game: GameModule<S, A, T, V, Settings, P>,
+  state: S,
+  playerIds: readonly PlayerId[],
+): Leak[] {
+  return (game.secrets ?? []).flatMap((secret) => {
+    if (!secret.visibleTo(state, SPECTATOR_ID)) return []
+    const hidden = playerIds.find((id) => !secret.visibleTo(state, id))
+    return hidden === undefined
+      ? []
+      : [{ secret: secret.name, viewerId: SPECTATOR_ID, kind: 'spectator' as const, detail: `visible to the spectator but not to ${hidden}` }]
+  })
 }
 
 export interface Move<A> {
@@ -125,7 +149,11 @@ export function runLeakTest<S, A, T, V, Settings, P>(
       result.statesChecked++
       const phase = (sim.state as { phase?: unknown }).phase
       if (typeof phase === 'string') phases.add(phase)
-      for (const leak of findLeaks(game, sim.state, sim.players.map((p) => p.id))) {
+      const playerIds = sim.players.map((p) => p.id)
+      // Called directly too, so a view that can't take a non-player fails here even when nothing is hidden.
+      game.view(sim.state, SPECTATOR_ID)
+      const leaks = [...findLeaks(game, sim.state, [...playerIds, SPECTATOR_ID]), ...findSpectatorLeaks(game, sim.state, playerIds)]
+      for (const leak of leaks) {
         if (result.leaks.length < maxLeaks) result.leaks.push({ ...leak, seed, step })
       }
     }

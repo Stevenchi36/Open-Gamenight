@@ -30,6 +30,9 @@
             >
               {{ p.name }}
             </v-chip>
+            <v-chip v-if="item.spectators > 0" size="small" variant="text" prepend-icon="mdi-television">
+              {{ item.spectators }} watching
+            </v-chip>
           </div>
         </template>
         <template #[`item.createdAt`]="{ item }">
@@ -79,6 +82,7 @@ interface RoomSummary {
   createdAt: number
   lastActivity: number
   players: { name: string; connected: boolean; isHost: boolean; isLoggedIn: boolean }[]
+  spectators: number
 }
 
 const REFRESH_MS = 10_000

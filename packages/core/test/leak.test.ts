@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { SPECTATOR_ID } from '../src/protocol.ts'
 import { findLeaks, runLeakTest, type Move } from '../src/testing/leak.ts'
 import { createSim, type GameSim } from '../src/testing/sim.ts'
 import { makeOracle, players, type OracleAction } from './fixtures/oracle.ts'
@@ -31,6 +32,20 @@ describe('runLeakTest', () => {
     const { leaks } = runLeakTest(makeOracle({ leak: 'oracle' }), leakOptions)
     expect(leaks.length).toBeGreaterThan(0)
     expect(leaks.every((l) => l.secret === 'oracleId' && l.kind === 'variant')).toBe(true)
+  })
+
+  it('checks the spectator as a viewer', () => {
+    const { leaks } = runLeakTest(makeOracle({ leak: 'word' }), leakOptions)
+    expect(leaks.some((l) => l.viewerId === SPECTATOR_ID && l.kind === 'value')).toBe(true)
+  })
+
+  it('catches a secret the spectator may see but a player may not (spectator check)', () => {
+    const base = makeOracle()
+    // "Everyone but the oracle", written as an exclusion, lets the spectator in too.
+    const game = { ...base, secrets: [{ ...base.secrets![0]!, visibleTo: (s: { oracleId: string }, id: string) => id !== s.oracleId }] }
+    const { leaks } = runLeakTest(game, leakOptions)
+    expect(leaks.some((l) => l.kind === 'spectator' && l.viewerId === SPECTATOR_ID)).toBe(true)
+    expect(runLeakTest(base, leakOptions).leaks).toEqual([])
   })
 
   it('refuses a game without a secrets spec', () => {
