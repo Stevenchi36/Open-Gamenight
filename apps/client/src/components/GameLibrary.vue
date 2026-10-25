@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="d-flex flex-wrap ga-2 mb-4">
+    <div class="d-flex align-center ga-2 mb-4">
       <v-text-field
         v-model="search"
         label="Search games"
@@ -9,24 +9,28 @@
         hide-details
         density="comfortable"
         class="flex-grow-1"
-        style="min-width: 200px"
       />
-      <v-select
-        v-model="style"
-        :items="styleItems"
-        label="Style"
-        hide-details
-        density="comfortable"
-        style="min-width: 150px; max-width: 220px"
-      />
-      <v-select
-        v-model="players"
-        :items="playerItems"
-        label="Players"
-        hide-details
-        density="comfortable"
-        style="min-width: 150px; max-width: 200px"
-      />
+      <!-- A menu rather than inline fields or a dialog: it floats over the list, so opening it moves nothing. -->
+      <v-menu v-model="filtersOpen" :close-on-content-click="false" location="bottom end" offset="8">
+        <template #activator="{ props: activator }">
+          <v-btn v-bind="activator" icon variant="text" :aria-label="filtersActive ? 'Filters (active)' : 'Filters'">
+            <v-badge :model-value="filtersActive" dot color="primary">
+              <v-icon icon="mdi-filter-variant" />
+            </v-badge>
+          </v-btn>
+        </template>
+        <v-card width="280">
+          <v-card-text class="d-flex flex-column ga-4">
+            <v-select v-model="style" :items="styleItems" label="Style" hide-details density="comfortable" />
+            <v-select v-model="players" :items="playerItems" label="Players" hide-details density="comfortable" />
+          </v-card-text>
+          <v-card-actions class="pa-3 pt-0">
+            <v-btn :disabled="!filtersActive" @click="clearChoices">Clear</v-btn>
+            <v-spacer />
+            <v-btn color="primary" @click="filtersOpen = false">Done</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-menu>
     </div>
 
     <v-card v-for="game in filtered" :key="game.id" class="mb-3">
@@ -72,6 +76,9 @@ const emit = defineEmits<{ start: [gameId: string] }>()
 const search = ref<string | null>('')
 const style = ref<GameStyle | null>(null)
 const players = ref<number | null>(null)
+const filtersOpen = ref(false)
+// Drives the dot on the filter button, since the choices are hidden while the menu is shut.
+const filtersActive = computed(() => style.value !== null || players.value !== null)
 
 // Only styles some game has, alphabetical by label.
 const styleItems = computed(() => {
@@ -110,10 +117,13 @@ const filtered = computed(() => {
 const clientOf = (id: string) => clientGames.find((g) => g.id === id)
 const playersText = (g: AvailableGame) => (g.minPlayers === g.maxPlayers ? `${g.minPlayers} players` : `${g.minPlayers}-${g.maxPlayers} players`)
 
-function clearFilters() {
-  search.value = ''
+function clearChoices() {
   style.value = null
   players.value = null
+}
+function clearFilters() {
+  search.value = ''
+  clearChoices()
 }
 </script>
 
