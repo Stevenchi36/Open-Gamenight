@@ -1059,6 +1059,70 @@ CREATE TABLE inorder_themes (
 - Results turn the numbers over one by one, top to bottom, each marked right or wrong, then show lives lost and the team's progress.
 - `needsAction`: a round player with an unclued card, or with every card in the line clued and not ready yet; the host on `RESULTS`.
 
+## 7j. Cheat (`games/cheat`)
+
+The eleventh game and the third card game: play cards face down, say what they are, and anyone may call "Cheat!". The card counterpart to Liar's Dice's bluffing. It uses the standard deck and card helpers from `kit` and `PlayingCard`/`CardTable` from `ui`.
+
+### Rules
+1. **2-10 players**, one standard 52-card deck, **all dealt** as evenly as it goes (the first seats get one more when it doesn't divide). Suits are only for show.
+2. **A turn.** Players take turns in seat order, clockwise. On your turn you put **1-4 cards** face down on the **pile** and **claim** a rank for all of them ("two sevens"). The number of cards is always true; the rank may be a lie.
+3. **Claims** (setting). **Next rank** (default): the claims run A, 2, 3 … K and back to A; the first play of a game claims aces. **Nearby**: claim the same rank as the last claim, or one above or below (K and A are neighbours); the first play of a game claims any rank.
+4. **Calling.** Any other player still in the game may call **Cheat!** on the latest play, until the next play goes down. After every play there is a **call time** (setting, default 5s) when the next player can't play yet, so the whole table gets a chance. The first call wins; a call on a play that's already been called or covered is refused.
+5. **The reveal.** The called play's cards are turned up for everyone. If any isn't the claimed rank, the player who played them **picks up the whole pile**; if they're all true, the **caller** picks it up. Either way play goes on with the player whose turn it already was, and the claims carry on from the last one.
+6. **Going out.** When your last cards go down, you win once the call time passes with nobody calling. If someone calls and you lied, you pick up the pile and play on; if you told the truth, you win straight away.
+7. **Scoring.** The winner scores **1 point**. Scores carry across games.
+8. **Next game.** The host starts it. Seats stay where they are and the first turn moves on one seat.
+
+### Settings (host, lobby only)
+| Setting | Default | Notes |
+|---|---|---|
+| Claims | `next` | `next` (the rank after the last claim) or `nearby` (same, one up or one down) |
+| Call time | 5 | 3, 5 or 10 seconds after each play before the next play |
+
+### State machine
+```
+PLAYING -> RESULTS -> new_game -> PLAYING
+```
+- `PLAYING`: `turn` is the player to play, `stage` is `calling` (call time after a play: no play yet, calls open) or `play` (the turn player may play; the latest play can still be called). A `call_window` timer ends `calling`; if the play it ends emptied a hand, that player wins instead.
+- A disconnected player's turn passes to the next seat after the 15s grace (`DISCONNECT_GRACE_MS`), without playing; the claim to make stays the same. Their hand stays.
+- `RESULTS`: the winner, each seat's cards left, the scoreboard. Host: **New game** (`new_game`, needs 2 players) or **Back to lobby**.
+- A player leaving mid-game: their hand is set aside face down (out of the game), their seat stays (dimmed) and is skipped, and if theirs was the latest play it can no longer be called. If fewer than 2 players remain, the game ends as `abandoned` with no points. Late joiners wait for the next game.
+
+### Actions
+| action | payload | Who |
+|---|---|---|
+| `play` | `{ cards, claim }` (1-4 distinct cards from your hand; `claim` allowed by the Claims setting) | the player to move, stage `play` |
+| `call` | `{ play }` (the latest play's number, from the view) | any player still in the game except whoever made that play, while it's open |
+| `new_game` | `{}` | host, `RESULTS`, 2+ players present |
+
+### View (per player)
+```ts
+type Move =                                     // public: what the table saw and heard
+  | { kind: 'play', playerId, count, claim }
+  | { kind: 'call', callerId, playerId, count, claim, cards: Card[], lied, pickerId, picked }  // cards: the called play, turned up; picked: pile size taken
+  | { kind: 'skip', playerId }                  // a disconnected player's turn passed
+{
+  phase, game, settings,
+  you: { status: 'playing' | 'waiting', hand: Card[] },   // your cards only, sorted by rank
+  seats: [{ id, cards, left }],                // seat order, clockwise
+  pile: number,                                 // cards in the pile
+  top: { play, playerId, count, claim } | null, // the latest play while it can be called; play numbers count up through the game
+  claims: Rank[],                               // what the turn player may claim
+  turn, stage, callUntil,                       // callUntil: server time the call time ends (stage calling)
+  log: Move[],                                  // this game's moves, oldest first
+  outcome: 'win' | 'abandoned' | null, winnerId,  // RESULTS only
+  scores,
+}
+```
+`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other hands), and the pile's cards are visible to nobody, the players who put them there included (variants: swap a pile card with a card in another player's hand, or reorder the pile). Only a call turns cards up, and only the called play's. The leak test covers both Claims settings, a leaver, a late joiner and RESULTS.
+
+### Client
+- **Table**: `CardTable` with each seat's face-down fan and count; the centre holds the pile (a face-down stack with its count) and the latest claim ("2 × 7").
+- **Your hand**: below the table, sorted by rank; tap cards to pick up to 4 (picked cards rise). On your turn with Next rank, the button reads **Play 2 as sevens**; with Nearby, pick the rank first from the allowed three. During the call time the button waits with a countdown.
+- **Cheat!**: a big button for everyone but the latest play's player, naming the play ("Cheat! Bea's two sevens"), while it's open.
+- The latest move shows in a status card above the table; after a call it shows the turned-up cards, marked true or false.
+- `needsAction`: your turn (stage `play`), or the host on `RESULTS`. Not a callable play: the cue would hint that calling is wise.
+
 ## 8. Vue client (`apps/client`)
 
 ### Setup

@@ -6,7 +6,6 @@ Candidates for future games, not yet filtered. Each entry has a one-line pitch, 
 
 1. **Who's Most Likely To…**: nearly every piece already exists (`PlayerPicker`, `tallyVotes`, `secretBallots`, `VoteBreakdown`), so it's the quickest new game, and it suits family play.
 2. **Just One**: the first co-op game, and Flock's answer grouping and host merge step already handle the duplicate-clue rule.
-3. **Cheat / BS**: a third card game that gets real use out of the card kit, and a card counterpart to Liar's Dice's bluffing.
 
 After those, **Fibbage** is the strongest party game here, but it needs a curated fact library before it's fun (like Ballpark's questions).
 
@@ -41,10 +40,6 @@ After those, **Fibbage** is the strongest party game here, but it needs a curate
 - **Love Letter**: a 16-card deck, one card in hand; draw, play one, use its effect to knock others out. Short rounds, 2–6 players.
 - **Coup**: two hidden role cards each; claim any role's action, and others may challenge the claim.
 - **Hanabi** (co-op): you see everyone's cards except your own, and give limited hints to build fireworks in order. That inverts the usual secrecy, which makes it a good `runLeakTest` case.
-- **Cheat / BS**: play cards face down, claim what they are, and anyone can call bluff.
-  - Rules: players take turns playing 1–4 cards face down, claiming the next rank in sequence ("two 7s"); if a "Cheat!" call is right the player picks up the pile, otherwise the caller does. First to empty their hand wins.
-  - Reuses: `standardDeck`, `deal`, `sortCards`, `PlayingCard`, `CardTable`.
-  - Secrets: every hand; the cards in the pile (only the claims are public until a call flips the last play).
 - **No Thanks!**: take the face-up card or pay a chip to pass. Plays up to 7.
 - **For Sale**: bid for properties, then sell them off in a second phase.
 

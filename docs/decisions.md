@@ -241,6 +241,22 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **The drag-to-order list is `OrderList` in `@wsfg/core/ui`, written on pointer events with no new dependency.** HTML5 drag and drop doesn't fire on touch screens, and ranking games in `games/IDEAS.md` could use the same list.
 - **Themes aren't secret, so the MCP tools may show them.** Knowing the theme gives nothing away; the numbers are dealt at play time.
 
+## Cheat rules
+- **Cheat is the eleventh game (id `cheat`): the classic bluffing card game under its traditional UK name.** It was in `games/IDEAS.md` as "Cheat / BS"; "BS" doesn't suit a family platform, and "I Doubt It" is less known.
+- **2-10 players with one deck, all of it dealt.** Two can play (you still can't tell which of your opponent's cards went on the pile), and ten still get five cards each.
+- **Claims are a setting: Next rank (A, 2 … K, wrapping; default) or Nearby (same, one up or one down).** Next rank is the usual rule; Nearby is the common house rule that makes forced lies rarer.
+- **A play is 1-4 cards, and the count is always true.** At a real table everyone sees how many cards go down; four is the most of one rank a deck holds.
+- **After each play there is a call time (3/5/10s, default 5s) before the next play; calls stay open until the next play.** Otherwise a quick next player could shut the table out of calling. The window is a timer in state (`stage: 'calling'`), not a comparison with `ctx.now`, so `createSim` and the leak test can move through it.
+- **A call names the play it's for (`{ play }`), and a call on a play that's already been called or covered is refused.** Two players tapping at once, or a tap landing just after the next play, must not hit a play nobody meant to call.
+- **After a call, play goes on with whoever's turn it already was, and the claims carry on.** The simplest common rule; restarting the sequence would give the loser of the call a free choice.
+- **Going out wins only once the call time passes uncalled.** The last play is the one most worth calling; a lie caught there means picking up the pile and playing on.
+- **The pile's cards are hidden from everyone, including the players who put them there; only a call turns up, and only the called play.** Your memory of what you played is yours to keep, as at a table, and a secret the view doesn't need.
+- **A disconnected player's turn passes after the 15s grace without a play, and the claim to make stays the same.** Playing for them would be an arbitrary choice of cards and claim.
+- **A leaver's hand is set aside, out of the game; if theirs was the latest play it can't be called.** Adding it to the pile would hand someone else their cards, and a call on a player who's gone has nobody to pick up the pile. Fewer than 2 players left ends the game with no points, as in Gone Fishin'.
+- **The winner scores 1 point; scores carry across games.** Same match scoring as Gone Fishin' and Liar's Dice.
+- **The attention glow shows on your turn, never for a callable play.** A cue to call would hint that the play is worth calling.
+- **Your hand isn't behind `HoldToReveal`.** As in Gone Fishin': you read it every turn.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.
