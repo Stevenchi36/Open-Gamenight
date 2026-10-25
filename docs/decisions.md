@@ -229,6 +229,18 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **With the draw pile and the reshufflable discard both empty, a draw takes what there is (perhaps nothing), penalties included, and play moves on.** It only happens when the hands hold nearly the whole deck; stalling the round or adding a second deck would be worse, and every play puts a card back to reshuffle later.
 - **Jump-in reuses `play` from a player whose turn it isn't; the room's action queue settles races and a late jump-in is refused because the top card changed.** No timers or claim windows: first to send wins, as at a table.
 
+## In Order rules
+- **In Order is the tenth game (id `inorder`): Ito's mechanics under a generic name, and the first co-op game.** It was in `games/IDEAS.md` under that name; Ito is a commercial game, and mechanics are free to use.
+- **Clues and ordering are one phase: clues appear in the shared line as they arrive, and anyone can drag any card at any time.** Ito is played by talking it over while cards are placed; a separate clue phase would make the table wait on its slowest writer before anyone can start arranging.
+- **The reveal waits for everyone connected to tap Ready, and any move or clue edit clears every Ready; the host can reveal anyway.** In a co-op game the table should agree, and clearing on change stops a late drag from going through on stale agreement. A disconnected player doesn't block it, as elsewhere.
+- **Mistakes are the fewest cards that would have to move to fix the line (cards − longest increasing run), 1 life each.** Counting out-of-order pairs, or Ito's "every lower card still in hand", punishes one card placed far from home as heavily as a scrambled line.
+- **Settings: rounds (default 5, or until out of lives), lives (default 3, 1-5), numbers each (default 1, 1-3).** Small tables need more cards to be a challenge; an endless mode gives a "how far can we get" score. No timer: the game is the conversation.
+- **A clue containing your own number as a number is refused; other digits are allowed.** "Never say your number" is the one hard rule, but banning every digit would refuse fair clues like "101 Dalmatians".
+- **Numbers are behind `HoldToReveal`, and clue fields are labelled by rank ("Your lower number"), never by number.** Phones lie on the table; a neighbour who sees your number has the round solved.
+- **Card ids are `<playerId>#<k>` in deal order (not sorted) and the line starts in seat order.** Anything derived from the numbers before the reveal would leak their order.
+- **The drag-to-order list is `OrderList` in `@wsfg/core/ui`, written on pointer events with no new dependency.** HTML5 drag and drop doesn't fire on touch screens, and ranking games in `games/IDEAS.md` could use the same list.
+- **Themes aren't secret, so the MCP tools may show them.** Knowing the theme gives nothing away; the numbers are dealt at play time.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.

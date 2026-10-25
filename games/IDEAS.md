@@ -65,10 +65,6 @@ Card games can reuse the deck and deal helpers already in `@wsfg/core/kit` (`sta
 - **Guess 2/3 of the average**: everyone picks 0–100; whoever is closest to two-thirds of the average wins.
 - **Lowest unique number**: the lowest number nobody else picked wins.
 - **The Mind** (co-op): the group must play their numbered cards in ascending order without talking, purely by timing. Uses `serverNow`, and tests timer and latency handling.
-- **In Order** (co-op, like Ito): everyone gets a secret number 1–100 and a theme ("how scary is it?"), and names something that fits their number ("a kitten" low, "a shark" high). The table then drags the names into the order they think the numbers go, and loses a life for each pair out of order.
-  - Reuses: `HoldToReveal`; a themes library.
-  - Needs: a shared drag-to-order list.
-  - Secrets: each player's number.
 - **Split or Steal**: secret choices made in pairs; quick, and good between rounds of something longer.
 - **Rock-Paper-Scissors tournament**: brackets and simultaneous throws, for any group size.
 
