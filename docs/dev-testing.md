@@ -41,6 +41,8 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://[::1]:5173
 2. Create the room in **P1**, which is signed in as you.
 3. Put the room code in the toolbar and click **Apply**. The guest frames open that room; enter a name in each.
 
+**Shortcut:** in dev, **Start a new room** (and the library's start dialog) has a **Dev** box. Tick **Open in dev players** and pick a player count, and/or **Open a spectator window**, then **Create room**: each opens in its own window, already pointed at the new room (players on the left, the watch page on the right). The tab you started from stays on the home page, since opening the room there would pull your seat back from P1; P1 takes the seat when you join in it. Chrome allows one pop-up per click, so to get both windows allow pop-ups for localhost once (a toast says when one was blocked). Launching again reuses the same two windows.
+
 Reloading the page reconnects every frame to its seat. URL options: `n` (players, 1-12), `code` (room to open), `guest` (guest origin, see below).
 
 ### How it works

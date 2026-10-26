@@ -26,6 +26,7 @@
 <script setup lang="ts">
 /** Dev only (the shell renders it under import.meta.env.DEV): opens dev-players.html, the multi-player grid. */
 import { ref, watch } from 'vue'
+import { devPlayersUrl } from '../lib/dev-windows.ts'
 import { roomState } from '../lib/room.ts'
 
 const open = ref(false)
@@ -38,12 +39,7 @@ watch(open, (isOpen) => {
 })
 
 function launch() {
-  const params = new URLSearchParams({ n: String(count.value) })
-  const room = code.value.trim().toUpperCase()
-  if (room) params.set('code', room)
-  // P1 shares this tab's sign-in, which lives on localhost; guests use another host (see dev-players.html).
-  const origin = location.hostname === 'localhost' ? location.origin : `${location.protocol}//localhost:${location.port}`
-  window.open(`${origin}/dev-players.html?${params}`, '_blank')
+  window.open(devPlayersUrl(count.value, code.value), '_blank')
   open.value = false
 }
 </script>

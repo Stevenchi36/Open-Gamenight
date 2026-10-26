@@ -58,6 +58,7 @@
               class="mb-3"
             />
             <v-text-field v-model="hostName" label="Your name in this room" maxlength="16" counter />
+            <DevStartOptions v-if="DevStartOptions" v-model="devLaunch" />
             <v-btn type="submit" color="primary" variant="flat" size="large" block :loading="creating" :disabled="!hostName.trim() || !gameId">
               Create room
             </v-btn>
@@ -74,6 +75,7 @@
         <v-card-text>
           <v-form id="start-room" @submit.prevent="startFromLibrary">
             <v-text-field v-model="hostName" label="Your name in this room" maxlength="16" counter autofocus />
+            <DevStartOptions v-if="DevStartOptions" v-model="devLaunch" />
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -89,11 +91,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import GameLibrary from '../components/GameLibrary.vue'
 import { authClient } from '../lib/auth-client.ts'
 import { config } from '../lib/config.ts'
+import { devLaunchDefaults, openDevWindows } from '../lib/dev-windows.ts'
 import { createRoom, joinRoom, lastName, leaveRoom, roomState, toast } from '../lib/room.ts'
 
 const router = useRouter()
@@ -116,6 +119,12 @@ const joining = ref(false)
 const joinError = ref<string | null>(null)
 const creating = ref(false)
 const selectedGame = computed(() => config.games.find((g) => g.id === gameId.value))
+// Dev only, and the build drops the import. Hidden inside the dev-players frames themselves.
+const DevStartOptions =
+  import.meta.env.DEV && window.self === window.top
+    ? defineAsyncComponent(() => import('../components/DevStartOptions.vue'))
+    : null
+const devLaunch = ref(devLaunchDefaults())
 
 watch(
   () => config.games,
@@ -149,11 +158,21 @@ async function join() {
 
 async function create(id = gameId.value) {
   if (!id) return
+  // Opened now, while this still counts as the user's click; they navigate once the room exists.
+  const devWindows = import.meta.env.DEV && DevStartOptions ? openDevWindows(devLaunch.value) : null
   creating.value = true
   try {
     const created = await createRoom(id, hostName.value.trim())
+    if (devWindows) {
+      devWindows.show(created)
+      starting.value = false
+      // Stay here: opening the room page would pull the seat back from P1.
+      if (devWindows.blocked) toast('A window was blocked: allow pop-ups for this site to open both.', 'warning')
+      return
+    }
     void router.push(`/room/${created}`)
   } catch (error) {
+    devWindows?.close()
     toast((error as Error).message, 'error')
   } finally {
     creating.value = false
