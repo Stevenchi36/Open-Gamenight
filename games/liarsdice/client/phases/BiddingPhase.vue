@@ -59,9 +59,7 @@
     <v-expansion-panels v-if="view.bids.length > 1 || view.lastRound" variant="accordion">
       <v-expansion-panel v-if="view.bids.length > 1" title="Bids this round">
         <v-expansion-panel-text>
-          <div v-for="(b, i) in [...view.bids].reverse()" :key="i" class="text-body-2">
-            {{ nameOf(room, b.playerId) }}: {{ bidText(b) }}
-          </div>
+          <MoveLog :entries="bidEntries" />
         </v-expansion-panel-text>
       </v-expansion-panel>
       <v-expansion-panel v-if="view.lastRound" title="Last round">
@@ -74,15 +72,23 @@
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, nameOf, StatusCard } from '@wsfg/core/ui'
+import { HoldToReveal, MoveLog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import { FACES, isLegalBid, minQuantity } from '../../shared/index.ts'
 import DiceRow from '../DiceRow.vue'
 import RoundResultCard from '../RoundResultCard.vue'
 import SeatList from '../SeatList.vue'
 import { bidText, type PhaseProps } from '../props.ts'
+import { bidRows } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
+const bidEntries = computed(() =>
+  moveLogEntries(
+    bidRows(props.view, props.me, (id) => nameOf(props.room, id)),
+    (r) => r.text,
+    (r) => r.tone,
+  ),
+)
 const myTurn = computed(() => props.view.turn === props.me)
 const callable = computed(() => props.view.bid !== null && props.view.bid.playerId !== props.me)
 

@@ -2,6 +2,7 @@
   <div v-if="result">
     <StatusCard prominent :color="outcomeColor" :overline="result.call === 'liar' ? 'Liar!' : 'Spot on?'" :title="headline" />
     <RoundResultCard :result="result" :room="room" :wild-ones="settings.wildOnes" />
+    <BidLog :view="view" :room="room" :me="me" />
     <SeatList :seats="view.seats" :turn="null" :me="me" :room="room" />
   </div>
 </template>
@@ -9,6 +10,7 @@
 <script setup lang="ts">
 import { nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
+import BidLog from '../BidLog.vue'
 import RoundResultCard from '../RoundResultCard.vue'
 import SeatList from '../SeatList.vue'
 import type { PhaseProps } from '../props.ts'

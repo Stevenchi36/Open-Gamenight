@@ -10,6 +10,7 @@
     />
 
     <RoundResultCard v-if="view.lastRound" :result="view.lastRound" :room="room" :wild-ones="settings.wildOnes" />
+    <BidLog :view="view" :room="room" :me="me" title="The last round's bids" />
 
     <ScoreBoard :scores="view.scores" :room="room" :gained="gained" class="mb-4" />
 
@@ -20,6 +21,7 @@
 <script setup lang="ts">
 import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
+import BidLog from '../BidLog.vue'
 import RoundResultCard from '../RoundResultCard.vue'
 import type { PhaseProps } from '../props.ts'
 

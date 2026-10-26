@@ -34,11 +34,15 @@
         </v-card-text>
       </v-card>
 
-      <v-card v-if="earlier.length > 0" class="mb-4" title="Earlier bids">
-        <v-card-text>
-          <MoveLog :entries="earlier" large />
-        </v-card-text>
-      </v-card>
+      <!-- While bidding the newest bid is in the status card; once called, the whole round with the call. -->
+      <BidLog
+        :view="view"
+        :room="room"
+        :me="SPECTATOR_ID"
+        :title="view.phase === 'BIDDING' ? 'Earlier bids' : view.phase === 'RESULTS' ? 'The last round\'s bids' : 'This round\'s bids'"
+        :skip-latest="view.phase === 'BIDDING'"
+        large
+      />
 
       <div class="text-overline">Matches won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
@@ -54,9 +58,11 @@
 // It's the view built for SPECTATOR_ID, which has no dice: faces only ever come from the call.
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
-import { MoveLog, moveLogEntries, nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import { SPECTATOR_ID } from '@wsfg/core/protocol'
+import { nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import type { LiarsDiceSettings, LiarsDiceView } from '../shared/index.ts'
+import BidLog from './BidLog.vue'
 import DiceSeats from './DiceSeats.vue'
 import { bidText } from './props.ts'
 import RoundResultCard from './RoundResultCard.vue'
@@ -65,12 +71,6 @@ const props = defineProps<SpectatorViewProps<LiarsDiceView, LiarsDiceSettings>>(
 
 const name = (id: PlayerId | null) => nameOf(props.room, id)
 const result = computed(() => props.view.lastRound)
-// The latest bid is in the status card; the rest newest first.
-const earlier = computed(() =>
-  props.view.phase === 'BIDDING'
-    ? moveLogEntries(props.view.bids, (b) => `${name(b.playerId)}: ${bidText(b)}`, () => null, { skipLatest: true, max: 10 })
-    : [],
-)
 const revealTitle = computed(() => {
   const r = result.value
   if (!r) return ''
