@@ -40,6 +40,25 @@ These have the most secrets, so check each view against `secrets` before showing
 - **In Order:** show the theme scale, the shared line of clue cards in its current order, the Ready count, and lives left, with no numbers until the reveal. Then turn the cards over one by one, as players see it. This works well on a TV, since the room arranges the line together.
 - **Liar's Dice:** show the seats with dice counts (not faces), the current bid, the bid history, and whose turn it is. When someone calls, show the faces that were revealed. Reuse `SeatList.vue` and `DiceRow.vue` (faces only after a call).
 
+## Animations
+
+Make play more lively, on the TV and on players' phones alike.
+
+- **In the shared board and table components** (`DropBoard`, `DotsBoard`, `CardTable`, `PlayingCard`), so the play view and the `SpectatorView` both get them. A TV view may add extras on top, like a bigger win moment.
+- **Client only, driven by view changes.** The server and games stay as they are. A component compares the new view with the one before (`last`, the move log) and animates the difference.
+- **Never on first render.** Joining, reconnecting or opening the TV mid-game shows the board as it stands, without replaying moves.
+- **`prefers-reduced-motion`** turns every animation off, back to instant updates.
+- **Only from view data.** A TV can't show cards leaving a hand it can't see; they come from the seat, face down.
+- Plain Vue transitions and CSS, no animation library.
+
+Per game, in order:
+
+1. **Drop Line (done):** the disc falls into its column with a small bounce, and a winning line pulses when it's made live.
+2. **Card games** (core `CardTable`/`PlayingCard`, so Cheat, Gone Fishin' and Last Card all get it): cards slide from a seat to the pile, flip when turned up (Cheat's call, Last Card's discard), deal at the start of a game, and slide into place in your hand. Do this before group 1's TV views.
+3. **Dots and Boxes:** the line draws in, and a claimed box fills in its owner's colour.
+4. **Tic-Tac-Toe:** a small pop when a mark lands.
+5. **TV extras**, per game as its view is built: a short win celebration, a pulse on the turn chip.
+
 ## Suggested order
 
 1. Card games (existing Cheat reference, `CardTable` ready)

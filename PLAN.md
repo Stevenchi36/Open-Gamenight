@@ -737,6 +737,7 @@ PLAYING -> RESULTS -> new_game -> PLAYING
 
 ### Client
 - **Watch page**: a `SpectatorView` like Tic-Tac-Toe's: the board large, the players' chips (colour, name, score), whose move it is with the line length, and on `RESULTS` the outcome and the scoreboard.
+- **Animation** (on the board, so players and the TV both see it): a newly dropped disc falls from above the board into its spot with a small bounce, and a line won while watching pulses once the disc lands. Not on first render; off under `prefers-reduced-motion`.
 
 ## 7f. Ballpark (`games/ballpark`)
 

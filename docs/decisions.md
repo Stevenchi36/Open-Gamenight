@@ -48,6 +48,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Spectators don't keep a room alive, and switching a tab from playing to watching detaches its seat instead of leaving.** A TV left on shouldn't hold a creator's room slot; the person whose browser it is keeps their seat to go back to.
 - **Leaving the watch page never reconnects a saved seat; only opening that room's page does.** The same account may be playing that seat on a phone by then, and an automatic reconnect from the TV would pull it away ("You joined from another tab or device").
 - **Games opt into the watch page with an optional `SpectatorView` (no `send` or `me`); without one it shows the player list.** A play view's "you'll be dealt in next game" outsider screen is wrong on a TV, and props without `send` make a display-only view by construction.
+- **Move animations live in the shared board/table components, are client only, and play only for changes that arrive while the board is on screen; `prefers-reduced-motion` turns them off.** Players and the TV get the same motion from one place, games stay pure with no animation state on the server, and joining, reconnecting or opening the TV mid-game shouldn't replay moves.
 
 ## Stack
 - **TypeScript everywhere, pnpm workspaces.** Shared protocol and view types can't drift between server and client.
