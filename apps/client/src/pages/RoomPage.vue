@@ -26,7 +26,17 @@
             />
           </template>
         </RulesDialog>
-        <v-btn icon="mdi-link-variant" variant="tonal" title="Invite" aria-label="Invite" @click="copyLink" />
+        <v-tooltip v-model="inviteTip" location="bottom" :text="inviteCopied ? 'Invite link copied' : 'Invite'">
+          <template #activator="{ props: tip }">
+            <v-btn
+              v-bind="tip"
+              :icon="inviteCopied ? 'mdi-check' : 'mdi-link-variant'"
+              variant="tonal"
+              aria-label="Invite"
+              @click="copyLink"
+            />
+          </template>
+        </v-tooltip>
         <v-btn icon="mdi-exit-run" variant="text" title="Leave" aria-label="Leave" @click="leave" />
       </div>
       <!-- Floated, so the play view's top row (round, score) wraps beside it instead of under it. -->
@@ -171,6 +181,9 @@ const joinError = ref<string | null>(null)
 const confirmLobby = ref(false)
 const rejoining = ref(false)
 const showTv = ref(false)
+const inviteTip = ref(false)
+const inviteCopied = ref(false)
+let inviteTimer: ReturnType<typeof setTimeout> | undefined
 const menu = ref(false)
 const watchSite = `${location.host}/watch`
 const { isDark, toggleTheme } = useThemeToggle()
@@ -254,24 +267,38 @@ function backToLobby() {
 }
 
 async function copyLink() {
-  await shareLink(`${location.origin}/room/${props.code}`, 'Join my game', 'Invite link copied')
+  if ((await shareLink(`${location.origin}/room/${props.code}`, 'Join my game')) !== 'copied') return
+  // The lobby's button confirms on itself, a tooltip and a check; the in-game drawer's item toasts.
+  if (playing.value) return toast('Invite link copied', 'success')
+  inviteCopied.value = true
+  inviteTip.value = true
+  clearTimeout(inviteTimer)
+  inviteTimer = setTimeout(() => {
+    inviteTip.value = false
+    // After the tooltip's fade, so its text doesn't flip back while it's still showing.
+    inviteTimer = setTimeout(() => (inviteCopied.value = false), 300)
+  }, 2000)
 }
 
 async function copyWatchLink() {
-  await shareLink(`${location.origin}/watch/${props.code}`, 'Watch our game', 'Watch link copied')
+  if ((await shareLink(`${location.origin}/watch/${props.code}`, 'Watch our game')) === 'copied') {
+    toast('Watch link copied', 'success')
+  }
 }
 
-// Touch devices get the share sheet; desktops copy, since Windows Chrome and Edge also have
-// navigator.share and its flyout is easy to miss.
-async function shareLink(url: string, title: string, copied: string) {
+// Only devices with no mouse or trackpad get the share sheet: Windows Chrome and Edge have
+// navigator.share too (touchscreen laptops included), and its flyout is easy to miss.
+async function shareLink(url: string, title: string): Promise<'shared' | 'copied' | 'failed'> {
   try {
-    if (navigator.share && matchMedia('(pointer: coarse)').matches) await navigator.share({ title, url })
-    else {
-      await navigator.clipboard.writeText(url)
-      toast(copied, 'success')
+    if (navigator.share && !matchMedia('(any-pointer: fine)').matches) {
+      await navigator.share({ title, url })
+      return 'shared'
     }
+    await navigator.clipboard.writeText(url)
+    return 'copied'
   } catch {
     toast(url, 'info')
+    return 'failed'
   }
 }
 </script>
