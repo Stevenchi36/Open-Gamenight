@@ -18,6 +18,17 @@ export interface PlayViewProps<V = unknown, A = unknown, Settings = unknown> {
   serverNow: () => number
 }
 
+/**
+ * Props the watch page passes to a game's SpectatorView: the view built for SPECTATOR_ID.
+ * No `send` or `me`: a spectator only watches.
+ */
+export interface SpectatorViewProps<V = unknown, Settings = unknown> {
+  view: V
+  room: RoomView
+  settings: Settings
+  serverNow: () => number
+}
+
 /** Props the lobby passes to a game's SettingsView. */
 export interface SettingsViewProps<Settings = unknown> {
   settings: Settings
@@ -44,6 +55,8 @@ export interface GameClientModule<V = unknown, Settings = unknown> extends GameM
    * Pure, from the view, room and settings alone.
    */
   needsAction?: (view: V, me: PlayerId, room: RoomView, settings: Settings) => boolean
+  /** The watch page's display for a TV or remote watcher (props: SpectatorViewProps). Without one it lists the players. */
+  SpectatorView?: () => Promise<Component>
 }
 
 /**

@@ -4,6 +4,7 @@ How to check changes on your own machine: the automated checks, and playing a ga
 
 - [Automated checks](#automated-checks)
 - [Several players in one window (dev players)](#several-players-in-one-window-dev-players)
+- [The watch page (TV view)](#the-watch-page-tv-view)
 - [Phones on your network](#phones-on-your-network)
 - [Troubleshooting](#troubleshooting)
 
@@ -55,6 +56,14 @@ Reloading the page reconnects every frame to its seat. URL options: `n` (players
 - **Normal tabs don't see frame seats.** Frames store their tokens under prefixed keys, so a normal tab won't show "Back to room" for a game running in the grid.
 - **Each frame has its own theme setting**, since the theme is stored per frame too.
 - **If Vite listens on IPv4 instead of IPv6** (`[::1]` doesn't load), use `?guest=http://127.0.0.1:5173` and add `http://127.0.0.1:5173` to `ALLOWED_ORIGINS` instead.
+
+## The watch page (TV view)
+
+To see what a TV shows, open **http://localhost:5173/watch/CODE** in a normal tab next to the dev-players window (or the room's **TV** button, then **Copy link**). It spectates: no seat, the view built for `SPECTATOR_ID`, and the players' room header shows "1 watching".
+
+- **It doesn't disturb your seat.** Watching never touches the saved room token. If that tab was a player, its seat is detached as if the socket dropped (you'll show as away in the grid), and leaving the watch page reconnects it. P1 in the grid is unaffected either way, because frames keep their own tokens.
+- **Watch at TV size.** Resize the tab or use device emulation (1920×1080), and try the **Full screen** button. Games without a `SpectatorView` show the player list during play.
+- **It counts as a join for the rate limit**, and it re-spectates on every reconnect, so a dev server that restarts often adds to the 20-per-minute budget.
 
 ## Phones on your network
 

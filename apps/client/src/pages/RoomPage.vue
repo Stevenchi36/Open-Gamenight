@@ -6,9 +6,13 @@
           <div class="text-caption text-medium-emphasis">Room code</div>
           <div class="text-h5 room-code font-weight-bold">{{ room.code }}</div>
         </div>
+        <v-chip v-if="room.spectators > 0" size="small" variant="tonal" prepend-icon="mdi-television">
+          {{ room.spectators }} watching
+        </v-chip>
         <v-spacer />
         <RulesDialog v-if="gameModule" :game="gameModule" />
         <v-btn variant="tonal" prepend-icon="mdi-link-variant" @click="copyLink">Invite</v-btn>
+        <v-btn variant="tonal" prepend-icon="mdi-television" @click="showTv = true">TV</v-btn>
         <v-btn v-if="isHost && room.phase === 'playing'" variant="tonal" prepend-icon="mdi-arrow-left" @click="confirmLobby = true">
           Lobby
         </v-btn>
@@ -27,6 +31,25 @@
         :server-now="serverNow"
       />
       <AttentionGlow v-if="actionNeeded" />
+
+      <v-dialog v-model="showTv" max-width="420">
+        <v-card title="Show the game on a TV">
+          <v-card-text>
+            <p class="mb-3">
+              On the TV (or any big screen), open <strong>{{ watchSite }}</strong> and enter the code
+              <strong class="room-code">{{ room.code }}</strong>.
+            </p>
+            <p class="text-body-2 text-medium-emphasis">
+              It shows the table for everyone, never anyone's hand or secret, and doesn't take a seat.
+            </p>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn prepend-icon="mdi-link-variant" @click="copyWatchLink">Copy link</v-btn>
+            <v-spacer />
+            <v-btn @click="showTv = false">Done</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
       <v-dialog v-model="confirmLobby" max-width="360">
         <v-card title="Back to the lobby?" text="This ends the current game for everyone. Scores reset.">
@@ -64,6 +87,7 @@
 </template>
 
 <script setup lang="ts">
+import { SPECTATOR_ID } from '@wsfg/core/protocol'
 import { clientGames } from '@wsfg/games/client'
 import { computed, defineAsyncComponent, onMounted, ref, shallowRef, watch, type Component } from 'vue'
 import { useRouter } from 'vue-router'
@@ -75,7 +99,11 @@ import { joinRoom, lastName, leaveRoom, roomState, savedRoom, send, sendAction, 
 const props = defineProps<{ code: string }>()
 const router = useRouter()
 
-const room = computed(() => (roomState.room?.code === props.code ? roomState.room : null))
+// Not a spectator's view, which can linger for a moment after leaving the watch page.
+const room = computed(() => {
+  const r = roomState.room
+  return r?.code === props.code && r.you.id !== SPECTATOR_ID ? r : null
+})
 const game = computed(() => roomState.game)
 const isHost = computed(() => !!room.value && room.value.hostId === room.value.you.id)
 const name = ref(lastName())
@@ -84,6 +112,8 @@ const joining = ref(false)
 const joinError = ref<string | null>(null)
 const confirmLobby = ref(false)
 const rejoining = ref(false)
+const showTv = ref(false)
+const watchSite = `${location.host}/watch`
 
 onMounted(() => {
   // A saved token for this room: the store sends `reconnect` on (re)connect.
@@ -147,12 +177,19 @@ function backToLobby() {
 }
 
 async function copyLink() {
-  const url = `${location.origin}/room/${props.code}`
+  await shareLink(`${location.origin}/room/${props.code}`, 'Join my game', 'Invite link copied')
+}
+
+async function copyWatchLink() {
+  await shareLink(`${location.origin}/watch/${props.code}`, 'Watch our game', 'Watch link copied')
+}
+
+async function shareLink(url: string, title: string, copied: string) {
   try {
-    if (navigator.share) await navigator.share({ title: 'Join my game', url })
+    if (navigator.share) await navigator.share({ title, url })
     else {
       await navigator.clipboard.writeText(url)
-      toast('Invite link copied', 'success')
+      toast(copied, 'success')
     }
   } catch {
     toast(url, 'info')

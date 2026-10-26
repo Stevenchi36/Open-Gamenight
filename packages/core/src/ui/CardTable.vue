@@ -1,6 +1,6 @@
 <template>
   <div class="card-table-wrap">
-    <div class="d-flex justify-end mb-1">
+    <div v-if="!props.layout" class="d-flex justify-end mb-1">
       <v-btn-toggle :model-value="layout" density="compact" variant="outlined" divided mandatory aria-label="Layout" @update:model-value="setLayout">
         <v-btn value="table" size="small" prepend-icon="mdi-circle-outline">Table</v-btn>
         <v-btn value="list" size="small" prepend-icon="mdi-format-list-bulleted">List</v-btn>
@@ -62,6 +62,8 @@ import type { RoomView } from '../protocol.ts'
 import { isConnected, nameOf } from './helpers.ts'
 import { load, save } from './storage.ts'
 
+type Layout = 'table' | 'list'
+
 const props = withDefaults(
   defineProps<{
     room: RoomView
@@ -75,17 +77,19 @@ const props = withDefaults(
     selected?: PlayerId | null
     /** Seats shown faded (players who left). */
     dimmed?: PlayerId[]
+    /** Fixes the layout and hides the toggle (a spectator view's TV table). */
+    layout?: Layout | null
   }>(),
-  { turn: null, tappable: () => [], selected: null, dimmed: () => [] },
+  { turn: null, tappable: () => [], selected: null, dimmed: () => [], layout: null },
 )
 const emit = defineEmits<{ select: [id: PlayerId] }>()
 
-type Layout = 'table' | 'list'
 const LAYOUT_KEY = 'cardTableLayout'
 // Until a player picks, phones get the list: six seats round an oval are tight there.
-const layout = ref<Layout>(load<Layout>(LAYOUT_KEY) ?? (window.matchMedia('(max-width: 520px)').matches ? 'list' : 'table'))
+const chosen = ref<Layout>(load<Layout>(LAYOUT_KEY) ?? (window.matchMedia('(max-width: 520px)').matches ? 'list' : 'table'))
+const layout = computed(() => props.layout ?? chosen.value)
 function setLayout(value: Layout) {
-  layout.value = value
+  chosen.value = value
   save(LAYOUT_KEY, value)
 }
 

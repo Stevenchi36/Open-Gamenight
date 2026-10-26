@@ -13,6 +13,12 @@ const router = createRouter({
       props: (route) => ({ code: String(route.params.code).toUpperCase() }),
     },
     {
+      path: '/watch/:code?',
+      name: 'watch',
+      component: () => import('./pages/WatchPage.vue'),
+      props: (route) => ({ code: String(route.params.code ?? '').toUpperCase() }),
+    },
+    {
       path: '/admin',
       component: () => import('./pages/admin/AdminLayout.vue'),
       children: [

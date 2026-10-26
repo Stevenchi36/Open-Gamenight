@@ -37,6 +37,9 @@
               Join
             </v-btn>
           </v-form>
+          <div class="text-center text-body-2 mt-3">
+            Putting the game on a TV? <router-link to="/watch">Watch a room</router-link> on that screen instead.
+          </div>
         </v-card-text>
       </v-card>
   

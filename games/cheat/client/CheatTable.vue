@@ -5,6 +5,7 @@
     :me="me"
     :turn="view.turn"
     :dimmed="view.seats.filter((s) => s.left).map((s) => s.id)"
+    :layout="layout"
     class="mb-4"
   >
     <template #seat="{ id }">
@@ -38,7 +39,7 @@ import { CardTable, PlayingCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { CheatView, Seat } from '../shared/index.ts'
 
-const props = defineProps<{ view: CheatView; room: RoomView; me: PlayerId }>()
+const props = defineProps<{ view: CheatView; room: RoomView; me: PlayerId; layout?: 'table' | 'list' }>()
 
 const byId = computed(() => Object.fromEntries(props.view.seats.map((s) => [s.id, s])) as Record<PlayerId, Seat>)
 </script>

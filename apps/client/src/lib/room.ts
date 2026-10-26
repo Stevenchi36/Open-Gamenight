@@ -5,9 +5,12 @@
  * Flow: connect() opens the socket; on open we resend `reconnect` if we have a
  * saved { code, token }. Drops retry with backoff; close code 1012 means the
  * server is restarting (shown as a calm message instead of a spinner).
+ *
+ * Watching (the watch page) sends `spectate_room` instead, on every (re)connect. It never
+ * touches the saved seat, so leaving the watch page can take that seat back.
  */
 import type { ClientMessage, RoomView, ServerMessage, SessionUser } from '@wsfg/core/protocol'
-import { parseServerMessage } from '@wsfg/core/protocol'
+import { parseServerMessage, SPECTATOR_ID } from '@wsfg/core/protocol'
 import { reactive } from 'vue'
 import { load, remove, save } from '@wsfg/core/ui/storage'
 
@@ -50,6 +53,8 @@ let retries = 0
 let retryTimer: ReturnType<typeof setTimeout> | null = null
 let wanted = false
 let reconnecting: SavedRoom | null = null
+/** The room code the watch page is showing, or null. */
+let watching: string | null = null
 /** The server announced a restart; the next failed reconnect means the room ended. */
 let restarted = false
 const queue: ClientMessage[] = []
@@ -115,6 +120,28 @@ export function leaveRoom(): void {
   clearRoom(null)
 }
 
+/** Watch a room without a seat. Failures land in `removedReason`, for the watch page to show. */
+export function watchRoom(code: string): void {
+  watching = code
+  state.removedReason = null
+  if (socket?.readyState === WebSocket.OPEN) sendNow(socket, { type: 'spectate_room', code })
+  else connect() // onopen sends it
+}
+
+/** Leave the watch page: stop spectating and, if this browser has a seat, take it back. */
+export function stopWatching(): void {
+  if (!watching) return
+  watching = null
+  const spectating = state.room?.you.id === SPECTATOR_ID
+  clearView(null)
+  const saved = savedRoom()
+  if (saved && socket?.readyState === WebSocket.OPEN) {
+    // reconnect also ends the spectating on the server
+    reconnecting = saved
+    sendNow(socket, { type: 'reconnect', code: saved.code, token: saved.token })
+  } else if (spectating) send({ type: 'leave' })
+}
+
 /** Forget a remembered room without telling the server (e.g. it no longer exists). */
 export function forgetRoom(): void {
   remove(SAVED_KEY)
@@ -144,11 +171,12 @@ function open(): void {
     retries = 0
     state.status = 'open'
     const saved = savedRoom()
-    if (saved) {
+    if (watching) sendNow(ws, { type: 'spectate_room', code: watching })
+    else if (saved) {
       reconnecting = saved
-      ws.send(JSON.stringify({ type: 'reconnect', code: saved.code, token: saved.token } satisfies ClientMessage))
+      sendNow(ws, { type: 'reconnect', code: saved.code, token: saved.token })
     }
-    for (const message of queue.splice(0)) ws.send(JSON.stringify(message))
+    for (const message of queue.splice(0)) sendNow(ws, message)
   }
   ws.onmessage = (event) => {
     const parsed = parseServerMessage(String(event.data))
@@ -182,12 +210,19 @@ function handle(message: ServerMessage): void {
       joinWaiter = null
       return
     case 'state':
+      // A spectate that landed after the watch page closed.
+      if (message.room.you.id === SPECTATOR_ID && !watching) return send({ type: 'leave' })
       state.room = message.room
       state.game = message.game
       state.playerId = message.room.you.id
       state.clockOffset = message.now - Date.now()
       return
     case 'error':
+      // Not watching yet, so this answers spectate_room; the watch page shows it.
+      if (watching && state.room?.you.id !== SPECTATOR_ID) {
+        state.removedReason = message.message
+        return
+      }
       if (reconnecting && message.code === 'not_found') {
         // our saved room is gone; forget it (and say why if the server restarted)
         reconnecting = null
@@ -206,7 +241,9 @@ function handle(message: ServerMessage): void {
       return
     case 'notice':
       if (message.kind === 'removed') {
-        clearRoom(message.message)
+        // The watched room closed; any seat this browser has elsewhere is untouched.
+        if (watching) clearView(message.message)
+        else clearRoom(message.message)
         toast(message.message, 'warning')
       } else if (message.kind === 'server_restarting') {
         state.status = 'restarting'
@@ -234,8 +271,16 @@ function reloadForBuild(build: string): void {
   location.reload()
 }
 
+function sendNow(ws: WebSocket, message: ClientMessage): void {
+  ws.send(JSON.stringify(message))
+}
+
 function clearRoom(reason: string | null): void {
   remove(SAVED_KEY)
+  clearView(reason)
+}
+
+function clearView(reason: string | null): void {
   state.room = null
   state.game = null
   state.playerId = null
