@@ -1105,6 +1105,8 @@ CREATE TABLE inorder_themes (
 - **`OrderList`** (`@wsfg/core/ui`): a vertical list a player reorders by dragging a row's handle (pointer events, so it works with touch; the page still scrolls from the rest of the row, and dragging near the screen edge scrolls) or with its up/down buttons. It emits `move(id, to)` and shows the new order straight away until the next view arrives. The game fills each row through a slot.
 - The line: the low end's label above the list ("1 · Not scary at all"), the high end's below ("100 · Terrifying"). Each card shows its clue (or "Waiting for Sam…"), whose it is, and a **You** tag on your own.
 - Results turn the numbers over one by one, top to bottom, each marked right or wrong, then show lives lost and the team's progress.
+- **Win**: when the team clears the last round, a `WinCelebration` ("You made it!") once the cards have turned over, on your phone and the TV.
+- **Watch page**: a `SpectatorView` with the theme's scale, the shared line as the room arranges it (cards slide to their new places), who is ready, lives left and rounds cleared; no numbers until the reveal, then the cards turn over one by one as players see it (all turned at once if the TV opens on the results).
 - `needsAction`: a round player with an unclued card, or with every card in the line clued and not ready yet; the host on `RESULTS`.
 
 ## 7j. Cheat (`games/cheat`)

@@ -53,14 +53,13 @@ import LineCard from '../LineCard.vue'
 import LineEnd from '../LineEnd.vue'
 import LivesLeft from '../LivesLeft.vue'
 import type { PhaseProps } from '../props.ts'
+import { roundDetail, roundHeadline, TURN_MS } from '../reveal.ts'
 
 const props = defineProps<PhaseProps>()
 const result = computed(() => props.view.result)
 const isWrong = (id: string) => result.value?.wrong.includes(id) ?? false
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
 // The cards turn over one at a time, top to bottom; a tap on the line turns the rest.
-const TURN_MS = 700
 const turned = ref(0)
 const done = computed(() => turned.value >= props.view.line.length)
 let timer: ReturnType<typeof setInterval> | undefined
@@ -78,19 +77,6 @@ const color = computed(() => {
   return r.outcome === 'won' || r.livesLost === 0 ? 'success' : undefined
 })
 
-const headline = computed(() => {
-  const r = result.value!
-  if (r.outcome === 'won') return 'You made it!'
-  if (r.outcome === 'lost') return 'Out of lives'
-  return r.livesLost === 0 ? 'Perfect order!' : plural(r.livesLost, 'card out of place', 'cards out of place')
-})
-
-const detail = computed(() => {
-  const r = result.value!
-  const v = props.view
-  const lost = r.livesLost === 0 ? 'No lives lost.' : `${plural(r.livesLost, 'life', 'lives')} lost.`
-  if (r.outcome === 'won') return `${lost} Every round cleared, with ${plural(v.lives, 'life', 'lives')} to spare.`
-  if (r.outcome === 'lost') return `${lost} The team cleared ${plural(v.cleared, 'round', 'rounds')}.`
-  return `${lost} ${plural(v.lives, 'life', 'lives')} left.`
-})
+const headline = computed(() => roundHeadline(result.value!, 'You made it!'))
+const detail = computed(() => roundDetail(result.value!, props.view))
 </script>

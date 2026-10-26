@@ -7,15 +7,26 @@
     </div>
     <OrderingPhase v-if="view.phase === 'ORDERING'" v-bind="phaseProps" />
     <ResultsPhase v-else-if="view.phase === 'RESULTS'" :key="view.round" v-bind="phaseProps" />
+
+    <!-- Here, not in ResultsPhase: it has to be on screen before RESULTS arrives to see the win happen live.
+         It waits for the cards to turn over. -->
+    <WinCelebration
+      :active="view.result?.outcome === 'won'"
+      title="You made it!"
+      :subtitle="view.result ? roundDetail(view.result, view) : undefined"
+      :delay="view.line.length * TURN_MS + 300"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import LivesLeft from './LivesLeft.vue'
 import OrderingPhase from './phases/OrderingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import type { PhaseProps } from './props.ts'
+import { roundDetail, TURN_MS } from './reveal.ts'
 
 const props = defineProps<PhaseProps>()
 
