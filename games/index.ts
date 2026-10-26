@@ -7,6 +7,7 @@ import { ballpark } from '@wsfg/game-ballpark/server'
 import { cheat } from '@wsfg/game-cheat/server'
 import { colorMix } from '@wsfg/game-colormix/server'
 import { dropLine } from '@wsfg/game-dropline/server'
+import { dotsAndBoxes } from '@wsfg/game-dotsandboxes/server'
 import { flock } from '@wsfg/game-flock/server'
 import { goneFishin } from '@wsfg/game-gonefishin/server'
 import { imposter } from '@wsfg/game-imposter/server'
@@ -15,4 +16,4 @@ import { lastCard } from '@wsfg/game-lastcard/server'
 import { liarsDice } from '@wsfg/game-liarsdice/server'
 import { ticTacToe } from '@wsfg/game-tictactoe/server'
 
-export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe, dropLine, ballpark, goneFishin, lastCard, inOrder, cheat]
+export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe, dropLine, ballpark, goneFishin, lastCard, inOrder, cheat, dotsAndBoxes]

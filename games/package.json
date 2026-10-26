@@ -12,6 +12,7 @@
     "@wsfg/game-ballpark": "workspace:*",
     "@wsfg/game-cheat": "workspace:*",
     "@wsfg/game-colormix": "workspace:*",
+    "@wsfg/game-dotsandboxes": "workspace:*",
     "@wsfg/game-dropline": "workspace:*",
     "@wsfg/game-flock": "workspace:*",
     "@wsfg/game-gonefishin": "workspace:*",
