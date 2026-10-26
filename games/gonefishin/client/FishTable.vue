@@ -8,6 +8,7 @@
     :selected="selected"
     :dimmed="view.seats.filter((s) => s.left).map((s) => s.id)"
     :flights="flights"
+    :layout="layout"
     class="mb-4"
     @select="(id) => emit('select', id)"
   >
@@ -52,7 +53,7 @@ import type { GoneFishinView, Seat } from '../shared/index.ts'
 import { tableFlights } from './flights.ts'
 
 const props = withDefaults(
-  defineProps<{ view: GoneFishinView; room: RoomView; me: PlayerId; tappable?: PlayerId[]; selected?: PlayerId | null }>(),
+  defineProps<{ view: GoneFishinView; room: RoomView; me: PlayerId; tappable?: PlayerId[]; selected?: PlayerId | null; layout?: 'table' | 'list' }>(),
   { tappable: () => [], selected: null },
 )
 const emit = defineEmits<{ select: [id: PlayerId] }>()

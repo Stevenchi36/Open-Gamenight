@@ -907,7 +907,8 @@ type Move = {                               // public: what the table saw and he
 `secrets` declares: each hand is visible only to its owner (variant: swap a card between two other players' hands, or between another hand and the pond, and the viewer's view must not change), and the pond's order is visible to nobody. A card drawn while fishing isn't in `Move` unless it was a lucky catch. Everything in `Move` is public because at a real table it's said out loud. The leak test covers both Lucky catch settings, a leaver, and RESULTS.
 
 ### Client
-- **Win**: when a game ends while you watch, a `WinCelebration` with a podium of places by books (ties share a place; leavers aren't placed).
+- **Win**: when a game ends while you watch, a `WinCelebration` with a podium of places by books (ties share a place; leavers aren't placed), on your phone and the TV.
+- **Watch page**: a `SpectatorView` with the table fixed to the oval (flights included, so the TV sees every ask and draw), the latest move large, the pond and books down, earlier moves and the games won; on `RESULTS` the winners and their books.
 
 ### Your hand
 Shown openly, not behind `HoldToReveal`: you need it on every turn, and a hand of cards is held, not left on the table. Cards are grouped by rank; tapping a rank selects it for the next ask.
@@ -999,6 +1000,8 @@ type Move =                                              // public: what the tab
 - **Moving cards** (`CardTable` flights, see Gone Fishin'): the deal from the draw pile, then the first card turning up onto the discard; a played card flying to the discard and turning face up on the way (yours is already up), with the top card changing as it lands; draws, penalties and catches from the draw pile; and with 7-0 swaps, cards crossing between the swapped hands (a 7) or passing round the table (a 0).
 - **Your hand**: below the table, playable cards raised. Tap a card, then **Play** (or a colour for a wild, or a seat then **Play** for a 7). **Draw** sits beside it; after drawing, **Play it** / **Keep it**. With jump-in on, identical cards stay tappable out of turn behind a **Jump in!** button. **Last card!** sits by the hand in call mode (pressable any time, so its state hints nothing); others see **Catch** for an exposed player.
 - `needsAction`: your turn, or the host on `RESULTS`. Not an exposed player: the cue would remind them to call.
+- **Win**: a `WinCelebration` for the game's winner, on your phone and the TV: in points scoring only when someone reaches the target (a round win isn't the game), in rounds scoring every round.
+- **Watch page**: a `SpectatorView` with the table fixed to the oval (flights included), the latest move large, a warning while someone can be caught on an uncalled last card, the colour in play, direction, draw pile and any waiting stack, earlier moves, this game's points (points scoring) and the games or rounds won; on `RESULTS` the outcome and everyone's cards left.
 
 ## 7i. In Order (`games/inorder`)
 

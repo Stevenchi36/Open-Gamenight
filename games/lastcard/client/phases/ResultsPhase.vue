@@ -41,21 +41,17 @@ import { computed } from 'vue'
 import { handPoints } from '../../shared/index.ts'
 import LcCard from '../LcCard.vue'
 import type { PhaseProps } from '../props.ts'
+import { resultTitle } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
 
 const points = computed(() => props.view.settings.scoring === 'points')
-const winner = computed(() => (props.view.winnerId === props.me ? 'You' : nameOf(props.room, props.view.winnerId)))
-const wins = computed(() => (props.view.winnerId === props.me ? 'win' : 'wins'))
 
 const overline = computed(() => {
   if (points.value && props.view.champion) return `Reached ${props.view.settings.target} points`
   return 'Out of cards'
 })
-const headline = computed(() => {
-  if (points.value && props.view.champion) return `${winner.value} ${wins.value} the game!`
-  return `${winner.value} ${wins.value} the round`
-})
+const headline = computed(() => resultTitle(props.view, props.me, (id) => nameOf(props.room, id)))
 
 /** Everyone else's hand, in seat order, for checking the count. */
 const leftovers = computed(() =>

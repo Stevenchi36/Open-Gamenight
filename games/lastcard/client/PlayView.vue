@@ -8,14 +8,24 @@
     </div>
     <PlayingPhase v-if="view.phase === 'PLAYING'" v-bind="phaseProps" />
     <ResultsPhase v-else-if="view.phase === 'RESULTS'" v-bind="phaseProps" />
+
+    <!-- Here, not in ResultsPhase: it has to be on screen before RESULTS arrives to see the win happen live. -->
+    <WinCelebration
+      :active="gameWon(view)"
+      :title="resultTitle(view, me, (id) => nameOf(room, id))"
+      :subtitle="points ? `Reached ${view.settings.target} points` : 'Out of cards'"
+      :delay="300"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { nameOf, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import type { PhaseProps } from './props.ts'
+import { gameWon, resultTitle } from './text.ts'
 
 const props = defineProps<PhaseProps>()
 

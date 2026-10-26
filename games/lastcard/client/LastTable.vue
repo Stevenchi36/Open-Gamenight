@@ -8,6 +8,7 @@
     :selected="selected"
     :dimmed="view.seats.filter((s) => s.left).map((s) => s.id)"
     :flights="flights"
+    :layout="layout"
     class="mb-4"
     @select="(id) => emit('select', id)"
   >
@@ -62,7 +63,7 @@ import LcCard from './LcCard.vue'
 import { CARD_COLORS } from './text.ts'
 
 const props = withDefaults(
-  defineProps<{ view: LastCardView; room: RoomView; me: PlayerId; tappable?: PlayerId[]; selected?: PlayerId | null }>(),
+  defineProps<{ view: LastCardView; room: RoomView; me: PlayerId; tappable?: PlayerId[]; selected?: PlayerId | null; layout?: 'table' | 'list' }>(),
   { tappable: () => [], selected: null },
 )
 const emit = defineEmits<{ select: [id: PlayerId] }>()

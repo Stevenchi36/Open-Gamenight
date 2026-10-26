@@ -6,6 +6,7 @@ export const goneFishinClient = defineGameClient<GoneFishinView, GoneFishinSetti
   ...meta,
   PlayView: () => import('./PlayView.vue'),
   SettingsView: () => import('./SettingsView.vue'),
+  SpectatorView: () => import('./SpectatorView.vue'),
   rules: () => import('../RULES.md?raw').then((m) => m.default),
   needsAction,
 })

@@ -2,7 +2,7 @@
 
 Games with no `SpectatorView` yet. On the watch page (`/watch/:code`) they show only the player list and a note saying the game has no TV view yet. See `PLAN.md` § Spectators and `docs/decisions.md`.
 
-**Done:** Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line.
+**Done:** Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card.
 
 ## How to add one
 
@@ -14,16 +14,7 @@ Games with no `SpectatorView` yet. On the watch page (`/watch/:code`) they show 
 
 ## Groups
 
-### 1. Card games: Gone Fishin', Last Card
-
-Reference: `games/cheat/client/SpectatorView.vue`.
-
-- Both already use core `CardTable` through `FishTable.vue` and `LastTable.vue`. Pass `layout="table"` and `:me="SPECTATOR_ID"` and the table works almost unchanged, with no hand shown.
-- Show the latest move prominently, keep a log of earlier moves, and add a scoreboard. Their `text.ts` move formatters should already handle a viewer who isn't a player, as Cheat's do.
-- Gone Fishin': show public set counts and the size of the pond. Never show who holds which ranks.
-- Last Card: show the discard pile top, the current suit/rank in play, the turn direction, and each player's hand count.
-
-### 2. Secret-answer party rounds: Flock, Color Mix, Ballpark
+### 1. Secret-answer party rounds: Flock, Color Mix, Ballpark
 
 These share one round shape: a prompt, then secret answers, then a reveal, then scores.
 
@@ -32,7 +23,7 @@ These share one round shape: a prompt, then secret answers, then a reveal, then 
 - **Ballpark** has an extra betting phase. Show the board of guesses and where tokens sit only if that's already public at that point; check `secrets`.
 - Build one first (Flock is the simplest) and pull the shared "prompt + who's answered + timer" header into `@wsfg/core/ui` if the other two match it.
 
-### 3. Hidden-role and hidden-info games: Word Imposter, In Order, Liar's Dice
+### 2. Hidden-role and hidden-info games: Word Imposter, In Order, Liar's Dice
 
 These have the most secrets, so check each view against `secrets` before showing anything.
 
@@ -54,14 +45,13 @@ Make play more lively, on the TV and on players' phones alike.
 Per game, in order:
 
 1. **Drop Line (done):** the disc falls into its column with a small bounce, and a winning line pulses when it's made live, followed by the win celebration.
-2. **Card games (done):** `CardTable` flights (each game's `client/flights.ts`) for Cheat, Gone Fishin' and Last Card: the deal, cards arcing between seats, the pile and your hand, flips when turned up, a Cheat call's reveal and pickup, Last Card's 7-0 swaps, Gone Fishin's books popping in, and new cards dropping into your hand. Group 1's TV views get it by using the game's table.
+2. **Card games (done):** `CardTable` flights (each game's `client/flights.ts`) for Cheat, Gone Fishin' and Last Card: the deal, cards arcing between seats, the pile and your hand, flips when turned up, a Cheat call's reveal and pickup, Last Card's 7-0 swaps, Gone Fishin's books popping in, and new cards dropping into your hand. Their TV views get it by using the game's table.
 3. **Dots and Boxes:** the line draws in, and a claimed box fills in its owner's colour.
 4. **Tic-Tac-Toe:** a small pop when a mark lands.
-5. **Win celebration everywhere:** core `WinCelebration` (confetti burst and a "{name} wins!" card, plus a podium when given `standings`) is in Drop Line, Dots and Boxes and Gone Fishin'. Add it to every game with a winner, on the play view and the TV; mount it outside any results-only branch so it sees the win arrive.
+5. **Win celebration everywhere:** core `WinCelebration` (confetti burst and a "{name} wins!" card, plus a podium when given `standings`) is in Drop Line, Dots and Boxes, Gone Fishin' and Last Card. Add it to every game with a winner, on the play view and the TV; mount it outside any results-only branch so it sees the win arrive.
 6. **TV extras**, per game as its view is built: a pulse on the turn chip.
 
 ## Suggested order
 
-1. Card games (existing Cheat reference, `CardTable` ready)
-2. Party rounds (new shared header, likely worth extracting)
-3. Hidden-role games (most secrecy review)
+1. Party rounds (new shared header, likely worth extracting)
+2. Hidden-role games (most secrecy review)

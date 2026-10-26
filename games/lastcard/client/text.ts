@@ -1,5 +1,5 @@
 import type { PlayerId } from '@wsfg/core/contract'
-import type { Color, LcCard, Move } from '../shared/index.ts'
+import type { Color, LastCardView, LcCard, Move } from '../shared/index.ts'
 
 /** Card colours: fixed, since they're what's printed on the cards, and they read on light and dark. */
 export const CARD_COLORS: Record<Color, string> = {
@@ -56,4 +56,16 @@ export function moveText(move: Move, me: PlayerId, name: (id: PlayerId) => strin
     case 'catch':
       return `${actor} caught ${who(move.targetId)} without a Last card! call: ${move.count} cards.`
   }
+}
+
+/** The results line: "Bea wins the round", or "You win the game!" when a points game is won. `me` may be SPECTATOR_ID. */
+export function resultTitle(view: LastCardView, me: PlayerId, name: (id: PlayerId) => string): string {
+  const mine = view.winnerId === me
+  const winner = `${mine ? 'You' : name(view.winnerId!)} ${mine ? 'win' : 'wins'}`
+  return view.settings.scoring === 'points' && view.champion ? `${winner} the game!` : `${winner} the round`
+}
+
+/** Worth a celebration: in points scoring someone reached the target; in rounds scoring every round won counts. */
+export function gameWon(view: LastCardView): boolean {
+  return view.settings.scoring === 'points' ? view.champion !== null : view.outcome === 'win'
 }
