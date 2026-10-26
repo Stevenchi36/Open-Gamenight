@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar :model-value="!layout.immersive" density="comfortable" flat border="b">
+    <v-app-bar :model-value="!immersive.room && !immersive.watch" density="comfortable" flat border="b">
       <v-app-bar-title>
         <router-link to="/" class="text-decoration-none" style="color: inherit">{{ config.appName }}</router-link>
       </v-app-bar-title>
@@ -51,7 +51,7 @@ import { computed, defineAsyncComponent, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { authClient } from './lib/auth-client.ts'
 import { config } from './lib/config.ts'
-import { layout } from './lib/layout.ts'
+import { immersive } from './lib/layout.ts'
 import { refreshSession, roomState, toasts } from './lib/room.ts'
 import { useThemeToggle } from './lib/theme.ts'
 

@@ -1,26 +1,29 @@
 <template>
   <v-container class="py-4" :style="{ maxWidth: room ? '1400px' : '560px' }">
     <template v-if="room">
-      <div class="d-flex align-center flex-wrap ga-4 mb-4">
-        <div>
-          <div class="text-caption text-medium-emphasis">Room code</div>
-          <div class="text-h3 room-code font-weight-bold">{{ room.code }}</div>
+      <div class="watch-header mb-4">
+        <div class="d-flex align-center flex-wrap ga-4">
+          <div>
+            <div class="text-caption text-medium-emphasis">Room code</div>
+            <div class="text-h3 room-code font-weight-bold">{{ room.code }}</div>
+          </div>
+          <div>
+            <div class="text-caption text-medium-emphasis">Join on your phone</div>
+            <div class="text-h6">{{ joinUrl }}</div>
+          </div>
         </div>
-        <div>
-          <div class="text-caption text-medium-emphasis">Join on your phone</div>
-          <div class="text-h6">{{ joinUrl }}</div>
+        <div class="text-h5 text-md-center">{{ room.game.name }}</div>
+        <div class="d-flex align-center flex-wrap justify-md-end ga-2">
+          <v-btn
+            v-if="canFullscreen"
+            variant="tonal"
+            :prepend-icon="fullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+            @click="toggleFullscreen"
+          >
+            {{ fullscreen ? 'Exit full screen' : 'Full screen' }}
+          </v-btn>
+          <v-btn variant="text" prepend-icon="mdi-close" to="/">Stop watching</v-btn>
         </div>
-        <v-spacer />
-        <div class="text-h6">{{ room.game.name }}</div>
-        <v-btn
-          v-if="canFullscreen"
-          variant="tonal"
-          :prepend-icon="fullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-          @click="toggleFullscreen"
-        >
-          {{ fullscreen ? 'Exit full screen' : 'Full screen' }}
-        </v-btn>
-        <v-btn variant="text" prepend-icon="mdi-close" to="/">Stop watching</v-btn>
       </div>
 
       <template v-if="room.phase === 'lobby'">
@@ -84,9 +87,10 @@
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
 import { nameOf, StatusCard } from '@wsfg/core/ui'
 import { clientGames } from '@wsfg/games/client'
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch, type Component } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect, type Component } from 'vue'
 import { useRouter } from 'vue-router'
 import PlayerChips from '../components/PlayerChips.vue'
+import { immersive } from '../lib/layout.ts'
 import { roomState, serverNow, stopWatching, watchRoom } from '../lib/room.ts'
 
 const props = defineProps<{ code: string }>()
@@ -100,6 +104,10 @@ const game = computed(() => roomState.game)
 const currentGame = computed(() => room.value?.availableGames.find((g) => g.id === room.value!.game.id))
 const joinUrl = computed(() => `${location.host}/room/${props.code}`)
 const entered = ref(props.code)
+
+// A screen showing a room needs only its own header (code, join link, full screen, stop).
+watchEffect(() => (immersive.watch = !!room.value))
+onUnmounted(() => (immersive.watch = false))
 
 watch(
   () => props.code,
@@ -165,3 +173,19 @@ onUnmounted(() => {
   if (document.fullscreenElement) void document.exitFullscreen().catch(() => {})
 })
 </script>
+
+<style scoped>
+/* Equal side columns keep the game name centred on the screen, not between the two sides. */
+.watch-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+/* Below md (Vuetify's 960px) the three parts stack, left-aligned. */
+@media (max-width: 959.98px) {
+  .watch-header {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

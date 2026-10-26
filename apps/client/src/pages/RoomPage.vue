@@ -136,7 +136,7 @@ import { useRouter } from 'vue-router'
 import AttentionGlow from '../components/AttentionGlow.vue'
 import LobbyView from '../components/LobbyView.vue'
 import RulesDialog from '../components/RulesDialog.vue'
-import { layout } from '../lib/layout.ts'
+import { immersive } from '../lib/layout.ts'
 import { joinRoom, lastName, leaveRoom, resumeSeat, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
 import { useThemeToggle } from '../lib/theme.ts'
 
@@ -162,8 +162,8 @@ const watchSite = `${location.host}/watch`
 const { isDark, toggleTheme } = useThemeToggle()
 
 const playing = computed(() => room.value?.phase === 'playing')
-watchEffect(() => (layout.immersive = playing.value))
-onUnmounted(() => (layout.immersive = false))
+watchEffect(() => (immersive.room = playing.value))
+onUnmounted(() => (immersive.room = false))
 watch(playing, () => (menu.value = false))
 
 function openTv() {
