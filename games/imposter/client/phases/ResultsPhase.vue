@@ -9,7 +9,7 @@
     >
       The word was <strong>{{ result.secretWord }}</strong>.
       {{ nameOf(room, result.imposterId) }} was the imposter{{ result.caught ? ' and got caught' : ' and escaped' }}.
-      <div v-if="result.guessRequired" class="text-body-2 mt-1">
+      <div v-if="result.guessRequired" class="text-body-medium mt-1">
         Their guess<template v-if="result.guess">, "{{ result.guess }}",</template> was {{ result.guessCorrect ? 'right' : 'wrong' }}.
       </div>
     </StatusCard>

@@ -1,6 +1,6 @@
 <template>
   <div class="mb-3">
-    <div class="text-body-2 mb-1">{{ label }}</div>
+    <div class="text-body-medium mb-1">{{ label }}</div>
     <v-btn-toggle
       :model-value="modelValue"
       :disabled="disabled"
@@ -15,7 +15,7 @@
     >
       <v-btn v-for="item in items" :key="String(item.value)" :value="item.value" size="small">{{ item.title }}</v-btn>
     </v-btn-toggle>
-    <div v-if="hint" class="text-caption text-medium-emphasis mt-1">{{ hint }}</div>
+    <div v-if="hint" class="text-body-small text-medium-emphasis mt-1">{{ hint }}</div>
   </div>
 </template>
 

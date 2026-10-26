@@ -28,9 +28,9 @@
     <v-col cols="12" md="4">
       <v-card class="mb-4">
         <v-card-text>
-          <div class="text-overline">Round {{ view.round }}</div>
-          <div class="text-h5">{{ view.totalDice }} dice in play</div>
-          <div v-if="settings.wildOnes" class="text-body-1 mt-1">Ones are wild</div>
+          <div class="text-label-large">Round {{ view.round }}</div>
+          <div class="text-headline-small">{{ view.totalDice }} dice in play</div>
+          <div v-if="settings.wildOnes" class="text-body-large mt-1">Ones are wild</div>
         </v-card-text>
       </v-card>
 
@@ -44,7 +44,7 @@
         large
       />
 
-      <div class="text-overline">Matches won</div>
+      <div class="text-label-large">Matches won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
     </v-col>
 

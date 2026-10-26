@@ -10,24 +10,24 @@
     class="mb-4"
   >
     <template #seat="{ id }">
-      <div v-if="byId[id]!.left" class="text-caption text-medium-emphasis">left</div>
-      <div v-else-if="byId[id]!.cards === 0" class="text-caption font-weight-bold text-success my-1">out of cards</div>
+      <div v-if="byId[id]!.left" class="text-body-small text-medium-emphasis">left</div>
+      <div v-else-if="byId[id]!.cards === 0" class="text-body-small font-weight-bold text-success my-1">out of cards</div>
       <div v-else class="d-flex align-center justify-center my-1" :aria-label="`${byId[id]!.cards} cards`">
         <PlayingCard v-for="i in Math.min(byId[id]!.cards, 4)" :key="i" size="sm" :class="{ 'seat-card--stacked': i > 1 }" />
-        <span class="text-caption font-weight-bold ml-1">{{ byId[id]!.cards }}</span>
+        <span class="text-body-small font-weight-bold ml-1">{{ byId[id]!.cards }}</span>
       </div>
     </template>
     <template #center>
       <div v-if="view.pile > 0" class="d-flex align-center ga-2">
         <PlayingCard />
-        <div class="text-body-2 text-left">
+        <div class="text-body-medium text-left">
           <strong>{{ view.pile }}</strong> in the pile
-          <div v-if="view.top" class="text-caption">
+          <div v-if="view.top" class="text-body-small">
             Last: <strong>{{ view.top.count }} × {{ view.top.claim }}</strong>
           </div>
         </div>
       </div>
-      <div v-else class="text-body-2 text-medium-emphasis">The pile is empty</div>
+      <div v-else class="text-body-medium text-medium-emphasis">The pile is empty</div>
     </template>
   </CardTable>
 </template>

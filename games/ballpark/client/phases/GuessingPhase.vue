@@ -7,8 +7,8 @@
     </v-alert>
     <v-card v-else-if="view.you.guess === null || changing" color="primary" variant="tonal" class="mb-4">
       <v-card-text>
-        <div class="text-h6 mb-1">What's your best guess?</div>
-        <div class="text-body-2 mb-3">No idea? Guess anyway: you can still win by betting well.</div>
+        <div class="text-title-large mb-1">What's your best guess?</div>
+        <div class="text-body-medium mb-3">No idea? Guess anyway: you can still win by betting well.</div>
         <v-form class="d-flex ga-2" @submit.prevent="submit">
           <v-text-field
             v-model="text"
@@ -33,8 +33,8 @@
     <template v-else>
       <!-- Phones lie on the table: keep the guess out of a neighbour's sight. -->
       <HoldToReveal label="Hold to see your guess" class="mb-2">
-        <div class="text-overline">Your guess</div>
-        <div class="text-h5 font-weight-bold">{{ formatValue(view.you.guess, view.question.unit) }}</div>
+        <div class="text-label-large">Your guess</div>
+        <div class="text-headline-small font-weight-bold">{{ formatValue(view.you.guess, view.question.unit) }}</div>
       </HoldToReveal>
       <div class="text-center mb-4">
         <v-btn variant="text" size="small" prepend-icon="mdi-pencil" @click="changing = true">Change my guess</v-btn>
@@ -42,7 +42,7 @@
     </template>
 
     <ProgressCount :done="view.guessed.length" :total="view.roundPlayers.length" label="guessed" />
-    <div v-if="waitingOn.length > 0 && view.guessed.length > 0" class="text-body-2 text-medium-emphasis text-center mb-4">
+    <div v-if="waitingOn.length > 0 && view.guessed.length > 0" class="text-body-medium text-medium-emphasis text-center mb-4">
       Waiting for {{ waitingOn.map((id) => nameOf(room, id)).join(', ') }}
     </div>
 

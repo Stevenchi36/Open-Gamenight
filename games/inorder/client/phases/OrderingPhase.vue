@@ -10,15 +10,15 @@
       <HoldToReveal :label="cards.length === 1 ? 'Hold to see your number' : 'Hold to see your numbers'" class="mb-3">
         <div class="d-flex justify-center ga-8">
           <div v-for="(card, i) in cards" :key="card.id">
-            <div class="text-overline">{{ rankLabel(i) }}</div>
-            <div class="text-h2 font-weight-bold">{{ card.number }}</div>
+            <div class="text-label-large">{{ rankLabel(i) }}</div>
+            <div class="text-display-large font-weight-bold">{{ card.number }}</div>
           </div>
         </div>
       </HoldToReveal>
 
       <v-card color="primary" variant="tonal" class="mb-4">
         <v-card-text>
-          <div class="text-body-2 mb-3">Name something that fits the theme at your number. Don't say the number!</div>
+          <div class="text-body-medium mb-3">Name something that fits the theme at your number. Don't say the number!</div>
           <div v-for="(card, i) in cards" :key="card.id" :class="{ 'mt-3': i > 0 }">
             <SubmitField
               v-if="card.clue === null || editing === card.id"
@@ -30,8 +30,8 @@
             />
             <div v-else class="d-flex align-center ga-2">
               <div class="flex-grow-1" style="min-width: 0">
-                <div class="text-caption">{{ rankLabel(i) }}</div>
-                <div class="text-body-1 font-weight-medium" style="overflow-wrap: anywhere">{{ card.clue }}</div>
+                <div class="text-body-small">{{ rankLabel(i) }}</div>
+                <div class="text-body-large font-weight-medium" style="overflow-wrap: anywhere">{{ card.clue }}</div>
               </div>
               <v-btn variant="text" size="small" prepend-icon="mdi-pencil" @click="edit(card.id, card.clue)">Change</v-btn>
             </div>
@@ -40,8 +40,8 @@
       </v-card>
     </template>
 
-    <div class="text-h6">The line</div>
-    <div class="text-body-2 text-medium-emphasis mb-3">
+    <div class="text-title-large">The line</div>
+    <div class="text-body-medium text-medium-emphasis mb-3">
       Talk it over and drag the clues into order, lowest number at the top. Anyone can move any card.
     </div>
     <LineEnd :theme="view.theme" end="low" />
@@ -65,7 +65,7 @@
         <v-btn v-else block size="x-large" color="primary" prepend-icon="mdi-check" class="mb-2" :disabled="unclued" @click="send({ type: 'set_ready', ready: true })">
           Ready: I'm happy with the order
         </v-btn>
-        <div class="text-caption text-medium-emphasis text-center mb-4">
+        <div class="text-body-small text-medium-emphasis text-center mb-4">
           {{
             unclued
               ? 'Give your number a clue first.'

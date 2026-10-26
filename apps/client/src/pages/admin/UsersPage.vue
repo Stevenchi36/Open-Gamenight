@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h5">Users</h1>
+      <h1 class="text-headline-small">Users</h1>
       <v-spacer />
       <v-btn color="primary" prepend-icon="mdi-account-plus" @click="openCreate">New user</v-btn>
     </div>
@@ -10,7 +10,7 @@
       <v-data-table :headers="headers" :items="users" :loading="loading" item-value="id" density="comfortable">
         <template #[`item.name`]="{ item }">
           <div class="font-weight-medium">{{ item.name }}</div>
-          <div class="text-caption text-medium-emphasis">{{ item.email }}</div>
+          <div class="text-body-small text-medium-emphasis">{{ item.email }}</div>
         </template>
         <template #[`item.role`]="{ item }">
           <v-chip :color="item.role === 'admin' ? 'primary' : undefined" size="small" variant="tonal">{{ item.role ?? 'user' }}</v-chip>
@@ -39,7 +39,7 @@
               <v-list-item prepend-icon="mdi-delete" title="Delete" base-color="error" @click="toDelete = item" />
             </v-list>
           </v-menu>
-          <span v-else class="text-caption text-medium-emphasis">you</span>
+          <span v-else class="text-body-small text-medium-emphasis">you</span>
         </template>
       </v-data-table>
     </v-card>

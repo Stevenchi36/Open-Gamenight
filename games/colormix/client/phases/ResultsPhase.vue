@@ -13,7 +13,7 @@
     <MixCard compact :colors="view.colors" :target="view.target" :server-now="serverNow" />
 
     <v-card variant="tonal" class="mb-4">
-      <v-card-title class="text-subtitle-1">Guesses, closest first</v-card-title>
+      <v-card-title class="text-body-large">Guesses, closest first</v-card-title>
       <v-list density="compact" bg-color="transparent">
         <v-list-item v-for="(guess, i) in result.guesses" :key="guess.playerId" :active="guess.playerId === me">
           <template #prepend>
@@ -25,7 +25,7 @@
             <v-chip v-if="guess.points" size="x-small" color="success" class="ml-1">+{{ guess.points }}</v-chip>
           </v-list-item-title>
           <template #append>
-            <span class="text-body-1">{{ guess.closeness.toFixed(2) }}%</span>
+            <span class="text-body-large">{{ guess.closeness.toFixed(2) }}%</span>
           </template>
         </v-list-item>
         <v-list-item v-for="id in noGuess" :key="id">

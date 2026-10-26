@@ -9,7 +9,7 @@
     </StatusCard>
 
     <VoteBreakdown :room="room" :ballots="result.votedFor" :voters="view.roundPlayers" :marked-id="result.imposterId" marked-label="imposter" />
-    <div class="text-center text-body-2 text-medium-emphasis">{{ next }}</div>
+    <div class="text-center text-body-medium text-medium-emphasis">{{ next }}</div>
   </div>
 </template>
 

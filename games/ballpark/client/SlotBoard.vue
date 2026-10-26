@@ -12,14 +12,14 @@
     >
       <v-card-text class="d-flex align-center ga-3 py-3">
         <div class="text-center" style="min-width: 3.5ch">
-          <div class="text-h6 font-weight-bold">×{{ slot.odds }}</div>
+          <div class="text-title-large font-weight-bold">×{{ slot.odds }}</div>
         </div>
         <div class="flex-grow-1">
-          <div class="text-subtitle-1 font-weight-medium">
+          <div class="text-body-large font-weight-medium">
             <template v-if="slot.value === null">All too high</template>
             <template v-else>{{ formatValue(slot.value, unit) }}</template>
           </div>
-          <div class="text-body-2 text-medium-emphasis">
+          <div class="text-body-medium text-medium-emphasis">
             <template v-if="slot.value === null">The answer is below every guess</template>
             <template v-else>{{ slot.playerIds.map((id) => (id === me ? 'You' : nameOf(room, id))).join(', ') }}</template>
           </div>

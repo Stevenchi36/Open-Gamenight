@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h5">Rooms</h1>
+      <h1 class="text-headline-small">Rooms</h1>
       <v-spacer />
       <v-btn variant="text" prepend-icon="mdi-refresh" :loading="loading" @click="load">Refresh</v-btn>
     </div>
@@ -10,7 +10,7 @@
       <v-data-table :headers="headers" :items="rooms" :loading="loading" item-value="code" density="comfortable" :items-per-page="50">
         <template #[`item.code`]="{ item }">
           <div class="room-code font-weight-bold">{{ item.code }}</div>
-          <div class="text-caption text-medium-emphasis">{{ item.gameName }}</div>
+          <div class="text-body-small text-medium-emphasis">{{ item.gameName }}</div>
         </template>
         <template #[`item.phase`]="{ item }">
           <v-chip size="small" variant="tonal" :color="item.phase === 'playing' ? 'success' : undefined">
@@ -37,7 +37,7 @@
         </template>
         <template #[`item.createdAt`]="{ item }">
           <div>{{ item.creatorName }}</div>
-          <div class="text-caption text-medium-emphasis">{{ ago(item.createdAt) }}</div>
+          <div class="text-body-small text-medium-emphasis">{{ ago(item.createdAt) }}</div>
         </template>
         <template #[`item.lastActivity`]="{ item }">{{ ago(item.lastActivity) }}</template>
         <template #[`item.actions`]="{ item }">
@@ -49,7 +49,7 @@
         <template #no-data>No rooms are open.</template>
       </v-data-table>
     </v-card>
-    <div class="text-caption text-medium-emphasis mt-2">
+    <div class="text-body-small text-medium-emphasis mt-2">
       Updates every {{ REFRESH_MS / 1000 }} seconds. Joining takes a seat like any player, and you can join a game in progress.
     </div>
 

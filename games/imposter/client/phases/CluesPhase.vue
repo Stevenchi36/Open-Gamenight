@@ -5,11 +5,11 @@
 
     <v-card v-if="myTurn" color="primary" variant="tonal" class="mb-4">
       <v-card-text>
-        <div class="text-h6 mb-2">Your turn: one word</div>
+        <div class="text-title-large mb-2">Your turn: one word</div>
         <SubmitField v-model="clue" label="Your clue" :maxlength="24" send-label="Send clue" :error="localError" @submit="submit" />
       </v-card-text>
     </v-card>
-    <div v-else class="text-h6 text-center mb-4">
+    <div v-else class="text-title-large text-center mb-4">
       {{ nameOf(room, view.turn.currentPlayerId) }} is thinking of a clue...
     </div>
 

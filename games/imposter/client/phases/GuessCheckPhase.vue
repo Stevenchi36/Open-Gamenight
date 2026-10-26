@@ -6,7 +6,7 @@
       </StatusCard>
       <StatusCard v-else-if="result.guess === null" color="primary" variant="flat" prominent compact overline="Your last chance" title="What's the secret word?">
         <SubmitField label="Your guess" :maxlength="GUESS_MAX_LENGTH" send-label="Send guess" on-color @submit="(word) => send({ type: 'submit_guess', word })" />
-        <div class="text-body-2 mt-2">One try. {{ judgeLine }}</div>
+        <div class="text-body-medium mt-2">One try. {{ judgeLine }}</div>
       </StatusCard>
       <StatusCard v-else color="primary" variant="flat" prominent overline="You guessed" :title="result.guess">
         {{ judgeLine }}
@@ -14,8 +14,8 @@
     </template>
 
     <template v-else-if="me === result.judgeId">
-      <div class="text-h6 mb-2">You're the judge</div>
-      <div class="text-body-2 mb-3">
+      <div class="text-title-large mb-2">You're the judge</div>
+      <div class="text-body-medium mb-3">
         <template v-if="!typed">Listen to {{ nameOf(room, result.imposterId) }}'s guess, then check it against the word.</template>
         <template v-else>Check {{ nameOf(room, result.imposterId) }}'s guess against the word. Close misspellings can count.</template>
       </div>
@@ -24,8 +24,8 @@
         <StatusCard v-else>Waiting for {{ nameOf(room, result.imposterId) }} to type a guess...</StatusCard>
       </template>
       <HoldToReveal label="Hold to see the secret word" class="mb-4">
-        <div class="text-overline">The secret word</div>
-        <div class="text-h4 font-weight-bold">{{ result.secretWord }}</div>
+        <div class="text-label-large">The secret word</div>
+        <div class="text-headline-large font-weight-bold">{{ result.secretWord }}</div>
       </HoldToReveal>
       <div class="d-flex ga-2">
         <v-btn class="flex-grow-1" size="x-large" color="success" prepend-icon="mdi-check" :disabled="waitingForGuess" @click="send({ type: 'judge_guess', correct: true })">

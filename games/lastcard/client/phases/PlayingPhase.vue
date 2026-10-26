@@ -26,7 +26,7 @@
         Catch {{ nameOf(room, view.exposed) }}! No Last card! call
       </v-btn>
 
-      <div v-if="hint" class="text-body-2 text-center text-medium-emphasis mb-2">{{ hint }}</div>
+      <div v-if="hint" class="text-body-medium text-center text-medium-emphasis mb-2">{{ hint }}</div>
       <HandCards
         :hand="view.you.hand"
         :playable="playable"
@@ -73,7 +73,7 @@
           Last card!
         </v-btn>
       </div>
-      <div v-if="!myTurn" class="text-center text-body-1 text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
+      <div v-if="!myTurn" class="text-center text-body-large text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
     </template>
 
     <v-expansion-panels v-if="view.log.length > 1" variant="accordion">

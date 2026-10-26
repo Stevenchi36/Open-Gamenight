@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="d-flex align-center mb-3 text-body-2 text-medium-emphasis">
+    <div class="d-flex align-center mb-3 text-body-medium text-medium-emphasis">
       <span v-if="points">Game {{ view.game }} · first to {{ view.settings.target }}</span>
       <span v-else>Round {{ view.round }}</span>
       <v-spacer />

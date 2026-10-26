@@ -12,7 +12,7 @@
         <MixCard :colors="view.colors" :target="view.target" :server-now="serverNow" />
 
         <v-card variant="tonal" class="mb-4">
-          <v-card-title class="text-h6">Guesses, closest first</v-card-title>
+          <v-card-title class="text-title-large">Guesses, closest first</v-card-title>
           <div class="pa-2">
             <div
               v-for="(guess, i) in result.guesses"
@@ -21,15 +21,15 @@
               :class="{ 'guess--in': stagger }"
               :style="stagger ? { animationDelay: `${(result.guesses.length - 1 - i) * 350}ms` } : undefined"
             >
-              <span class="text-h6 text-medium-emphasis" style="min-width: 1.5em">{{ placeOf(i) }}.</span>
+              <span class="text-title-large text-medium-emphasis" style="min-width: 1.5em">{{ placeOf(i) }}.</span>
               <ColorDot :color="guess.color" :size="56" />
-              <span class="text-h6 flex-grow-1">
+              <span class="text-title-large flex-grow-1">
                 {{ name(guess.playerId) }}
                 <v-chip v-if="guess.points" color="success" class="ml-1">+{{ guess.points }}</v-chip>
               </span>
-              <span class="text-h5 font-weight-bold">{{ guess.closeness.toFixed(2) }}%</span>
+              <span class="text-headline-small font-weight-bold">{{ guess.closeness.toFixed(2) }}%</span>
             </div>
-            <div v-for="id in noGuess" :key="id" class="text-body-1 text-medium-emphasis px-3 py-2">{{ name(id) }}: no guess</div>
+            <div v-for="id in noGuess" :key="id" class="text-body-large text-medium-emphasis px-3 py-2">{{ name(id) }}: no guess</div>
           </div>
         </v-card>
       </template>
@@ -38,8 +38,8 @@
     <v-col cols="12" md="4">
       <v-card class="mb-4">
         <v-card-text>
-          <div class="text-overline">Color Mix</div>
-          <div class="text-h5">Round {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</div>
+          <div class="text-label-large">Color Mix</div>
+          <div class="text-headline-small">Round {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</div>
         </v-card-text>
       </v-card>
       <ScoreBoard :scores="view.scores" :room="room" :gained="result?.pointsAwarded" />

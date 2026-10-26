@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-h5 mb-4">Overview</h1>
+    <h1 class="text-headline-small mb-4">Overview</h1>
     <v-card class="mb-4">
       <v-card-title>AI usage today</v-card-title>
       <v-card-text v-if="!usage">Loading...</v-card-text>
@@ -8,13 +8,13 @@
         AI generation is off. Set <code>ANTHROPIC_API_KEY</code> on the server to enable it.
       </v-card-text>
       <v-card-text v-else>
-        <div class="d-flex text-body-2 mb-1">
+        <div class="d-flex text-body-medium mb-1">
           <span>{{ usage.outputTokens.toLocaleString() }} of {{ usage.cap.toLocaleString() }} output tokens</span>
           <v-spacer />
           <span>{{ usage.calls }} call{{ usage.calls === 1 ? '' : 's' }}</span>
         </div>
         <v-progress-linear :model-value="percent" :color="percent >= 90 ? 'error' : 'primary'" height="10" rounded />
-        <div class="text-caption text-medium-emphasis mt-2">Resets at midnight UTC. Shared by every game and admin.</div>
+        <div class="text-body-small text-medium-emphasis mt-2">Resets at midnight UTC. Shared by every game and admin.</div>
         <v-table v-if="usage.byGame.length" density="compact" class="mt-3">
           <thead>
             <tr><th>Game</th><th>Calls</th><th>Output tokens</th></tr>

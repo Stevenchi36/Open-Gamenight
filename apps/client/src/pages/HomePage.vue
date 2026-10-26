@@ -22,7 +22,7 @@
         <v-card-title>Join a room</v-card-title>
         <v-card-text>
           <v-form @submit.prevent="join">
-            <div class="text-body-2 mb-1">Room code</div>
+            <div class="text-body-medium mb-1">Room code</div>
             <v-otp-input
               v-model="code"
               length="4"
@@ -37,7 +37,7 @@
               Join
             </v-btn>
           </v-form>
-          <div class="text-center text-body-2 mt-3">
+          <div class="text-center text-body-medium mt-3">
             Putting the game on a TV? <router-link to="/watch">Watch a room</router-link> on that screen instead.
           </div>
         </v-card-text>
@@ -64,7 +64,7 @@
           </v-form>
         </v-card-text>
       </v-card>
-      <p v-else class="text-center text-body-2 text-medium-emphasis">
+      <p v-else class="text-center text-body-medium text-medium-emphasis">
         <router-link to="/login">Sign in</router-link> to start a room. Joining only needs a code.
       </p>
     </template>

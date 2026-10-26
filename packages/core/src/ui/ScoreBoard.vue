@@ -1,6 +1,6 @@
 <template>
   <v-card variant="tonal">
-    <v-card-title class="text-subtitle-1">Scoreboard</v-card-title>
+    <v-card-title class="text-body-large">Scoreboard</v-card-title>
     <v-list density="compact" bg-color="transparent">
       <v-list-item v-for="(row, i) in rows" :key="row.id">
         <template #prepend>
@@ -14,7 +14,7 @@
           <slot name="badge" :id="row.id" />
         </v-list-item-title>
         <template #append>
-          <span class="text-h6">{{ row.score }}</span>
+          <span class="text-title-large">{{ row.score }}</span>
         </template>
       </v-list-item>
     </v-list>

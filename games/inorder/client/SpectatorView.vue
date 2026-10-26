@@ -21,7 +21,7 @@
                 </template>
                 <div v-else-if="i < turned" class="d-flex align-center ga-2 number--in">
                   <v-icon :color="isWrong(item.id) ? 'error' : 'success'">{{ isWrong(item.id) ? 'mdi-close-circle' : 'mdi-check-circle' }}</v-icon>
-                  <v-avatar :color="isWrong(item.id) ? 'error' : 'success'" size="56" class="text-h5 font-weight-bold">{{ item.number }}</v-avatar>
+                  <v-avatar :color="isWrong(item.id) ? 'error' : 'success'" size="56" class="text-headline-small font-weight-bold">{{ item.number }}</v-avatar>
                 </div>
                 <v-avatar v-else variant="tonal" size="56"><v-icon>mdi-help</v-icon></v-avatar>
               </template>
@@ -35,15 +35,15 @@
     <v-col cols="12" md="4">
       <v-card class="mb-4">
         <v-card-text>
-          <div class="text-overline">Round {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</div>
+          <div class="text-label-large">Round {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</div>
           <LivesLeft :lives="view.lives" :max="view.maxLives" size="x-large" />
-          <div class="text-body-1 mt-2">
+          <div class="text-body-large mt-2">
             Rounds cleared: <strong>{{ view.cleared }}</strong> · Perfect: <strong>{{ view.perfect }}</strong>
           </div>
         </v-card-text>
       </v-card>
       <template v-if="view.phase === 'ORDERING'">
-        <div class="text-body-1 text-center mb-2">Players drag the clues into order on their phones, lowest number at the top.</div>
+        <div class="text-body-large text-center mb-2">Players drag the clues into order on their phones, lowest number at the top.</div>
         <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.ready" label="ready" large />
       </template>
     </v-col>
@@ -105,10 +105,10 @@ const detail = computed(() => (result.value ? roundDetail(result.value, props.vi
 </script>
 
 <style scoped>
-.tv-line :deep(.text-body-1) {
+.tv-line :deep(.text-body-large) {
   font-size: 1.5rem !important;
 }
-.tv-line :deep(.text-caption) {
+.tv-line :deep(.text-body-small) {
   font-size: 1rem !important;
 }
 .line-move {

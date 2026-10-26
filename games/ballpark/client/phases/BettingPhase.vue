@@ -6,8 +6,8 @@
       You joined during this round. You'll play from the next question.
     </v-alert>
     <template v-else-if="choosing">
-      <div class="text-h6 mb-1">Place your {{ TOKENS }} tokens</div>
-      <div class="text-body-2 mb-3">{{ howToWin }} Tap a guess to put a token on it; both on one is fine.</div>
+      <div class="text-title-large mb-1">Place your {{ TOKENS }} tokens</div>
+      <div class="text-body-medium mb-3">{{ howToWin }} Tap a guess to put a token on it; both on one is fine.</div>
     </template>
 
     <SlotBoard
@@ -25,14 +25,14 @@
 
     <v-card v-if="choosing && settings.scoring === 'chips' && draft.length > 0" variant="tonal" class="mb-4">
       <v-card-text>
-        <div class="text-subtitle-1 mb-1">Stake chips on your tokens</div>
-        <div class="text-body-2 text-medium-emphasis mb-2">
+        <div class="text-body-large mb-1">Stake chips on your tokens</div>
+        <div class="text-body-medium text-medium-emphasis mb-2">
           A winning token pays its odds × (1 + stake). A losing token loses its stake. You have {{ myChips }} chip{{ myChips === 1 ? '' : 's' }}.
         </div>
         <div v-for="(bet, i) in draft" :key="i" class="d-flex align-center ga-2">
           <span class="flex-grow-1">Token on {{ slotLabel(bet.slot) }}</span>
           <v-btn icon="mdi-minus" size="small" variant="text" :disabled="bet.stake === 0" aria-label="Less" @click="bet.stake--" />
-          <span class="text-h6" style="min-width: 2ch; text-align: center">{{ bet.stake }}</span>
+          <span class="text-title-large" style="min-width: 2ch; text-align: center">{{ bet.stake }}</span>
           <v-btn icon="mdi-plus" size="small" variant="text" :disabled="staked >= myChips" aria-label="More" @click="bet.stake++" />
         </div>
       </v-card-text>
@@ -45,8 +45,8 @@
       <template v-else>
         <!-- Hidden bets: keep them out of a neighbour's sight. -->
         <HoldToReveal v-if="settings.bets === 'hidden'" label="Hold to see your bets" class="mb-2">
-          <div class="text-overline">Your bets</div>
-          <div v-for="(bet, i) in view.you.bets" :key="i" class="text-h6">
+          <div class="text-label-large">Your bets</div>
+          <div v-for="(bet, i) in view.you.bets" :key="i" class="text-title-large">
             {{ slotLabel(bet.slot) }}<template v-if="bet.stake"> (+{{ bet.stake }})</template>
           </div>
         </HoldToReveal>
@@ -57,7 +57,7 @@
     </template>
 
     <ProgressCount :done="view.betted.length" :total="view.roundPlayers.length" label="bet" />
-    <div v-if="waitingOn.length > 0 && view.betted.length > 0" class="text-body-2 text-medium-emphasis text-center mb-4">
+    <div v-if="waitingOn.length > 0 && view.betted.length > 0" class="text-body-medium text-medium-emphasis text-center mb-4">
       Waiting for {{ waitingOn.map((id) => nameOf(room, id)).join(', ') }}
     </div>
 

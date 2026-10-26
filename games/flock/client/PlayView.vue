@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="d-flex align-center ga-3 mb-3 text-body-2 text-medium-emphasis">
+    <div class="d-flex align-center ga-3 mb-3 text-body-medium text-medium-emphasis">
       <span>Question {{ view.round }}</span>
       <span v-if="settings.scoreLimit !== null">· First to {{ settings.scoreLimit }}</span>
       <v-spacer />

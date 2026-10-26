@@ -7,7 +7,7 @@
       You're out of dice. Watch the rest of the match.
     </v-alert>
     <HoldToReveal v-else label="Hold to see your dice" class="mb-4">
-      <div class="text-overline">Your dice</div>
+      <div class="text-label-large">Your dice</div>
       <DiceRow :dice="view.you.dice" :size="48" class="justify-center" />
     </HoldToReveal>
 
@@ -22,10 +22,10 @@
 
     <v-card v-if="myTurn" class="mb-4">
       <v-card-text>
-        <div class="text-body-2 mb-2">Your bid: at least</div>
+        <div class="text-body-medium mb-2">Your bid: at least</div>
         <div class="d-flex align-center justify-center ga-4 mb-3">
           <v-btn icon="mdi-minus" variant="tonal" size="small" :disabled="quantity <= minForFace" @click="quantity--" />
-          <span class="text-h4 font-weight-bold" style="min-width: 2ch; text-align: center">{{ quantity }}</span>
+          <span class="text-headline-large font-weight-bold" style="min-width: 2ch; text-align: center">{{ quantity }}</span>
           <v-btn icon="mdi-plus" variant="tonal" size="small" :disabled="quantity >= view.totalDice" @click="quantity++" />
         </div>
         <div class="d-flex justify-center flex-wrap ga-1 mb-4">
@@ -52,7 +52,7 @@
         </div>
       </v-card-text>
     </v-card>
-    <div v-else-if="view.turn" class="text-center text-body-1 text-medium-emphasis mb-4">
+    <div v-else-if="view.turn" class="text-center text-body-large text-medium-emphasis mb-4">
       Waiting for {{ nameOf(room, view.turn) }}…
     </div>
 

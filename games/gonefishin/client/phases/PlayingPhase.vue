@@ -12,7 +12,7 @@
     <FishTable :view="view" :room="room" :me="me" :tappable="myTurn ? targets : []" :selected="target" @select="(id) => (target = id)" />
 
     <template v-if="view.you.status === 'playing'">
-      <div v-if="myTurn" class="text-body-2 text-center text-medium-emphasis mb-2">
+      <div v-if="myTurn" class="text-body-medium text-center text-medium-emphasis mb-2">
         {{ rank ? (target ? '' : 'Now tap a player to ask.') : 'Tap a rank in your hand, then a player to ask.' }}
       </div>
       <HandCards
@@ -23,11 +23,11 @@
         class="mb-4"
         @select="(r) => (rank = r)"
       />
-      <div v-if="view.you.hand.length === 0" class="text-center text-body-2 text-medium-emphasis mb-4">Your hand is empty.</div>
+      <div v-if="view.you.hand.length === 0" class="text-center text-body-medium text-medium-emphasis mb-4">Your hand is empty.</div>
       <v-btn v-if="myTurn" block size="large" color="primary" class="mb-4" :disabled="!rank || !target" @click="ask">
         {{ rank && target ? `Ask ${nameOf(room, target)} for ${rankName(rank)}` : 'Ask' }}
       </v-btn>
-      <div v-else class="text-center text-body-1 text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
+      <div v-else class="text-center text-body-large text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
     </template>
 
     <v-expansion-panels v-if="view.log.length > 1" variant="accordion">

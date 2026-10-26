@@ -1,13 +1,13 @@
 <template>
   <v-card class="mb-4" :class="{ 'clue-list--large': large }">
-    <v-card-title :class="large ? 'text-h6' : 'text-subtitle-1'">Clues</v-card-title>
+    <v-card-title :class="large ? 'text-title-large' : 'text-body-large'">Clues</v-card-title>
     <v-card-text v-if="view.clues.length === 0" class="text-medium-emphasis">No clues yet.</v-card-text>
     <v-card-text v-else class="pt-0">
       <!-- Transition groups pop in clues sent while watching; the first render shows them as they are. -->
       <TransitionGroup name="clue-pop">
         <div v-for="row in byPlayer" :key="row.playerId" class="mb-3">
           <h4 class="player">{{ nameOf(room, row.playerId) }}</h4>
-          <TransitionGroup tag="ul" name="clue-pop" class="clues text-body-1">
+          <TransitionGroup tag="ul" name="clue-pop" class="clues text-body-large">
             <li v-for="c in row.clues" :key="c.rotation">{{ c.word }}</li>
           </TransitionGroup>
         </div>

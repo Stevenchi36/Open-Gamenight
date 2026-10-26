@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="d-flex align-center mb-3 text-body-2 text-medium-emphasis">
+    <div class="d-flex align-center mb-3 text-body-medium text-medium-emphasis">
       <span>Round {{ view.round }}</span>
       <v-spacer />
       <span v-if="myScore !== null">Your score: <strong>{{ myScore }}</strong></span>

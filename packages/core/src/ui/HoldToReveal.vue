@@ -21,8 +21,8 @@
       <div v-if="revealed"><slot /></div>
       <div v-else>
         <v-icon size="36" class="mb-2">mdi-gesture-tap-hold</v-icon>
-        <div class="text-h6">{{ label }}</div>
-        <div class="text-caption text-medium-emphasis">Keep your screen away from others</div>
+        <div class="text-title-large">{{ label }}</div>
+        <div class="text-body-small text-medium-emphasis">Keep your screen away from others</div>
       </div>
     </v-card-text>
   </v-card>

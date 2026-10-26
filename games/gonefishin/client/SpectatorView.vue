@@ -18,9 +18,9 @@
     <v-col cols="12" md="4">
       <v-card class="mb-4">
         <v-card-text>
-          <div class="text-overline">Game {{ view.game }}</div>
-          <div class="text-h5">{{ view.pond }} {{ view.pond === 1 ? 'card' : 'cards' }} in the pond</div>
-          <div class="text-body-1 mt-1">{{ booksDown }} of 13 books down</div>
+          <div class="text-label-large">Game {{ view.game }}</div>
+          <div class="text-headline-small">{{ view.pond }} {{ view.pond === 1 ? 'card' : 'cards' }} in the pond</div>
+          <div class="text-body-large mt-1">{{ booksDown }} of 13 books down</div>
         </v-card-text>
       </v-card>
 
@@ -30,7 +30,7 @@
         </v-card-text>
       </v-card>
 
-      <div class="text-overline">Games won</div>
+      <div class="text-label-large">Games won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
     </v-col>
 

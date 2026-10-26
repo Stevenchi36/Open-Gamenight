@@ -16,22 +16,22 @@
           {{ flockSummary(view, 'final') }}
         </StatusCard>
 
-        <v-alert v-if="blackSheepMoved" variant="tonal" color="grey" class="mb-4 text-h6">
+        <v-alert v-if="blackSheepMoved" variant="tonal" color="grey" class="mb-4 text-title-large">
           <template #prepend><BlackSheep size="large" /></template>
           {{ name(view.result!.blackSheepTo) }} was the only odd one out, so they're the black sheep now.
         </v-alert>
 
         <GroupList :groups="view.groups" :flock-id="view.flockId" :room="room" :stagger="stagger" class="tv-groups" />
-        <div v-if="view.phase === 'REVIEW'" class="text-h6 text-center mb-4">{{ flockSummary(view, 'so far') }}</div>
+        <div v-if="view.phase === 'REVIEW'" class="text-title-large text-center mb-4">{{ flockSummary(view, 'so far') }}</div>
       </template>
     </v-col>
 
     <v-col cols="12" md="4">
       <v-card class="mb-4">
         <v-card-text>
-          <div class="text-overline">Question {{ view.round }}</div>
-          <div class="text-h5">{{ settings.scoreLimit !== null ? `First to ${settings.scoreLimit}` : 'Open-ended game' }}</div>
-          <div v-if="view.blackSheepId" class="d-flex align-center ga-2 text-body-1 mt-2">
+          <div class="text-label-large">Question {{ view.round }}</div>
+          <div class="text-headline-small">{{ settings.scoreLimit !== null ? `First to ${settings.scoreLimit}` : 'Open-ended game' }}</div>
+          <div v-if="view.blackSheepId" class="d-flex align-center ga-2 text-body-large mt-2">
             <BlackSheep /> {{ name(view.blackSheepId) }} is the black sheep
           </div>
         </v-card-text>
@@ -87,10 +87,10 @@ watch(
 </script>
 
 <style scoped>
-.tv-groups :deep(.text-subtitle-1) {
+.tv-groups :deep(.text-body-large) {
   font-size: 1.375rem !important;
 }
-.tv-groups :deep(.text-body-2) {
+.tv-groups :deep(.text-body-medium) {
   font-size: 1rem !important;
 }
 </style>

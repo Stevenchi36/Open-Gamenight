@@ -1,6 +1,6 @@
 <template>
   <div class="mb-4">
-    <div :class="large ? 'text-h6' : 'text-body-2'" class="mb-2 text-center">{{ done.length }} / {{ players.length }} {{ label }}</div>
+    <div :class="large ? 'text-title-large' : 'text-body-medium'" class="mb-2 text-center">{{ done.length }} / {{ players.length }} {{ label }}</div>
     <div class="d-flex justify-center flex-wrap ga-2">
       <v-chip
         v-for="id in players"

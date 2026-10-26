@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="d-flex align-center ga-3 mb-3 text-body-2 text-medium-emphasis">
+    <div class="d-flex align-center ga-3 mb-3 text-body-medium text-medium-emphasis">
       <span>Question {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</span>
       <v-spacer />
       <span v-if="myScore !== null">{{ settings.scoring === 'chips' ? 'Your chips' : 'Your score' }}: <strong>{{ myScore }}</strong></span>

@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-column chat-page">
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h5">Assistant</h1>
+      <h1 class="text-headline-small">Assistant</h1>
       <v-spacer />
       <v-btn variant="text" prepend-icon="mdi-plus" :disabled="busy || !items.length" @click="newChat">New chat</v-btn>
     </div>
@@ -13,7 +13,7 @@
           <div class="d-flex flex-wrap ga-2">
             <v-chip v-for="example in EXAMPLES" :key="example" variant="outlined" @click="draft = example">{{ example }}</v-chip>
           </div>
-          <p class="text-caption mt-4">
+          <p class="text-body-small mt-4">
             It can add, edit and remove categories, words and questions. Before removing anything it asks you to confirm.
           </p>
         </div>

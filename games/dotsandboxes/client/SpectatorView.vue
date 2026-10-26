@@ -24,7 +24,7 @@
         <StatusCard v-else prominent color="success" :overline="`${mostBoxes(view)} boxes`" :title="resultTitle(view, SPECTATOR_ID, name)" />
       </template>
 
-      <div class="text-overline">Games won</div>
+      <div class="text-label-large">Games won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
     </v-col>
 

@@ -3,8 +3,8 @@
     <template v-if="room">
       <div v-if="!playing" class="d-flex align-center flex-wrap ga-2 mb-4">
         <div>
-          <div class="text-caption text-medium-emphasis">Room code</div>
-          <div class="text-h5 room-code font-weight-bold">{{ room.code }}</div>
+          <div class="text-body-small text-medium-emphasis">Room code</div>
+          <div class="text-headline-small room-code font-weight-bold">{{ room.code }}</div>
         </div>
         <v-chip v-if="room.spectators > 0" size="small" variant="tonal" prepend-icon="mdi-television">
           {{ room.spectators }} watching
@@ -43,9 +43,9 @@
       <!-- During a game the room's controls live here, out of the way; the app bar is hidden too. -->
       <v-navigation-drawer v-if="playing" v-model="menu" temporary location="right" width="280">
         <div class="pa-4">
-          <div class="text-caption text-medium-emphasis">Room code</div>
-          <div class="text-h4 room-code font-weight-bold">{{ room.code }}</div>
-          <div v-if="room.spectators > 0" class="text-body-2 text-medium-emphasis mt-1">
+          <div class="text-body-small text-medium-emphasis">Room code</div>
+          <div class="text-headline-large room-code font-weight-bold">{{ room.code }}</div>
+          <div v-if="room.spectators > 0" class="text-body-medium text-medium-emphasis mt-1">
             <v-icon icon="mdi-television" size="small" /> {{ room.spectators }} watching
           </div>
         </div>
@@ -81,7 +81,7 @@
               On the TV (or any big screen), open <strong>{{ watchSite }}</strong> and enter the code
               <strong class="room-code">{{ room.code }}</strong>.
             </p>
-            <p class="text-body-2 text-medium-emphasis">
+            <p class="text-body-medium text-medium-emphasis">
               It shows the table for everyone, never anyone's hand or secret, and doesn't take a seat.
             </p>
           </v-card-text>
@@ -261,10 +261,10 @@ async function shareLink(url: string, title: string, copied: string) {
 </script>
 
 <style scoped>
-/* Centred on the play view's first line of text (28px button, 24px line); the negative bottom
-   margin keeps it from also narrowing the card under that line. */
+/* Centred on the play view's first line of text (28px button, 20px body-medium line); the negative
+   bottom margin keeps it from also narrowing the card under that line. */
 .menu-button {
   float: right;
-  margin: -2px 0 -12px 8px;
+  margin: -4px 0 -12px 8px;
 }
 </style>

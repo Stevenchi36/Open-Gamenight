@@ -51,15 +51,15 @@
         class="tv-votes"
       />
       <ClueList v-if="typed" :view="view" :room="room" large />
-      <div v-else-if="view.phase === 'CLUES'" class="text-h6 text-medium-emphasis text-center">Clues are said out loud this round.</div>
+      <div v-else-if="view.phase === 'CLUES'" class="text-title-large text-medium-emphasis text-center">Clues are said out loud this round.</div>
     </v-col>
 
     <v-col cols="12" md="4">
       <v-card class="mb-4">
         <v-card-text>
-          <div class="text-overline">Round {{ view.round }}</div>
-          <div class="text-h5">{{ category ?? 'Secret category' }}</div>
-          <div class="text-body-1 mt-1">
+          <div class="text-label-large">Round {{ view.round }}</div>
+          <div class="text-headline-small">{{ category ?? 'Secret category' }}</div>
+          <div class="text-body-large mt-1">
             {{ view.phase === 'CLUES' ? `Rotation ${view.turn.rotation} of ${view.turn.totalRotations}` : `${view.roundPlayers.length} players` }}
           </div>
         </v-card-text>
@@ -132,7 +132,7 @@ watch(
     animation: none;
   }
 }
-.tv-votes :deep(.text-body-2) {
+.tv-votes :deep(.text-body-medium) {
   font-size: 1.125rem !important;
 }
 </style>

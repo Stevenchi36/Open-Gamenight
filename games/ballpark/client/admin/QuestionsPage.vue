@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex align-center flex-wrap ga-2 mb-4">
-      <h1 class="text-h5">Question library</h1>
+      <h1 class="text-headline-small">Question library</h1>
       <v-spacer />
       <v-btn variant="text" prepend-icon="mdi-shape-outline" :to="{ name: 'admin-categories', params: { gameId: 'ballpark' } }">
         Categories
@@ -41,7 +41,7 @@
           <template #item="{ props: itemProps, item }">
             <v-list-item v-bind="itemProps" :title="item.category">
               <template #append>
-                <span class="text-caption text-medium-emphasis">{{ item.unused }}/{{ item.total }} unused</span>
+                <span class="text-body-small text-medium-emphasis">{{ item.unused }}/{{ item.total }} unused</span>
               </template>
             </v-list-item>
           </template>
@@ -118,7 +118,7 @@
             <v-select v-model="edit.unit" :items="unitItems" label="Unit" style="max-width: 220px" />
           </div>
           <v-text-field v-model="edit.fact" label="Fact (optional)" maxlength="200" counter />
-          <div v-if="editing" class="text-caption text-medium-emphasis">
+          <div v-if="editing" class="text-body-small text-medium-emphasis">
             Source: {{ editing.source }} · used {{ editing.times_used }} time{{ editing.times_used === 1 ? '' : 's' }}
           </div>
         </v-card-text>
@@ -144,7 +144,7 @@
                 {{ name }}: {{ n }}<span v-if="summary.createdCategories.includes(name)" class="text-medium-emphasis"> (new category)</span>
               </li>
             </ul>
-            <div v-if="summary.skippedCount" class="text-caption text-medium-emphasis">
+            <div v-if="summary.skippedCount" class="text-body-small text-medium-emphasis">
               {{ summary.skippedCount }} result{{ summary.skippedCount === 1 ? ' was' : 's were' }} dropped (duplicates or invalid).
             </div>
           </div>
@@ -168,7 +168,7 @@
               hide-details
               class="w-100"
             />
-            <div class="text-caption text-medium-emphasis w-100">
+            <div class="text-body-small text-medium-emphasis w-100">
               {{
                 gen.blind
                   ? 'Questions are saved straight away; you only see how many went into each category.'

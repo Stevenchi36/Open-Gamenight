@@ -1,8 +1,8 @@
 <template>
   <div>
     <RoleCard :you="view.you" />
-    <div class="text-h5 mb-1">Who is the imposter?</div>
-    <div class="text-body-2 text-medium-emphasis mb-3">
+    <div class="text-headline-small mb-1">Who is the imposter?</div>
+    <div class="text-body-medium text-medium-emphasis mb-3">
       {{ canVote ? 'Tap a player. You can change your vote until everyone has voted.' : 'You are watching this round.' }}
     </div>
 

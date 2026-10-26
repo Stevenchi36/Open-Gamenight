@@ -7,7 +7,7 @@
       <v-btn size="x-large" color="surface" class="mt-2" @click="send({ type: 'end_turn' })">Done</v-btn>
     </StatusCard>
     <StatusCard v-else prominent overline="Speaking now" :title="nameOf(room, view.turn.currentPlayerId)">
-      <div v-if="!currentConnected" class="text-body-2">Away. Skipping soon if they don't come back.</div>
+      <div v-if="!currentConnected" class="text-body-medium">Away. Skipping soon if they don't come back.</div>
     </StatusCard>
 
     <div v-if="amHost" class="d-flex ga-2">

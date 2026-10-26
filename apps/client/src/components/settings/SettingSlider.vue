@@ -1,6 +1,6 @@
 <template>
   <div class="mb-2">
-    <div class="d-flex justify-space-between text-body-2">
+    <div class="d-flex justify-space-between text-body-medium">
       <span>{{ label }}</span>
       <span class="font-weight-medium">{{ modelValue }}{{ suffix ?? '' }}</span>
     </div>
@@ -17,7 +17,7 @@
       density="compact"
       @update:model-value="(v: number) => emit('update:modelValue', v)"
     />
-    <div v-if="hint" class="text-caption text-medium-emphasis">{{ hint }}</div>
+    <div v-if="hint" class="text-body-small text-medium-emphasis">{{ hint }}</div>
   </div>
 </template>
 

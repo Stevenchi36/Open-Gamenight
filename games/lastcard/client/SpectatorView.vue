@@ -6,7 +6,7 @@
         <StatusCard v-else prominent overline="New round" :title="`${name(view.turn)} goes first`">
           <template v-if="view.pendingDraw > 0">They face a +{{ view.pendingDraw }}.</template>
         </StatusCard>
-        <v-alert v-if="view.exposed" color="error" variant="tonal" class="mb-4 text-h5" icon="mdi-hand-back-right">
+        <v-alert v-if="view.exposed" color="error" variant="tonal" class="mb-4 text-headline-small" icon="mdi-hand-back-right">
           {{ name(view.exposed) }} is on one card and didn't call it: anyone can catch them!
         </v-alert>
       </template>
@@ -22,7 +22,7 @@
       <v-card v-if="leftovers.length > 0" class="mb-4" title="Cards left">
         <v-card-text>
           <div v-for="seat in leftovers" :key="seat.id" class="mb-3">
-            <div class="text-body-1 mb-1">
+            <div class="text-body-large mb-1">
               {{ name(seat.id) }}
               <span v-if="points" class="text-medium-emphasis">· {{ handPoints(seat.hand) }} pts</span>
             </div>
@@ -37,13 +37,13 @@
     <v-col cols="12" md="4">
       <v-card class="mb-4">
         <v-card-text>
-          <div class="text-overline">{{ points ? `Game ${view.game} · first to ${view.settings.target}` : `Round ${view.round}` }}</div>
-          <div class="d-flex align-center ga-2 text-h5">
+          <div class="text-label-large">{{ points ? `Game ${view.game} · first to ${view.settings.target}` : `Round ${view.round}` }}</div>
+          <div class="d-flex align-center ga-2 text-headline-small">
             <span class="color-dot" :style="{ background: CARD_COLORS[view.color] }" />
             <span class="text-capitalize">{{ view.color }}</span>
             <v-icon class="ml-auto">{{ view.direction === 1 ? 'mdi-rotate-right' : 'mdi-rotate-left' }}</v-icon>
           </div>
-          <div class="text-body-1 mt-1">
+          <div class="text-body-large mt-1">
             {{ view.drawPile }} to draw<template v-if="view.pendingDraw > 0"> · <strong>+{{ view.pendingDraw }} waiting</strong></template>
           </div>
         </v-card-text>
@@ -56,10 +56,10 @@
       </v-card>
 
       <template v-if="points">
-        <div class="text-overline">Points this game</div>
+        <div class="text-label-large">Points this game</div>
         <ScoreBoard :scores="seatPoints" :room="room" :gained="roundGained" class="mb-4" />
       </template>
-      <div class="text-overline">{{ points ? 'Games won' : 'Rounds won' }}</div>
+      <div class="text-label-large">{{ points ? 'Games won' : 'Rounds won' }}</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="winGained" />
     </v-col>
 

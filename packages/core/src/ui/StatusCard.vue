@@ -1,13 +1,13 @@
 <template>
   <v-card :color="color" :variant="variant" class="mb-4 text-center">
     <v-card-text :class="prominent ? 'py-8' : 'py-6'">
-      <div v-if="overline || $slots.overline" class="text-overline">
+      <div v-if="overline || $slots.overline" class="text-label-large">
         <slot name="overline">{{ overline }}</slot>
       </div>
-      <div v-if="title || $slots.title" :class="[compact ? 'text-h5' : 'text-h4', 'font-weight-bold', { 'mb-2': $slots.default }]">
+      <div v-if="title || $slots.title" :class="[compact ? 'text-headline-small' : 'text-headline-large', 'font-weight-bold', { 'mb-2': $slots.default }]">
         <slot name="title">{{ title }}</slot>
       </div>
-      <div v-if="$slots.default" class="text-body-1"><slot /></div>
+      <div v-if="$slots.default" class="text-body-large"><slot /></div>
     </v-card-text>
   </v-card>
 </template>

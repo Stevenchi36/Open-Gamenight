@@ -10,8 +10,8 @@
       >
         <v-card-text class="py-5">
           <v-icon v-if="selected === id" class="mb-1">mdi-check-circle</v-icon>
-          <div class="text-subtitle-1 font-weight-medium">{{ nameOf(room, id) }}</div>
-          <div v-if="$slots.caption" class="text-caption"><slot name="caption" :id="id" /></div>
+          <div class="text-body-large font-weight-medium">{{ nameOf(room, id) }}</div>
+          <div v-if="$slots.caption" class="text-body-small"><slot name="caption" :id="id" /></div>
         </v-card-text>
       </v-card>
     </v-col>

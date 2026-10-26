@@ -10,7 +10,7 @@
         </StatusCard>
         <StatusCard v-else prominent overline="New game" :title="`${name(view.turn)} goes first`" />
 
-        <v-alert v-if="secondsLeft !== null && view.top" color="error" variant="tonal" class="mb-4 text-h5" icon="mdi-bullhorn">
+        <v-alert v-if="secondsLeft !== null && view.top" color="error" variant="tonal" class="mb-4 text-headline-small" icon="mdi-bullhorn">
           {{ name(view.top.playerId) }}'s {{ claimText(view.top.count, view.top.claim) }}: anyone can call Cheat! {{ secondsLeft }}s
         </v-alert>
       </template>
@@ -27,8 +27,8 @@
     <v-col cols="12" md="4">
       <v-card v-if="view.phase === 'PLAYING'" class="mb-4">
         <v-card-text>
-          <div class="text-overline">Game {{ view.game }} · next claim</div>
-          <div class="text-h5">{{ claimsText(view.claims) }}</div>
+          <div class="text-label-large">Game {{ view.game }} · next claim</div>
+          <div class="text-headline-small">{{ claimsText(view.claims) }}</div>
         </v-card-text>
       </v-card>
 
@@ -38,7 +38,7 @@
         </v-card-text>
       </v-card>
 
-      <div class="text-overline">Games won</div>
+      <div class="text-label-large">Games won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
     </v-col>
 

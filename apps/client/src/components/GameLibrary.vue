@@ -53,7 +53,7 @@
       </v-card-actions>
     </v-card>
 
-    <div v-if="filtered.length === 0" class="text-center text-body-1 text-medium-emphasis py-8">
+    <div v-if="filtered.length === 0" class="text-center text-body-large text-medium-emphasis py-8">
       No games match.
       <v-btn variant="text" @click="clearFilters">Clear filters</v-btn>
     </div>

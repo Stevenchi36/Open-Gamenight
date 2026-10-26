@@ -8,10 +8,10 @@
       :class="{ 'dice-seat--turn': seat.id === turn, 'dice-seat--out': seat.dice === 0 }"
     >
       <v-card-text class="text-center">
-        <div class="text-h6 text-truncate">
+        <div class="text-title-large text-truncate">
           <v-icon v-if="!isConnected(room, seat.id)" size="small" class="mr-1">mdi-wifi-off</v-icon>{{ nameOf(room, seat.id) }}
         </div>
-        <div v-if="seat.dice === 0" class="text-body-1 mt-1">Out</div>
+        <div v-if="seat.dice === 0" class="text-body-large mt-1">Out</div>
         <div v-else class="d-flex justify-center flex-wrap ga-1 mt-1" :aria-label="`${seat.dice} dice`">
           <v-icon v-for="n in seat.dice" :key="n" size="32">mdi-dice-d6</v-icon>
         </div>

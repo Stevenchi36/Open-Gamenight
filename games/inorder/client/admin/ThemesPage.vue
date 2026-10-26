@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex align-center flex-wrap ga-2 mb-4">
-      <h1 class="text-h5">Theme library</h1>
+      <h1 class="text-headline-small">Theme library</h1>
       <v-spacer />
       <v-btn variant="text" prepend-icon="mdi-shape-outline" :to="{ name: 'admin-categories', params: { gameId: 'inorder' } }">
         Categories
@@ -41,7 +41,7 @@
           <template #item="{ props: itemProps, item }">
             <v-list-item v-bind="itemProps" :title="item.category">
               <template #append>
-                <span class="text-caption text-medium-emphasis">{{ item.unused }}/{{ item.total }} unused</span>
+                <span class="text-body-small text-medium-emphasis">{{ item.unused }}/{{ item.total }} unused</span>
               </template>
             </v-list-item>
           </template>
@@ -116,7 +116,7 @@
             <v-text-field v-model="edit.low" label="1 means" maxlength="30" />
             <v-text-field v-model="edit.high" label="100 means" maxlength="30" />
           </div>
-          <div v-if="editing" class="text-caption text-medium-emphasis">
+          <div v-if="editing" class="text-body-small text-medium-emphasis">
             Source: {{ editing.source }} · used {{ editing.times_used }} time{{ editing.times_used === 1 ? '' : 's' }}
           </div>
         </v-card-text>
@@ -146,7 +146,7 @@
               counter
               class="w-100"
             />
-            <div class="text-caption text-medium-emphasis w-100">Nothing is saved until you review the results.</div>
+            <div class="text-body-small text-medium-emphasis w-100">Nothing is saved until you review the results.</div>
           </div>
           <template v-else>
             <v-alert v-if="skippedCount" type="info" variant="tonal" density="compact" class="mb-3">

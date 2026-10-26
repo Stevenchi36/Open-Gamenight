@@ -4,15 +4,15 @@
       <div class="watch-header mb-4">
         <div class="d-flex align-center flex-wrap ga-4">
           <div>
-            <div class="text-caption text-medium-emphasis">Room code</div>
-            <div class="text-h3 room-code font-weight-bold">{{ room.code }}</div>
+            <div class="text-body-small text-medium-emphasis">Room code</div>
+            <div class="text-display-medium room-code font-weight-bold">{{ room.code }}</div>
           </div>
           <div>
-            <div class="text-caption text-medium-emphasis">Join on your phone</div>
-            <div class="text-h6">{{ joinUrl }}</div>
+            <div class="text-body-small text-medium-emphasis">Join on your phone</div>
+            <div class="text-title-large">{{ joinUrl }}</div>
           </div>
         </div>
-        <div class="text-h5 text-md-center">{{ room.game.name }}</div>
+        <div class="text-headline-small text-md-center">{{ room.game.name }}</div>
         <div class="d-flex align-center flex-wrap justify-md-end ga-2">
           <v-btn
             v-if="canFullscreen"
@@ -56,14 +56,14 @@
     <v-card v-else>
       <v-card-title>Watch a room</v-card-title>
       <v-card-text>
-        <p class="text-body-2 mb-4">
+        <p class="text-body-medium mb-4">
           Shows the game on this screen, for everyone to see. It doesn't take a seat, and it only shows what every player can see.
         </p>
         <v-alert v-if="roomState.removedReason" type="info" variant="tonal" density="compact" class="mb-4">
           {{ roomState.removedReason }}
         </v-alert>
         <v-form @submit.prevent="watchCode">
-          <div class="text-body-2 mb-1">Room code</div>
+          <div class="text-body-medium mb-1">Room code</div>
           <v-otp-input
             v-model="entered"
             length="4"

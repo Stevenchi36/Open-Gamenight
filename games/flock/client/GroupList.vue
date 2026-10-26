@@ -11,13 +11,13 @@
       v-bind="selectable ? { onClick: () => emit('pick', group.id) } : {}"
     >
       <v-card-text class="d-flex align-center ga-3 py-3">
-        <div class="text-h5 font-weight-bold" style="min-width: 1.5ch">{{ group.answers.length }}</div>
+        <div class="text-headline-small font-weight-bold" style="min-width: 1.5ch">{{ group.answers.length }}</div>
         <div class="flex-grow-1">
-          <div class="text-subtitle-1 font-weight-medium">
+          <div class="text-body-large font-weight-medium">
             {{ group.label }}
             <v-chip v-if="group.id === flockId" size="x-small" color="success" variant="flat" class="ml-1">The flock</v-chip>
           </div>
-          <div class="text-body-2 text-medium-emphasis">
+          <div class="text-body-medium text-medium-emphasis">
             <span v-for="(a, i) in group.answers" :key="a.playerId">
               {{ i ? ', ' : '' }}{{ nameOf(room, a.playerId) }}<template v-if="a.text !== group.label"> ({{ a.text }})</template>
             </span>
@@ -26,7 +26,7 @@
         <v-btn v-if="splittable && group.merged" size="small" variant="text" @click.stop="emit('split', group.id)">Split</v-btn>
       </v-card-text>
     </v-card>
-    <div v-if="groups.length === 0" class="text-body-2 text-medium-emphasis text-center">Nobody answered.</div>
+    <div v-if="groups.length === 0" class="text-body-medium text-medium-emphasis text-center">Nobody answered.</div>
   </div>
 </template>
 

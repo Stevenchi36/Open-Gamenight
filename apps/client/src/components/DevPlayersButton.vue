@@ -5,11 +5,11 @@
       <v-card-text>
         <v-slider v-model="count" :min="2" :max="12" :step="1" label="Players" thumb-label hide-details class="mb-4">
           <template #append>
-            <span class="text-body-1 font-weight-medium" style="min-width: 2ch">{{ count }}</span>
+            <span class="text-body-large font-weight-medium" style="min-width: 2ch">{{ count }}</span>
           </template>
         </v-slider>
         <v-text-field v-model="code" label="Room code (optional)" maxlength="8" hide-details class="room-code" />
-        <div class="text-caption text-medium-emphasis mt-3">
+        <div class="text-body-small text-medium-emphasis mt-3">
           Opens in a new tab. P1 is signed in as you; if you're already in this room, P1 takes your seat from this
           tab.
         </div>

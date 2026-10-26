@@ -11,7 +11,7 @@
     </StatusCard>
 
     <StatusCard compact :color="gained > 0 ? 'success' : undefined" :overline="view.question.text" :title="formatValue(result.answer, view.question.unit)">
-      <div v-if="result.fact" class="text-body-2 mb-1">{{ result.fact }}</div>
+      <div v-if="result.fact" class="text-body-medium mb-1">{{ result.fact }}</div>
       <div>{{ headline }}</div>
     </StatusCard>
 
@@ -24,7 +24,7 @@
       :bets="view.bets"
       :winning-ids="result.winningSlotIds"
     />
-    <div v-else class="text-body-2 text-medium-emphasis text-center mb-4">Nobody guessed.</div>
+    <div v-else class="text-body-medium text-medium-emphasis text-center mb-4">Nobody guessed.</div>
 
     <ScoreBoard :scores="view.scores" :room="room" :gained="result.pointsAwarded" class="mb-4" />
 

@@ -13,28 +13,28 @@
     @select="(id) => emit('select', id)"
   >
     <template #seat="{ id }">
-      <div v-if="byId[id]!.left" class="text-caption text-medium-emphasis">left</div>
+      <div v-if="byId[id]!.left" class="text-body-small text-medium-emphasis">left</div>
       <div v-else class="d-flex align-center justify-center my-1" :aria-label="`${byId[id]!.cards} cards`">
         <PlayingCard v-for="i in Math.min(byId[id]!.cards, 4)" :key="i" size="sm" :class="{ 'seat-card--stacked': i > 1 }" />
-        <span class="text-caption font-weight-bold ml-1">{{ byId[id]!.cards }}</span>
+        <span class="text-body-small font-weight-bold ml-1">{{ byId[id]!.cards }}</span>
       </div>
       <div v-if="!byId[id]!.left && (byId[id]!.cards === 1 || points)" class="d-flex flex-wrap justify-center ga-1">
         <span v-if="id === view.exposed" class="seat-tag seat-tag--error">No call!</span>
         <span v-else-if="byId[id]!.cards === 1 && view.phase === 'PLAYING'" class="seat-tag seat-tag--warning">Last card</span>
-        <span v-if="points" class="text-caption text-medium-emphasis">{{ byId[id]!.points }} pts</span>
+        <span v-if="points" class="text-body-small text-medium-emphasis">{{ byId[id]!.points }} pts</span>
       </div>
     </template>
     <template #center>
       <div class="d-flex align-center justify-center ga-3">
         <div class="d-flex flex-column align-center">
           <PlayingCard data-card-anchor="draw" />
-          <span class="text-caption mt-1">{{ view.drawPile }} left</span>
+          <span class="text-body-small mt-1">{{ view.drawPile }} left</span>
         </div>
         <div data-card-anchor="discard">
           <LcCard v-if="shownTop" :card="shownTop" size="lg" />
           <div v-else class="discard-empty" />
         </div>
-        <div class="d-flex flex-column align-center ga-1 text-caption">
+        <div class="d-flex flex-column align-center ga-1 text-body-small">
           <span class="color-dot" :style="{ background: CARD_COLORS[view.color] }" :aria-label="`Colour in play: ${view.color}`" />
           <span>{{ view.color }}</span>
           <v-icon size="small" :aria-label="view.direction === 1 ? 'Clockwise' : 'Anticlockwise'">

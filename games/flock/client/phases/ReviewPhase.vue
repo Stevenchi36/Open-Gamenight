@@ -3,8 +3,8 @@
     <QuestionCard compact :question="view.question" :server-now="serverNow" />
 
     <template v-if="amHost">
-      <div class="text-h6 mb-1">Any answers that mean the same?</div>
-      <div class="text-body-2 text-medium-emphasis mb-3">
+      <div class="text-title-large mb-1">Any answers that mean the same?</div>
+      <div class="text-body-medium text-medium-emphasis mb-3">
         {{
           selected
             ? `Now tap the answer to merge "${labelOf(selected)}" into, or tap it again to cancel.`
@@ -12,7 +12,7 @@
         }}
       </div>
     </template>
-    <div v-else class="text-body-2 text-medium-emphasis mb-3">
+    <div v-else class="text-body-medium text-medium-emphasis mb-3">
       {{ nameOf(room, room.hostId) }} is checking for answers that mean the same thing.
     </div>
 
@@ -27,7 +27,7 @@
       @split="(group) => send({ type: 'split_group', group })"
     />
 
-    <div class="text-body-1 text-center mb-4">{{ flockLine }}</div>
+    <div class="text-body-large text-center mb-4">{{ flockLine }}</div>
 
     <v-btn v-if="amHost" block size="x-large" color="primary" prepend-icon="mdi-check" @click="send({ type: 'score_round' })">
       Score it

@@ -25,6 +25,7 @@ Multiplayer party-game platform (pnpm workspace, TypeScript, Node 26). Word Impo
 - The MCP process and everything it imports write logs to stderr (the shared logger, `console.error`), because stdout is the protocol.
 - AI calls go through `services.ai` (one strict tool, `tool_choice: auto`, validated output); the model and caps come from env.
 - Comments explain *why*; keep them brief and match the surrounding density.
+- Text sizes are Vuetify 4 classes (`text-headline-small`, `text-body-medium`, ...). Vuetify 3's `text-h5`, `text-body-2`, `text-caption`, `text-overline` don't exist in 4 and silently do nothing (mapping in `docs/decisions.md`).
 
 ## Agent skills
 

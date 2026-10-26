@@ -15,7 +15,7 @@
         <StatusCard v-else-if="view.outcome === 'draw'" prominent overline="Full board" title="It's a draw" />
         <StatusCard v-else prominent color="success" overline="Three in a row" :title="`${name(view.winnerId)} wins`" />
 
-        <div class="text-overline">Games won</div>
+        <div class="text-label-large">Games won</div>
         <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
       </template>
     </v-col>

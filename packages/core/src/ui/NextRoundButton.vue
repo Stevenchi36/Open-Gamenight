@@ -3,7 +3,7 @@
     <slot name="options" />
     <v-btn block size="x-large" color="primary" prepend-icon="mdi-replay" @click="emit('next')">{{ label }}</v-btn>
   </template>
-  <div v-else class="text-center text-body-1 text-medium-emphasis">Waiting for {{ nameOf(room, room.hostId) }} {{ waitingFor }}.</div>
+  <div v-else class="text-center text-body-large text-medium-emphasis">Waiting for {{ nameOf(room, room.hostId) }} {{ waitingFor }}.</div>
 </template>
 
 <script setup lang="ts">

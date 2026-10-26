@@ -7,7 +7,7 @@
     </v-alert>
     <v-card v-else-if="view.you.guess === null || changing" variant="tonal" class="mb-4">
       <v-card-text>
-        <div class="text-h6 mb-3">What colour do they make?</div>
+        <div class="text-title-large mb-3">What colour do they make?</div>
         <v-color-picker
           v-model="pick"
           mode="hex"
@@ -28,7 +28,7 @@
     <template v-else>
       <!-- Phones lie on the table: keep the guess out of a neighbour's sight. -->
       <HoldToReveal label="Hold to see your guess" class="mb-2">
-        <div class="text-overline">Your guess</div>
+        <div class="text-label-large">Your guess</div>
         <ColorDot :color="view.you.guess" :size="64" />
       </HoldToReveal>
       <div class="text-center mb-4">
@@ -37,7 +37,7 @@
     </template>
 
     <ProgressCount :done="view.guessed.length" :total="view.roundPlayers.length" label="guessed" />
-    <div v-if="waitingOn.length > 0 && view.guessed.length > 0" class="text-body-2 text-medium-emphasis text-center mb-4">
+    <div v-if="waitingOn.length > 0 && view.guessed.length > 0" class="text-body-medium text-medium-emphasis text-center mb-4">
       Waiting for {{ waitingOn.map((id) => nameOf(room, id)).join(', ') }}
     </div>
 

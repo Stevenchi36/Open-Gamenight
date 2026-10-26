@@ -7,7 +7,7 @@
       </template>
       <template v-else-if="view.phase === 'BETTING'">
         <QuestionCard compact :question="view.question" :deadline="view.deadline" :server-now="serverNow" />
-        <div class="text-h6 text-center mb-3">{{ howToWin }}</div>
+        <div class="text-title-large text-center mb-3">{{ howToWin }}</div>
         <SlotBoard :slots="view.slots" :unit="view.question.unit" :room="room" :me="SPECTATOR_ID" :bets="view.bets" :stagger="stagger" class="tv-slots" />
         <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.betted" label="bet" large />
       </template>
@@ -17,7 +17,7 @@
         </StatusCard>
         <StatusCard prominent color="primary" :overline="view.question.text" :title="formatValue(result.answer, view.question.unit)">
           <div v-if="result.fact" class="mb-1">{{ result.fact }}</div>
-          <div class="text-h6">{{ headline }}</div>
+          <div class="text-title-large">{{ headline }}</div>
         </StatusCard>
         <SlotBoard
           v-if="view.slots.length"
@@ -29,19 +29,19 @@
           :winning-ids="result.winningSlotIds"
           class="tv-slots"
         />
-        <div v-else class="text-h6 text-medium-emphasis text-center mb-4">Nobody guessed.</div>
+        <div v-else class="text-title-large text-medium-emphasis text-center mb-4">Nobody guessed.</div>
       </template>
     </v-col>
 
     <v-col cols="12" md="4">
       <v-card class="mb-4">
         <v-card-text>
-          <div class="text-overline">Question {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</div>
-          <div class="text-h5">{{ settings.winRule === 'over' ? 'Closest without going over' : 'Closest wins' }}</div>
-          <div v-if="view.phase === 'BETTING' && !view.bets" class="text-body-1 mt-1">Bets stay hidden until the answer.</div>
+          <div class="text-label-large">Question {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</div>
+          <div class="text-headline-small">{{ settings.winRule === 'over' ? 'Closest without going over' : 'Closest wins' }}</div>
+          <div v-if="view.phase === 'BETTING' && !view.bets" class="text-body-large mt-1">Bets stay hidden until the answer.</div>
         </v-card-text>
       </v-card>
-      <div v-if="settings.scoring === 'chips'" class="text-overline">Chips</div>
+      <div v-if="settings.scoring === 'chips'" class="text-label-large">Chips</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="result?.pointsAwarded" />
     </v-col>
 
@@ -100,10 +100,10 @@ watch(
 </script>
 
 <style scoped>
-.tv-slots :deep(.text-subtitle-1) {
+.tv-slots :deep(.text-body-large) {
   font-size: 1.375rem !important;
 }
-.tv-slots :deep(.text-body-2) {
+.tv-slots :deep(.text-body-medium) {
   font-size: 1rem !important;
 }
 </style>

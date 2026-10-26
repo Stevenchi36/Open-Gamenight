@@ -16,13 +16,13 @@
 
     <v-btn v-if="canCall" block size="x-large" color="error" class="mb-4" @click="call">
       <div>
-        <div class="text-h6 font-weight-bold">Cheat!</div>
-        <div class="text-caption text-none">{{ nameOf(room, view.top!.playerId) }}'s {{ claimText(view.top!.count, view.top!.claim) }}</div>
+        <div class="text-title-large font-weight-bold">Cheat!</div>
+        <div class="text-body-small text-none">{{ nameOf(room, view.top!.playerId) }}'s {{ claimText(view.top!.count, view.top!.claim) }}</div>
       </div>
     </v-btn>
 
     <template v-if="view.you.status === 'playing'">
-      <div class="text-body-2 text-center text-medium-emphasis mb-3">
+      <div class="text-body-medium text-center text-medium-emphasis mb-3">
         <template v-if="myTurn">Your turn: play 1-{{ MAX_PLAY }} cards as <strong>{{ claimsText(view.claims) }}</strong>. They don't have to be.</template>
         <template v-else>Next claim: {{ claimsText(view.claims) }}. You can pick your cards while you wait.</template>
       </div>
@@ -47,7 +47,7 @@
           <template v-else>Pick a rank to claim</template>
         </v-btn>
       </template>
-      <div v-else class="text-center text-body-1 text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
+      <div v-else class="text-center text-body-large text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
     </template>
 
     <v-expansion-panels v-if="view.log.length > 1" variant="accordion">

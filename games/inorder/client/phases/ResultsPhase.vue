@@ -12,7 +12,7 @@
           <template #append>
             <div v-if="i < turned" class="d-flex align-center ga-1">
               <v-icon size="small" :color="isWrong(item.id) ? 'error' : 'success'">{{ isWrong(item.id) ? 'mdi-close-circle' : 'mdi-check-circle' }}</v-icon>
-              <v-avatar :color="isWrong(item.id) ? 'error' : 'success'" size="44" class="text-h6 font-weight-bold">{{ item.number }}</v-avatar>
+              <v-avatar :color="isWrong(item.id) ? 'error' : 'success'" size="44" class="text-title-large font-weight-bold">{{ item.number }}</v-avatar>
             </div>
             <v-avatar v-else variant="tonal" size="44"><v-icon>mdi-help</v-icon></v-avatar>
           </template>
@@ -28,10 +28,10 @@
       <v-card variant="tonal" class="my-4">
         <v-card-text class="d-flex align-center flex-wrap ga-4">
           <LivesLeft :lives="view.lives" :max="view.maxLives" size="large" />
-          <span class="text-body-1">
+          <span class="text-body-large">
             Rounds cleared: <strong>{{ view.cleared }}</strong><template v-if="view.totalRounds !== null"> of {{ view.totalRounds }}</template>
           </span>
-          <span class="text-body-1">Perfect rounds: <strong>{{ view.perfect }}</strong></span>
+          <span class="text-body-large">Perfect rounds: <strong>{{ view.perfect }}</strong></span>
         </v-card-text>
       </v-card>
 

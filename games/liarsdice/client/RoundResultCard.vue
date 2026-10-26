@@ -1,7 +1,7 @@
 <template>
   <v-card variant="tonal" class="mb-4">
     <v-card-text>
-      <div :class="large ? 'text-h6' : 'text-body-1'" class="mb-3">
+      <div :class="large ? 'text-title-large' : 'text-body-large'" class="mb-3">
         {{ nameOf(room, result.callerId) }} {{ result.call === 'liar' ? 'called liar on' : 'called spot on for' }}
         {{ nameOf(room, result.bid.playerId) }}'s <strong>{{ bidText(result.bid) }}</strong>. There
         {{ result.count === 1 ? 'was' : 'were' }} <strong>{{ result.count }}</strong>.
@@ -15,7 +15,7 @@
         :class="{ 'dice--in': stagger }"
         :style="stagger ? { animationDelay: `${i * 300}ms` } : undefined"
       >
-        <div :class="large ? 'text-body-1' : 'text-caption'" class="text-medium-emphasis">{{ nameOf(room, id) }}</div>
+        <div :class="large ? 'text-body-large' : 'text-body-small'" class="text-medium-emphasis">{{ nameOf(room, id) }}</div>
         <DiceRow :dice="dice" :size="large ? 48 : 28" :highlight="result.bid.face" :wild-ones="wildOnes" />
       </div>
     </v-card-text>

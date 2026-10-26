@@ -1,9 +1,9 @@
 <template>
   <v-card class="mb-4">
-    <v-card-title class="text-subtitle-1">{{ title }}</v-card-title>
+    <v-card-title class="text-body-large">{{ title }}</v-card-title>
     <v-card-text>
       <div v-for="row in tally" :key="row.id" class="mb-3">
-        <div class="d-flex text-body-2">
+        <div class="d-flex text-body-medium">
           <span>{{ nameOf(room, row.id) }}<span v-if="markedLabel && row.id === markedId" class="text-error"> ({{ markedLabel }})</span></span>
           <v-spacer />
           <span>{{ row.voters.length }}</span>
@@ -21,7 +21,7 @@
         </div>
       </div>
       <div v-if="tally.length === 0" class="text-medium-emphasis">No votes were cast.</div>
-      <div v-else-if="abstained.length > 0" class="text-body-2 text-medium-emphasis">
+      <div v-else-if="abstained.length > 0" class="text-body-medium text-medium-emphasis">
         Didn't vote: {{ abstained.map((id) => nameOf(room, id)).join(', ') }}
       </div>
     </v-card-text>

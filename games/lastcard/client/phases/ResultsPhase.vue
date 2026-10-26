@@ -8,7 +8,7 @@
     </StatusCard>
 
     <v-card v-if="view.hands" variant="tonal" class="mb-4">
-      <v-card-title class="text-subtitle-1">Cards left</v-card-title>
+      <v-card-title class="text-body-large">Cards left</v-card-title>
       <v-list density="compact" bg-color="transparent">
         <v-list-item v-for="seat in leftovers" :key="seat.id">
           <v-list-item-title class="mb-1">

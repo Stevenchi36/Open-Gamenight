@@ -46,8 +46,8 @@
           class="mb-4"
           @update:model-value="(id: string) => send({ type: 'select_game', gameId: id })"
         />
-        <div v-else class="text-h6 mb-1">{{ room.game.name }}</div>
-        <div class="text-body-2 text-medium-emphasis mb-4">{{ currentGame?.description }}</div>
+        <div v-else class="text-title-large mb-1">{{ room.game.name }}</div>
+        <div class="text-body-medium text-medium-emphasis mb-4">{{ currentGame?.description }}</div>
         <component :is="settingsView" v-if="settingsView" :settings="room.game.settings" :update="update" :is-host="isHost" />
       </v-card-text>
     </v-card>
@@ -63,10 +63,10 @@
     >
       Start {{ room.game.name }}
     </v-btn>
-    <div v-if="tooFew" class="text-center text-body-2 text-medium-emphasis mt-2">
+    <div v-if="tooFew" class="text-center text-body-medium text-medium-emphasis mt-2">
       Waiting for players: {{ currentGame?.minPlayers }} needed to start.
     </div>
-    <div v-else-if="!isHost" class="text-center text-body-1 text-medium-emphasis mt-2">
+    <div v-else-if="!isHost" class="text-center text-body-large text-medium-emphasis mt-2">
       Waiting for {{ hostName }} to start the game.
     </div>
 

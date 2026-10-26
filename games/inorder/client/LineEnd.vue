@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex align-center ga-2 text-body-2 text-medium-emphasis" :class="end === 'low' ? 'mb-2' : 'mt-2'">
+  <div class="d-flex align-center ga-2 text-body-medium text-medium-emphasis" :class="end === 'low' ? 'mb-2' : 'mt-2'">
     <v-icon size="small">{{ end === 'low' ? 'mdi-arrow-collapse-up' : 'mdi-arrow-collapse-down' }}</v-icon>
     <span><strong>{{ end === 'low' ? 1 : MAX_NUMBER }}</strong> · {{ end === 'low' ? theme.low : theme.high }}</span>
   </div>

@@ -1,6 +1,6 @@
 <template>
   <div class="mb-4">
-    <div class="d-flex align-center text-body-2 mb-1">
+    <div class="d-flex align-center text-body-medium mb-1">
       <span>Rotation {{ view.turn.rotation }} of {{ view.turn.totalRotations }}</span>
       <v-spacer />
       <CountdownTimer :deadline="view.turn.deadline" :server-now="serverNow" />

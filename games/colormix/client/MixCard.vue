@@ -5,9 +5,9 @@
       <div class="palette">
         <span v-for="(color, i) in colors" :key="i" class="strip" :style="{ background: color }" role="img" :aria-label="color" />
       </div>
-      <span class="text-h6 text-medium-emphasis">=</span>
+      <span class="text-title-large text-medium-emphasis">=</span>
       <span v-if="target" class="answer" :style="{ background: target }" role="img" :aria-label="target" />
-      <span v-else class="answer mystery text-h5">?</span>
+      <span v-else class="answer mystery text-headline-small">?</span>
     </div>
     <CountdownTimer v-if="deadline" :deadline="deadline" :server-now="serverNow" />
   </StatusCard>

@@ -6,8 +6,8 @@
         <v-card class="win-celebration__card text-center" elevation="16" rounded="xl" @click="hide">
           <v-card-text class="py-8 px-6 px-sm-10">
             <v-icon v-if="!podium" icon="mdi-trophy" color="amber" size="72" class="mb-2" />
-            <div class="text-h4 font-weight-bold">{{ title }}</div>
-            <div v-if="subtitle" class="text-body-1 mt-2">{{ subtitle }}</div>
+            <div class="text-headline-large font-weight-bold">{{ title }}</div>
+            <div v-if="subtitle" class="text-body-large mt-2">{{ subtitle }}</div>
 
             <div v-if="podium" class="win-podium mt-6">
               <div
@@ -18,8 +18,8 @@
               >
                 <div class="win-podium__names">
                   <div v-for="s in step.players" :key="s.id">
-                    <div class="text-subtitle-1 font-weight-bold text-truncate">{{ s.name }}</div>
-                    <div v-if="s.detail" class="text-caption text-medium-emphasis">{{ s.detail }}</div>
+                    <div class="text-body-large font-weight-bold text-truncate">{{ s.name }}</div>
+                    <div v-if="s.detail" class="text-body-small text-medium-emphasis">{{ s.detail }}</div>
                   </div>
                 </div>
                 <div class="win-podium__block">{{ ordinal(step.place) }}</div>
@@ -29,8 +29,8 @@
             <div v-if="rest.length > 0" class="win-rest mt-4 text-left">
               <div v-for="s in rest" :key="s.id" class="d-flex align-center ga-3 py-1">
                 <span class="win-rest__place text-medium-emphasis">{{ ordinal(s.place) }}</span>
-                <span class="text-body-1 flex-grow-1 text-truncate">{{ s.name }}</span>
-                <span v-if="s.detail" class="text-body-2 text-medium-emphasis">{{ s.detail }}</span>
+                <span class="text-body-large flex-grow-1 text-truncate">{{ s.name }}</span>
+                <span v-if="s.detail" class="text-body-medium text-medium-emphasis">{{ s.detail }}</span>
               </div>
             </div>
           </v-card-text>

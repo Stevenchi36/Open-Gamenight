@@ -1,7 +1,7 @@
 <template>
   <v-container class="py-8" style="max-width: 440px">
     <v-card class="pa-2">
-      <v-card-title class="text-h5">Sign in</v-card-title>
+      <v-card-title class="text-headline-small">Sign in</v-card-title>
       <v-card-text>
         <v-form @submit.prevent="submit">
           <v-text-field v-model="email" label="Email" type="email" autocomplete="username" autofocus required />
@@ -18,7 +18,7 @@
           <v-btn type="submit" color="primary" size="large" block :loading="busy">Sign in</v-btn>
         </v-form>
       </v-card-text>
-      <v-card-text class="text-body-2 text-medium-emphasis">
+      <v-card-text class="text-body-medium text-medium-emphasis">
         You only need an account to create rooms; anyone can join a room with its code.
         Accounts are created by an admin. Forgot your password? Ask an admin to reset it.
       </v-card-text>

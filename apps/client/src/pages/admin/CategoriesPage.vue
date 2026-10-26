@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h1 class="text-h5 mb-1">Categories</h1>
-    <div class="text-body-2 text-medium-emphasis mb-4">{{ gameName }}</div>
+    <h1 class="text-headline-small mb-1">Categories</h1>
+    <div class="text-body-medium text-medium-emphasis mb-4">{{ gameName }}</div>
 
     <v-card class="mb-4">
       <v-card-text>
@@ -44,7 +44,7 @@
       <v-card :title="`Rename ${renaming?.name}`">
         <v-card-text>
           <v-text-field v-model="renameTo" label="Name" maxlength="39" counter autofocus @keyup.enter="rename" />
-          <div class="text-caption text-medium-emphasis">Everything in this category moves with it.</div>
+          <div class="text-body-small text-medium-emphasis">Everything in this category moves with it.</div>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
