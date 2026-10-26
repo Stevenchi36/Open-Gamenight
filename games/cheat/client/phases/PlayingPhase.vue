@@ -50,19 +50,13 @@
       <div v-else class="text-center text-body-large text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
     </template>
 
-    <v-expansion-panels v-if="view.log.length > 1" variant="accordion">
-      <v-expansion-panel title="Moves this game">
-        <v-expansion-panel-text>
-          <MoveLog :entries="moves" />
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+    <MoveLogDialog v-if="view.log.length > 1" title="Moves this game" :entries="moves" block />
   </div>
 </template>
 
 <script setup lang="ts">
 import { rankName, type Card, type Rank } from '@wsfg/core/kit'
-import { MoveLog, moveLogEntries, nameOf, PlayingCard, StatusCard, useCountdown } from '@wsfg/core/ui'
+import { MoveLogDialog, moveLogEntries, nameOf, PlayingCard, StatusCard, useCountdown } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import { MAX_PLAY } from '../../shared/index.ts'
 import CheatTable from '../CheatTable.vue'

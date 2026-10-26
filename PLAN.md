@@ -507,7 +507,7 @@ BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
 Your dice sit behind `HoldToReveal`, like Imposter's role card: phones lie on a shared table.
 
 ### Bids list
-This round's bids as a numbered `MoveLog`, newest first, on phones ("Bids this round", then on the reveal and results) and the TV. All plain while bidding; once called, the called bid turns green if it held or red if it didn't, and the call is added as the last row, green if it paid off for the caller.
+This round's bids as a numbered `MoveLog`, newest first, on phones (a "Bids this round" dialog, then on the reveal and results) and the TV. All plain while bidding; once called, the called bid turns green if it held or red if it didn't, and the call is added as the last row, green if it paid off for the caller.
 
 ### Client (watch page and win)
 - **Watch page**: a `SpectatorView` with a card per seat showing its dice as hidden dice (counts, never faces; the turn's card pulses), the current bid big, earlier bids this round, and the matches won. On a call, the outcome and everyone's dice with the counted ones lit, each player's turning up in turn when it happens live.

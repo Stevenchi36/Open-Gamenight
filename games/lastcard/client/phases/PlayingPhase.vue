@@ -76,19 +76,13 @@
       <div v-if="!myTurn" class="text-center text-body-large text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
     </template>
 
-    <v-expansion-panels v-if="view.log.length > 1" variant="accordion">
-      <v-expansion-panel title="Moves this round">
-        <v-expansion-panel-text>
-          <MoveLog :entries="moves" />
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+    <MoveLogDialog v-if="view.log.length > 1" title="Moves this round" :entries="moves" block />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PlayerId } from '@wsfg/core/contract'
-import { MoveLog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
+import { MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import { canJumpIn, canPlay, COLORS, isWild, sameCard, type Color } from '../../shared/index.ts'
 import { arriveDelay } from '../flights.ts'

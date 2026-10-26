@@ -56,23 +56,17 @@
       Waiting for {{ nameOf(room, view.turn) }}…
     </div>
 
-    <v-expansion-panels v-if="view.bids.length > 1 || view.lastRound" variant="accordion">
-      <v-expansion-panel v-if="view.bids.length > 1" title="Bids this round">
-        <v-expansion-panel-text>
-          <MoveLog :entries="bidEntries" />
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-      <v-expansion-panel v-if="view.lastRound" title="Last round">
-        <v-expansion-panel-text>
-          <RoundResultCard :result="view.lastRound" :room="room" :wild-ones="settings.wildOnes" />
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+    <div v-if="view.bids.length > 1 || view.lastRound" class="d-flex ga-2">
+      <MoveLogDialog v-if="view.bids.length > 1" title="Bids this round" :entries="bidEntries" class="flex-grow-1" />
+      <MoveLogDialog v-if="view.lastRound" title="Last round" icon="mdi-history" class="flex-grow-1">
+        <RoundResultCard :result="view.lastRound" :room="room" :wild-ones="settings.wildOnes" />
+      </MoveLogDialog>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, MoveLog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
+import { HoldToReveal, MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import { FACES, isLegalBid, minQuantity } from '../../shared/index.ts'
 import DiceRow from '../DiceRow.vue'
