@@ -3,7 +3,7 @@
  * settings, client actions and the per-player view.
  */
 import type { GameMeta } from '@wsfg/core/contract'
-import { RANKS, rankSchema, SUITS, type Card, type Rank } from '@wsfg/core/kit'
+import { moveHistorySchema, RANKS, rankSchema, SUITS, type Card, type Rank } from '@wsfg/core/kit'
 import { z } from 'zod'
 
 type PlayerId = string
@@ -43,6 +43,8 @@ export const settingsSchema = z.object({
   claims: claimsSchema,
   /** Seconds after each play when calls are open and the next player waits. */
   callSeconds: z.union([z.literal(3), z.literal(5), z.literal(10)]),
+  /** How many past plays and calls players can look back at; remembering the claims is the skill. */
+  moveHistory: moveHistorySchema,
 })
 
 export type CheatSettings = z.infer<typeof settingsSchema>
@@ -50,6 +52,7 @@ export type CheatSettings = z.infer<typeof settingsSchema>
 export const defaultSettings: CheatSettings = {
   claims: 'next',
   callSeconds: 5,
+  moveHistory: 'last5',
 }
 
 // ---------------------------------------------------------------- actions
@@ -131,8 +134,10 @@ export interface CheatView {
   stage: Stage
   /** Server time the call time ends; null outside the calling stage. */
   callUntil: number | null
-  /** This game's moves, oldest first. */
+  /** This game's moves, oldest first, trimmed to `settings.moveHistory`: always the latest one, so only empty before the first move. */
   log: Move[]
+  /** Moves before `log[0]`, so `logStart + log.length` is the move count. */
+  logStart: number
   /** RESULTS only. */
   outcome: 'win' | 'abandoned' | null
   winnerId: PlayerId | null

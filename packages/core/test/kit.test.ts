@@ -5,6 +5,7 @@ import {
   carryScores,
   deal,
   dropBallots,
+  hiddenMoves,
   isConnected,
   isPresent,
   nextTurnOrder,
@@ -15,6 +16,7 @@ import {
   sortCards,
   standardDeck,
   tallyVotes,
+  visibleMoves,
   withoutPlayer,
   type Card,
 } from '../src/kit.ts'
@@ -152,6 +154,28 @@ describe('secretBallots', () => {
     expect(secret.visibleTo(state, 'a')).toBe(false)
     const variants = secret.variants!(state, 'a')
     expect(variants.map((v) => v.ballots)).toEqual([{ a: 'b', b: 'a' }])
+  })
+})
+
+describe('visibleMoves', () => {
+  const log = [1, 2, 3, 4, 5, 6, 7]
+  it('keeps the latest move, the last five, or all, with how many came before', () => {
+    expect(visibleMoves(log, 'off')).toEqual({ log: [7], logStart: 6 })
+    expect(visibleMoves(log, 'last5')).toEqual({ log: [3, 4, 5, 6, 7], logStart: 2 })
+    expect(visibleMoves(log, 'all')).toEqual({ log, logStart: 0 })
+    expect(visibleMoves([], 'off')).toEqual({ log: [], logStart: 0 })
+  })
+})
+
+describe('hiddenMoves', () => {
+  interface S {
+    log: number[]
+  }
+  const secret = (history: 'off' | 'last5') => hiddenMoves<S, number>({ log: (s) => s.log, history: () => history, withLog: (s, log) => ({ ...s, log }) })
+
+  it('changes a move older than the window, and nothing while every move is shown', () => {
+    expect(secret('off').variants!({ log: [1, 2, 3] }, 'a')).toEqual([{ log: [3, 2, 3] }])
+    expect(secret('last5').variants!({ log: [1, 2, 3] }, 'a')).toEqual([])
   })
 })
 

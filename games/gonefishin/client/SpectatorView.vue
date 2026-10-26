@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12" md="8">
       <template v-if="view.phase === 'PLAYING'">
-        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.log.length} · ${name(view.turn)}'s turn`">{{ moveText(last, SPECTATOR_ID, name) }}</StatusCard>
+        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.logStart + view.log.length} · ${name(view.turn)}'s turn`">{{ moveText(last, SPECTATOR_ID, name) }}</StatusCard>
         <StatusCard v-else prominent overline="New game" :title="`${name(view.turn)} goes first`" />
       </template>
       <template v-else>
@@ -62,7 +62,7 @@ const name = (id: PlayerId | null) => nameOf(props.room, id)
 const last = computed(() => props.view.log.at(-1) ?? null)
 // The latest is in the status card; the rest newest first, a screenful at most.
 const earlier = computed(() =>
-  moveLogEntries(props.view.log, (m) => moveText(m, SPECTATOR_ID, name), moveTone, { skipLatest: true, max: 8 }),
+  moveLogEntries(props.view.log, (m) => moveText(m, SPECTATOR_ID, name), moveTone, { skipLatest: true, max: 8, start: props.view.logStart }),
 )
 const booksDown = computed(() => props.view.seats.reduce((n, s) => n + s.books.length, 0))
 const topBooks = computed(() => props.view.seats.find((s) => s.id === props.view.winnerIds[0])?.books.length ?? 0)

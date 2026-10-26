@@ -11,7 +11,7 @@ export function tableFlights(view: CheatView): CardFlight[] {
   if (view.phase !== 'PLAYING') return []
   if (log.length === 0) return dealFlights(`${game}:deal`, 'center', view.seats)
   const from = Math.max(0, log.length - 2)
-  return log.slice(from).flatMap((move, i) => moveFlights(move, `${game}:${from + i}`))
+  return log.slice(from).flatMap((move, i) => moveFlights(move, `${game}:${view.logStart + from + i}`))
 }
 
 function moveFlights(move: Move, id: string): CardFlight[] {

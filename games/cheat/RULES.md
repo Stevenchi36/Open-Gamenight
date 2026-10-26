@@ -33,11 +33,12 @@ The host starts a new game. Everyone keeps their seat, and the first turn moves 
 
 - **Claims** (default **Next rank**): the claims go up one rank every turn. **Nearby**: claim the same rank as the last play, or one above or below (aces and kings count as neighbours); the first play of a game can claim any rank.
 - **Call time** (default **5 seconds**): how long everyone gets to call after each play: 3, 5 or 10 seconds.
+- **Move history** (default **Last 5**): how many past plays and calls you can look back at under **Moves this game**: **Off** (only the latest, so it's all memory), **Last 5**, or **All**.
 
 ## Tips
 
 - Count what you hold: if you have three sevens, nobody else can truly play two.
 - Play your bluffs early, while the pile is small and getting caught costs less.
 - You can pick your cards while you wait for your turn.
-- **Moves this game** lists every play and call so far, if you lose track.
+- **Moves this game** lists recent plays and calls (as many as Move history allows), if you lose track.
 - If a player leaves mid-game, their cards are set aside, and their last play can't be called any more.

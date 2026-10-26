@@ -50,7 +50,7 @@
       <div v-else class="text-center text-body-large text-medium-emphasis mb-4">Waiting for {{ nameOf(room, view.turn) }}…</div>
     </template>
 
-    <MoveLogDialog v-if="view.log.length > 1" title="Moves this game" :entries="moves" block />
+    <MoveLogDialog v-if="view.settings.moveHistory !== 'off' && view.log.length > 1" title="Moves this game" :entries="moves" block />
   </div>
 </template>
 
@@ -69,7 +69,7 @@ const props = defineProps<PhaseProps>()
 
 const myTurn = computed(() => props.view.turn === props.me)
 const last = computed(() => props.view.log.at(-1) ?? null)
-const moves = computed(() => moveLogEntries(props.view.log, (m) => moveText(m, props.me, (id) => nameOf(props.room, id)), moveTone))
+const moves = computed(() => moveLogEntries(props.view.log, (m) => moveText(m, props.me, (id) => nameOf(props.room, id)), moveTone, { start: props.view.logStart }))
 const secondsLeft = useCountdown(() => props.view.callUntil, props.serverNow)
 
 const turnLine = computed(() => {

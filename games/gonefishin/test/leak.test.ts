@@ -29,6 +29,8 @@ function moves(sim: Sim): Move<ClientAction>[] {
 const configs: Array<[string, Partial<GoneFishinSettings>]> = [
   ['defaults', {}],
   ['no lucky catch', { luckyCatch: false }],
+  ['no move history', { moveHistory: 'off' }],
+  ['full move history', { moveHistory: 'all' }],
 ]
 
 describe("gone fishin' secret-leak test", () => {

@@ -8,7 +8,7 @@ export function tableFlights(view: GoneFishinView): CardFlight[] {
   if (view.phase !== 'PLAYING') return []
   if (log.length === 0) return dealFlights(`${game}:deal`, 'center', view.seats)
   const from = Math.max(0, log.length - 2)
-  return log.slice(from).flatMap((move, i) => moveFlights(move, `${game}:${from + i}`))
+  return log.slice(from).flatMap((move, i) => moveFlights(move, `${game}:${view.logStart + from + i}`))
 }
 
 // Cards handed over go first, then any draw from the pond.

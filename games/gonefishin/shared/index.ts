@@ -3,7 +3,7 @@
  * settings, client actions and the per-player view.
  */
 import type { GameMeta } from '@wsfg/core/contract'
-import { rankSchema, type Card, type Rank } from '@wsfg/core/kit'
+import { moveHistorySchema, rankSchema, type Card, type MoveHistory, type Rank } from '@wsfg/core/kit'
 import { z } from 'zod'
 
 type PlayerId = string
@@ -35,12 +35,15 @@ export function handSize(players: number): number {
 export const settingsSchema = z.object({
   /** Drawing the asked-for rank from the pond lets you ask again. */
   luckyCatch: z.boolean(),
+  /** How many past asks players can look back at; remembering them is the skill. */
+  moveHistory: moveHistorySchema,
 })
 
 export type GoneFishinSettings = z.infer<typeof settingsSchema>
 
 export const defaultSettings: GoneFishinSettings = {
   luckyCatch: true,
+  moveHistory: 'last5',
 }
 
 // ---------------------------------------------------------------- actions
@@ -86,6 +89,7 @@ export interface GoneFishinView {
   phase: Phase
   game: number
   luckyCatch: boolean
+  moveHistory: MoveHistory
   you: {
     /** 'waiting': joined mid-game, plays from the next game. */
     status: 'playing' | 'waiting'
@@ -98,8 +102,10 @@ export interface GoneFishinView {
   pond: number
   /** Who asks next; null outside PLAYING. */
   turn: PlayerId | null
-  /** This game's moves, oldest first. */
+  /** This game's moves, oldest first, trimmed to `moveHistory`: always the latest one, so only empty before the first move. */
   log: Move[]
+  /** Moves before `log[0]`, so `logStart + log.length` is the move count. */
+  logStart: number
   /** RESULTS only. */
   outcome: 'win' | 'abandoned' | null
   winnerIds: PlayerId[]

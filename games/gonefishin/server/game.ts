@@ -20,11 +20,13 @@ import {
   carryScores,
   deal,
   DISCONNECT_GRACE_MS,
+  hiddenMoves,
   isConnected,
   nextTurnOrder,
   RANKS,
   sortCards,
   standardDeck,
+  visibleMoves,
   withoutPlayer,
   type Card,
   type Rank,
@@ -288,6 +290,7 @@ function view(state: GoneFishinState, viewerId: PlayerId): GoneFishinView {
     phase: state.phase,
     game: state.game,
     luckyCatch: state.settings.luckyCatch,
+    moveHistory: state.settings.moveHistory,
     you: { status: seated ? 'playing' : 'waiting', hand: seated ? sortCards(handOf(state, viewerId)) : [] },
     seats: state.seats.map((id) => ({
       id,
@@ -297,7 +300,7 @@ function view(state: GoneFishinState, viewerId: PlayerId): GoneFishinView {
     })),
     pond: state.pond.length,
     turn: state.phase === 'PLAYING' ? state.turn : null,
-    log: state.log,
+    ...visibleMoves(state.log, state.settings.moveHistory),
     outcome: state.phase === 'RESULTS' ? state.outcome : null,
     winnerIds: state.phase === 'RESULTS' ? state.winnerIds : [],
     scores: state.scores,
@@ -383,5 +386,6 @@ export const goneFishin = defineGame<GoneFishinState, ClientAction, GoneFishinTi
         return variants
       },
     },
+    hiddenMoves({ log: (s) => s.log, history: (s) => s.settings.moveHistory, withLog: (s, log) => ({ ...s, log }) }),
   ],
 })

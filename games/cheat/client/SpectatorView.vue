@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12" md="8">
       <template v-if="view.phase === 'PLAYING'">
-        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.log.length} · ${turnLine}`">
+        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.logStart + view.log.length} · ${turnLine}`">
           {{ moveText(last, SPECTATOR_ID, name) }}
           <div v-if="last.kind === 'call'" class="d-flex flex-wrap ga-2 mt-3" :aria-label="`Turned up: ${last.cards.map((c) => c.rank).join(', ')}`">
             <PlayingCard v-for="card in last.cards" :key="card.rank + card.suit" :card="card" :class="{ 'card--false': card.rank !== last.claim }" />
@@ -70,7 +70,7 @@ const name = (id: PlayerId | null) => nameOf(props.room, id)
 const last = computed(() => props.view.log.at(-1) ?? null)
 // The latest is in the status card; the rest newest first, a screenful at most.
 const earlier = computed(() =>
-  moveLogEntries(props.view.log, (m) => moveText(m, SPECTATOR_ID, name), moveTone, { skipLatest: true, max: 8 }),
+  moveLogEntries(props.view.log, (m) => moveText(m, SPECTATOR_ID, name), moveTone, { skipLatest: true, max: 8, start: props.view.logStart }),
 )
 const secondsLeft = useCountdown(() => props.view.callUntil, props.serverNow)
 const turnLine = computed(() => (props.view.stage === 'calling' ? `${name(props.view.turn)} is next` : `${name(props.view.turn)}'s turn`))

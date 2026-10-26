@@ -147,6 +147,41 @@ export function secretBallots<S>(spec: {
   }
 }
 
+// ---------------------------------------------------------------- move history
+
+/**
+ * How much of a game's move log players see, for games where remembering past moves is the
+ * skill: 'off' only the latest move (the table just saw it), 'last5' the last five, 'all' every move.
+ */
+export const moveHistorySchema = z.enum(['off', 'last5', 'all'])
+export type MoveHistory = z.infer<typeof moveHistorySchema>
+
+/** The moves a view may carry (oldest first), and how many came before them so clients can still number them. */
+export function visibleMoves<M>(log: readonly M[], history: MoveHistory): { log: M[]; logStart: number } {
+  const keep = history === 'all' ? log.length : history === 'last5' ? 5 : 1
+  const logStart = Math.max(0, log.length - keep)
+  return { log: log.slice(logStart), logStart }
+}
+
+/** Leak-test spec for `visibleMoves`: changing moves older than the window must not change any view. */
+export function hiddenMoves<S, M>(spec: {
+  log(state: S): readonly M[]
+  history(state: S): MoveHistory
+  withLog(state: S, log: M[]): S
+}): SecretDef<S> {
+  return {
+    name: 'move history',
+    visibleTo: () => false,
+    variants(state) {
+      const log = spec.log(state)
+      const { logStart } = visibleMoves(log, spec.history(state))
+      if (logStart === 0) return []
+      // The oldest hidden move swapped for the latest one: same length, different history.
+      return [spec.withLog(state, [log.at(-1)!, ...log.slice(1)])]
+    },
+  }
+}
+
 // ---------------------------------------------------------------- cards
 
 /** Low to high, ace low. */

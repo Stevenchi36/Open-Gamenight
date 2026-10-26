@@ -35,10 +35,11 @@ The host starts a new game. Everyone keeps their seat, and the first turn moves 
 ## Settings
 
 - **Lucky catch** (default on): drawing the rank you asked for lets you ask again. Off: a miss always ends your turn.
+- **Move history** (default **Last 5**): how many past asks you can look back at under **Moves this game**: **Off** (only the latest, so it's all memory), **Last 5**, or **All**.
 
 ## Tips
 
 - Every ask is said out loud: if someone asks for queens, they hold a queen. Use that later.
 - The table shows how many cards each player has; you can't ask someone with none.
-- **Moves this game** lists every ask so far, if you lose track.
+- **Moves this game** lists recent asks (as many as Move history allows), if you lose track.
 - If a player leaves mid-game, their cards go back into the pond and their books stay down.

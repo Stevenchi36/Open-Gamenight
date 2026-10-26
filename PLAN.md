@@ -887,6 +887,7 @@ The eighth game and the first card game: the classic ask-for-a-rank game under a
 | Setting | Default | Notes |
 |---|---|---|
 | Lucky catch | on | drawing the asked-for rank from the pond lets you ask again |
+| Move history | `last5` | how many past moves players and the TV can look back at: `off` (only the latest), `last5` or `all`. Trimmed in `view()` (`visibleMoves` from kit), so older moves never leave the server |
 
 ### State machine
 ```
@@ -916,18 +917,19 @@ type Move = {                               // public: what the table saw and he
   books: Rank[],                            // books laid down as a result
 }
 {
-  phase, game, luckyCatch,
+  phase, game, luckyCatch, moveHistory,
   you: { status: 'playing' | 'waiting', hand: Card[] },  // your cards only, sorted by rank
   seats: [{ id, cards: number, books: Rank[], left: boolean }],  // seat order, clockwise
   pond: number,                             // cards left
   turn: PlayerId | null,                    // PLAYING only
-  log: Move[],                              // this game's moves, oldest first; the last is the latest
+  log: Move[],                              // this game's moves, oldest first, trimmed to moveHistory; the last is the latest
+  logStart: number,                         // moves before log[0]; logStart + log.length is the move count
   outcome: 'win' | 'abandoned' | null,      // RESULTS only
   winnerIds: PlayerId[],
   scores,
 }
 ```
-`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other players' hands, or between another hand and the pond, and the viewer's view must not change), and the pond's order is visible to nobody. A card drawn while fishing isn't in `Move` unless it was a lucky catch. Everything in `Move` is public because at a real table it's said out loud. The leak test covers both Lucky catch settings, a leaver, and RESULTS.
+`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other players' hands, or between another hand and the pond, and the viewer's view must not change), and the pond's order is visible to nobody. A card drawn while fishing isn't in `Move` unless it was a lucky catch. Everything in `Move` is public because at a real table it's said out loud. Moves outside the Move history window are visible to nobody (`hiddenMoves` from kit: change an older move, and no view may change). The leak test covers both Lucky catch settings, every Move history setting, a leaver, and RESULTS.
 
 ### Client
 - **Win**: when a game ends while you watch, a `WinCelebration` with a podium of places by books (ties share a place; leavers aren't placed), on your phone and the TV.
@@ -1131,6 +1133,7 @@ The eleventh game and the third card game: play cards face down, say what they a
 |---|---|---|
 | Claims | `next` | `next` (the rank after the last claim) or `nearby` (same, one up or one down) |
 | Call time | 5 | 3, 5 or 10 seconds after each play before the next play |
+| Move history | `last5` | how many past moves plays and calls players and the TV can look back at: `off` (only the latest), `last5` or `all`. Trimmed in `view()` (`visibleMoves` from kit), so older moves never leave the server |
 
 ### State machine
 ```
@@ -1162,12 +1165,13 @@ type Move =                                     // public: what the table saw an
   top: { play, playerId, count, claim } | null, // the latest play while it can be called; play numbers count up through the game
   claims: Rank[],                               // what the turn player may claim
   turn, stage, callUntil,                       // callUntil: server time the call time ends (stage calling)
-  log: Move[],                                  // this game's moves, oldest first
+  log: Move[],                                  // this game's moves, oldest first, trimmed to settings.moveHistory
+  logStart: number,                             // moves before log[0]; logStart + log.length is the move count
   outcome: 'win' | 'abandoned' | null, winnerId,  // RESULTS only
   scores,
 }
 ```
-`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other hands), and the pile's cards are visible to nobody, the players who put them there included (variants: swap a pile card with a card in another player's hand, or reorder the pile). Only a call turns cards up, and only the called play's. The leak test covers both Claims settings, a leaver, a late joiner and RESULTS.
+`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other hands), and the pile's cards are visible to nobody, the players who put them there included (variants: swap a pile card with a card in another player's hand, or reorder the pile). Only a call turns cards up, and only the called play's. Moves outside the Move history window are visible to nobody (`hiddenMoves`, as in Gone Fishin'). The leak test covers both Claims settings, every Move history setting, a leaver, a late joiner and RESULTS.
 
 ### Client
 - **Table**: `CardTable` with each seat's face-down fan and count; the centre holds the pile (a face-down stack with its count) and the latest claim ("2 × 7").

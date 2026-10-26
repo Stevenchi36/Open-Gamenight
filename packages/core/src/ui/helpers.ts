@@ -48,17 +48,18 @@ export interface MoveLogEntry {
 
 /**
  * A move log (oldest first) as `MoveLog` rows, newest first and numbered from the first move.
- * `skipLatest` leaves out the newest when it's already shown big; `max` caps the rows.
+ * `skipLatest` leaves out the newest when it's already shown big; `max` caps the rows; `start` is how
+ * many moves came before `log[0]`, for a log trimmed to the game's move history setting.
  */
 export function moveLogEntries<M>(
   log: readonly M[],
   text: (move: M) => string,
   tone: (move: M) => MoveLogEntry['tone'],
-  { skipLatest = false, max = Infinity }: { skipLatest?: boolean; max?: number } = {},
+  { skipLatest = false, max = Infinity, start = 0 }: { skipLatest?: boolean; max?: number; start?: number } = {},
 ): MoveLogEntry[] {
   const upTo = skipLatest ? log.length - 1 : log.length
   const out: MoveLogEntry[] = []
-  for (let i = upTo - 1; i >= 0 && out.length < max; i--) out.push({ n: i + 1, text: text(log[i]!), tone: tone(log[i]!) })
+  for (let i = upTo - 1; i >= 0 && out.length < max; i--) out.push({ n: start + i + 1, text: text(log[i]!), tone: tone(log[i]!) })
   return out
 }
 

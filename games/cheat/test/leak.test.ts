@@ -32,6 +32,8 @@ function moves(sim: Sim): Move<ClientAction>[] {
 const configs: Array<[string, Partial<CheatSettings>]> = [
   ['defaults', {}],
   ['nearby claims', { claims: 'nearby' }],
+  ['no move history', { moveHistory: 'off' }],
+  ['full move history', { moveHistory: 'all' }],
 ]
 
 describe('cheat secret-leak test', () => {
