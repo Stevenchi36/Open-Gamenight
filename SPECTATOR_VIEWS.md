@@ -2,7 +2,7 @@
 
 Games with no `SpectatorView` yet. On the watch page (`/watch/:code`) they show only the player list and a note saying the game has no TV view yet. See `PLAN.md` § Spectators and `docs/decisions.md`.
 
-**Done:** Cheat, Dots and Boxes.
+**Done:** Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line.
 
 ## How to add one
 
@@ -23,16 +23,7 @@ Reference: `games/cheat/client/SpectatorView.vue`.
 - Gone Fishin': show public set counts and the size of the pond. Never show who holds which ranks.
 - Last Card: show the discard pile top, the current suit/rank in play, the turn direction, and each player's hand count.
 
-### 2. Grid board games: Tic-Tac-Toe, Drop Line
-
-Reference: `games/dotsandboxes/client/SpectatorView.vue` (board, `SeatChips`, `ScoreBoard`).
-
-- The whole state is public, so they need no secrecy work. These are the quickest wins.
-- Reuse `GameBoard.vue` and `DropBoard.vue` read-only: no click handlers, or disabled ones, larger cells, and the winning line highlighted.
-- A seat/turn strip (X vs O, colours), the round result, and the match score.
-- `SeatChips` is per-game in Dots and Boxes. If all three need it, consider moving it into `@wsfg/core/ui` ("Reuse before writing").
-
-### 3. Secret-answer party rounds: Flock, Color Mix, Ballpark
+### 2. Secret-answer party rounds: Flock, Color Mix, Ballpark
 
 These share one round shape: a prompt, then secret answers, then a reveal, then scores.
 
@@ -41,7 +32,7 @@ These share one round shape: a prompt, then secret answers, then a reveal, then 
 - **Ballpark** has an extra betting phase. Show the board of guesses and where tokens sit only if that's already public at that point; check `secrets`.
 - Build one first (Flock is the simplest) and pull the shared "prompt + who's answered + timer" header into `@wsfg/core/ui` if the other two match it.
 
-### 4. Hidden-role and hidden-info games: Word Imposter, In Order, Liar's Dice
+### 3. Hidden-role and hidden-info games: Word Imposter, In Order, Liar's Dice
 
 These have the most secrets, so check each view against `secrets` before showing anything.
 
@@ -51,7 +42,6 @@ These have the most secrets, so check each view against `secrets` before showing
 
 ## Suggested order
 
-1. Grid board games (no secrets, existing reference)
-2. Card games (existing Cheat reference, `CardTable` ready)
-3. Party rounds (new shared header, likely worth extracting)
-4. Hidden-role games (most secrecy review)
+1. Card games (existing Cheat reference, `CardTable` ready)
+2. Party rounds (new shared header, likely worth extracting)
+3. Hidden-role games (most secrecy review)

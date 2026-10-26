@@ -678,6 +678,9 @@ PLAYING -> RESULTS -> new_game -> PLAYING
 ```
 `secrets` is empty: everything is on the board, so there is nothing for the leak test to check.
 
+### Client
+- **Watch page**: a `SpectatorView` with the board large, the players' chips (mark, name, score), whose move it is, and on `RESULTS` the outcome and the scoreboard.
+
 ## 7e. Drop Line (`games/dropline`)
 
 The sixth game: two players drop discs into an upright grid, aiming for a line of a set length. Built like Tic-Tac-Toe (2 players, nothing hidden), with settings for the line length and board size.
@@ -731,6 +734,9 @@ PLAYING -> RESULTS -> new_game -> PLAYING
 }
 ```
 `secrets` is empty, as in Tic-Tac-Toe.
+
+### Client
+- **Watch page**: a `SpectatorView` like Tic-Tac-Toe's: the board large, the players' chips (colour, name, score), whose move it is with the line length, and on `RESULTS` the outcome and the scoreboard.
 
 ## 7f. Ballpark (`games/ballpark`)
 

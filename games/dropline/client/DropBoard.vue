@@ -1,5 +1,5 @@
 <template>
-  <div class="dl-board mx-auto mb-4" :style="{ gridTemplateColumns: `repeat(${cols}, 1fr)`, maxWidth: `${cols * 52}px` }">
+  <div class="dl-board mx-auto mb-4" :style="{ gridTemplateColumns: `repeat(${cols}, 1fr)`, maxWidth: `${cols * (large ? 80 : 52)}px` }">
     <button
       v-for="(column, c) in columns"
       :key="c"
@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 // The upright grid, drawn top row first. A whole column is the tap target; the
-// last disc dropped gets a dot and the winning line a ring.
+// last disc dropped gets a dot and the winning line a ring. `large` sizes it for the watch page's TV.
 import type { Disc, Spot } from '../shared/index.ts'
 
 const props = defineProps<{
@@ -34,6 +34,7 @@ const props = defineProps<{
   playable: boolean
   /** Yours, previewed where it would land in the hovered column. */
   disc: Disc | null
+  large?: boolean
 }>()
 const emit = defineEmits<{ drop: [column: number] }>()
 

@@ -1,18 +1,6 @@
 <template>
   <div>
-    <div class="d-flex justify-center flex-wrap ga-2 mb-4">
-      <v-chip
-        v-for="disc in DISCS"
-        :key="disc"
-        :color="view.turn === view.discs[disc] ? 'primary' : undefined"
-        :variant="view.turn === view.discs[disc] ? 'flat' : 'tonal'"
-        :prepend-icon="isConnected(room, view.discs[disc]) ? undefined : 'mdi-wifi-off'"
-      >
-        <span class="dl-dot mr-2" :class="`dl-dot--${disc}`" />
-        {{ nameOf(room, view.discs[disc]) }}{{ view.discs[disc] === me ? ' (you)' : '' }}
-        <strong class="ml-2">{{ view.scores[view.discs[disc]] ?? 0 }}</strong>
-      </v-chip>
-    </div>
+    <DiscChips :view="view" :room="room" :me="me" />
 
     <template v-if="view.phase === 'PLAYING'">
       <StatusCard v-if="!view.you.disc" compact title="Watching">You'll play from the next game.</StatusCard>
@@ -55,29 +43,13 @@
 import type { PlayViewProps } from '@wsfg/core/client'
 import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
-import type { ClientAction, Disc, DropLineSettings, DropLineView } from '../shared/index.ts'
+import type { ClientAction, DropLineSettings, DropLineView } from '../shared/index.ts'
+import DiscChips from './DiscChips.vue'
 import DropBoard from './DropBoard.vue'
 
 const props = defineProps<PlayViewProps<DropLineView, ClientAction, DropLineSettings>>()
-
-const DISCS: Disc[] = ['red', 'blue']
 
 const myTurn = computed(() => props.view.phase === 'PLAYING' && props.view.turn === props.me)
 const overline = computed(() => `You are ${props.view.you.disc} · ${props.view.lineLength} in a row wins`)
 const gained = computed(() => (props.view.winnerId ? { [props.view.winnerId]: 1 } : {}))
 </script>
-
-<style scoped>
-.dl-dot {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-.dl-dot--red {
-  background: #e53935;
-}
-.dl-dot--blue {
-  background: #1e88e5;
-}
-</style>

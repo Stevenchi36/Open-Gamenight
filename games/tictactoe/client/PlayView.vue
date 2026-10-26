@@ -1,17 +1,6 @@
 <template>
   <div>
-    <div class="d-flex justify-center flex-wrap ga-2 mb-4">
-      <v-chip
-        v-for="mark in MARKS"
-        :key="mark"
-        :color="view.turn === view.marks[mark] ? 'primary' : undefined"
-        :variant="view.turn === view.marks[mark] ? 'flat' : 'tonal'"
-        :prepend-icon="isConnected(room, view.marks[mark]) ? MARK_ICONS[mark] : 'mdi-wifi-off'"
-      >
-        {{ nameOf(room, view.marks[mark]) }}{{ view.marks[mark] === me ? ' (you)' : '' }}
-        <strong class="ml-2">{{ view.scores[view.marks[mark]] ?? 0 }}</strong>
-      </v-chip>
-    </div>
+    <MarkChips :view="view" :room="room" :me="me" />
 
     <template v-if="view.phase === 'PLAYING'">
       <StatusCard v-if="!view.you.mark" compact title="Watching">You'll play from the next game.</StatusCard>
@@ -45,13 +34,11 @@
 import type { PlayViewProps } from '@wsfg/core/client'
 import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
-import type { ClientAction, Mark, TicTacToeSettings, TicTacToeView } from '../shared/index.ts'
+import type { ClientAction, TicTacToeSettings, TicTacToeView } from '../shared/index.ts'
 import GameBoard from './GameBoard.vue'
+import MarkChips from './MarkChips.vue'
 
 const props = defineProps<PlayViewProps<TicTacToeView, ClientAction, TicTacToeSettings>>()
-
-const MARKS: Mark[] = ['X', 'O']
-const MARK_ICONS: Record<Mark, string> = { X: 'mdi-close', O: 'mdi-circle-outline' }
 
 const myTurn = computed(() => props.view.phase === 'PLAYING' && props.view.turn === props.me)
 const gained = computed(() => (props.view.winnerId ? { [props.view.winnerId]: 1 } : {}))
