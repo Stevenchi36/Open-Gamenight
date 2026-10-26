@@ -265,6 +265,18 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Your hand isn't behind `HoldToReveal`.** As in Gone Fishin': you read it every turn.
 - **`rankName` ("sevens", "one ace") moved from Gone Fishin' to `kit`.** Cheat needs it too, and it names a kit `Rank`.
 
+## Dots and Boxes rules
+- **Dots and Boxes is the twelfth game (id `dotsandboxes`) under its traditional name.** The name is generic and owned by nobody (the game dates from 1889), like Tic-Tac-Toe and Cheat, so it passes the naming rule in `games/CLAUDE.md`; the user chose it over a custom name.
+- **2-4 players, not 2 as in `games/IDEAS.md`.** The game plays well with more, and more than 4 colours stop being easy to tell apart on a small board.
+- **Square grids of 3-7 boxes per side (default 5).** 8 dots across is the most a phone fits with comfortable tap targets; 5×5 is the usual size and its 25 boxes can't tie between two players.
+- **Seat colours red, blue, green, orange follow the turn order; seats rotate each game (`nextTurnOrder` 'rotate').** Moving first changes the game, so it moves round; colours by seat mean red always goes first, as in Drop Line.
+- **Closing a box means drawing again, and that is compulsory.** It's the standard rule; the endgame strategy (giving away boxes to keep control) depends on it.
+- **Players tied for the most boxes each score 1 point.** With 3-4 players a tie for first is common, and calling it a draw would waste a whole game; between two players a shared point changes nobody's lead.
+- **A disconnected player's turn is skipped after the 15s grace only while 3 or more are in the game; with 2 it waits.** With 3-4 players, one locked phone shouldn't stall the rest; with 2, a skip hands the other player two turns in a row, as in Drop Line.
+- **A leaver's seat and boxes stay on the board, they're skipped and can't win; under 2 players left ends the game with no points.** Removing their boxes would reopen closed squares; same leaver shape as Cheat.
+- **Line tap targets are diamonds (the line's two dots and the centres of the boxes either side).** They tile the board without gaps or overlaps, so every point picks exactly one line and targets stay as large as the grid allows.
+- **Boxes show the owner's initial as well as their colour.** Colour alone fails colour-blind players.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.

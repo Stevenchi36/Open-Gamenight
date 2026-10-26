@@ -1136,6 +1136,61 @@ type Move =                                     // public: what the table saw an
 - The latest move shows in a status card above the table; after a call it shows the turned-up cards, marked true or false.
 - `needsAction`: your turn (stage `play`), or the host on `RESULTS`. Not a callable play: the cue would hint that calling is wise.
 
+## 7k. Dots and Boxes (`games/dotsandboxes`)
+
+The twelfth game: the classic pencil-and-paper game. Players take turns drawing a line between two neighbouring dots; whoever closes a box claims it and draws again. Built like Drop Line (nothing hidden, a board-size setting), but for 2-4 players, with Cheat's disconnect skip and leaver handling.
+
+### Rules
+1. **2-4 players**, each with a colour by seat: **red, blue, green, orange**. Seats follow the turn order; red goes first.
+2. **A turn.** Draw one line between two dots next to each other, across or down, that isn't drawn yet.
+3. **Boxes.** A line that closes the fourth side of a box claims it for you (filled in your colour). One line can close two boxes. Closing at least one box means you **draw again**; otherwise the turn passes on.
+4. **The end.** When every line is drawn, the player with the most boxes wins and scores **1 point**. Players tied for most each score 1 point (a shared win). Scores carry across games.
+5. **Next game.** The host starts it. Seats keep their places and the first turn moves on one seat (`nextTurnOrder` 'rotate'), so colours move round too; with 2 players that's a swap.
+
+### Settings (host, lobby only)
+| Setting | Default | Notes |
+|---|---|---|
+| Grid | 5 | boxes per side, 3-7 (a square grid of 4×4 to 8×8 dots) |
+
+### State machine
+```
+PLAYING -> RESULTS -> new_game -> PLAYING
+```
+- `PLAYING`: `turn` is the player to draw. With 3 or more players still in the game, a disconnected player's turn passes to the next seat after the 15s grace (`DISCONNECT_GRACE_MS`), without drawing. With 2 it waits, as in Drop Line.
+- `RESULTS`: the full board, the box counts and winners, and the scoreboard. Host: **New game** (`new_game`, needs 2 players) or **Back to lobby**.
+- A player leaving mid-game: their seat stays (dimmed) with their boxes, they're skipped, and they can't win. If fewer than 2 players remain, the game ends as `abandoned` with no points. Late joiners wait for the next game.
+
+### Actions
+| action | payload | Who |
+|---|---|---|
+| `draw` | `{ dir, row, col }` (`h`: row 0-grid, col 0-(grid-1); `v`: row 0-(grid-1), col 0-grid; counted in dots from the top left) | the player to move, line not drawn, `PLAYING` |
+| `new_game` | `{}` | host, `RESULTS`, 2+ players present |
+
+### View (per player)
+```ts
+type Line = { dir: 'h' | 'v', row, col }
+{
+  phase, game, grid,
+  you: { seat: number | null },             // your seat (and colour) index; null: not in this game
+  seats: [{ id, boxes, left }],             // turn order; the index picks the colour
+  h: boolean[][],                           // (grid+1) rows × grid: drawn across-lines
+  v: boolean[][],                           // grid rows × (grid+1): drawn down-lines
+  boxes: (number | null)[][],               // grid × grid: the owner's seat index
+  last: Line | null,                        // the latest line drawn
+  turn: PlayerId | null,                    // PLAYING only
+  outcome: 'win' | 'abandoned' | null,      // RESULTS only
+  winnerIds: PlayerId[],                    // RESULTS only; more than one is a shared win
+  scores,
+}
+```
+`secrets` is empty, as in Drop Line.
+
+### Client
+- **Board**: an SVG of dots, drawn lines and claimed boxes (filled in the owner's colour, with their initial so colour isn't the only cue). Every undrawn line's tap target is the diamond between its two dots and the centres of the boxes either side, so targets tile the board without overlapping and stay large on a phone. Hovering previews the line in your colour; the latest line is highlighted.
+- **Seats**: a chip per seat in turn order: colour, name, boxes this game; the turn is highlighted, disconnects show the wifi-off icon, leavers are dimmed.
+- **Watch page**: a `SpectatorView` with the seats, the board and the scoreboard.
+- `needsAction`: your turn, or the host on `RESULTS`.
+
 ## 8. Vue client (`apps/client`)
 
 ### Setup

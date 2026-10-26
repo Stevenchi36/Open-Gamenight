@@ -67,7 +67,6 @@ Card games can reuse the deck and deal helpers already in `@wsfg/core/kit` (`sta
 
 Next to Tic-Tac-Toe and Drop Line: pure rules, `secrets: []`, and the same swap-colours-each-game setup.
 
-- **Dots and Boxes**: take turns drawing a line between neighbouring dots; completing a box scores it and earns another turn. Grid size as a setting. The fiddly part is tapping on lines rather than cells.
 - **Reversi**: 8×8; each move flips the opponent's discs caught between the new disc and one of yours. Show legal moves and the disc count. A player with no legal move passes.
 
 ## Social deduction
