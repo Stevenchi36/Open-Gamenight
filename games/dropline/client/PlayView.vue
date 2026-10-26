@@ -36,14 +36,23 @@
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" class="mb-4" />
       <NextRoundButton :room="room" :me="me" label="New game" waiting-for="to start a new game" @next="send({ type: 'new_game' })" />
     </template>
+
+    <WinCelebration
+      :active="view.outcome === 'win'"
+      :title="view.winnerId === me ? 'You win!' : `${nameOf(room, view.winnerId)} wins!`"
+      :subtitle="`${view.lineLength} in a row`"
+      :colors="winnerConfetti(view)"
+      :delay="LANDED_MS"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PlayViewProps } from '@wsfg/core/client'
-import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { ClientAction, DropLineSettings, DropLineView } from '../shared/index.ts'
+import { LANDED_MS, winnerConfetti } from './celebration.ts'
 import DiscChips from './DiscChips.vue'
 import DropBoard from './DropBoard.vue'
 

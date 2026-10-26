@@ -28,6 +28,14 @@
         <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
       </template>
     </v-col>
+
+    <WinCelebration
+      :active="view.outcome === 'win'"
+      :title="`${name(view.winnerId)} wins!`"
+      :subtitle="`${view.lineLength} in a row`"
+      :colors="winnerConfetti(view)"
+      :delay="LANDED_MS"
+    />
   </v-row>
 </template>
 
@@ -37,9 +45,10 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { isConnected, nameOf, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { isConnected, nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { DropLineSettings, DropLineView } from '../shared/index.ts'
+import { LANDED_MS, winnerConfetti } from './celebration.ts'
 import DiscChips from './DiscChips.vue'
 import DropBoard from './DropBoard.vue'
 

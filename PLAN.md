@@ -156,7 +156,7 @@ interface GameClientModule {
   SpectatorView?: () => Promise<Component> // props: { view, room, settings, serverNow }; the watch page's display (section 3)
 }
 ```
-The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Play views build on `@wsfg/core/ui`: helpers (`nameOf`, `isConnected`, `isHost`, `useCountdown`) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `ProgressCount`, `TurnOrder`, `CountdownTimer`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, `OrderList`). The "your move" glow is the shell's, driven by the module's `needsAction`. Each game's player-facing rules live in `games/<id>/RULES.md`: plain Markdown that the shell's **How to play** button (room header, in the lobby and during play) renders, and that people and Claude can read directly. A game's section of this plan is its spec; `RULES.md` is the short version for players. Auto-generating settings forms from zod is deferred until there are 3+ games.
+The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Play views build on `@wsfg/core/ui`: helpers (`nameOf`, `isConnected`, `isHost`, `useCountdown`) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `ProgressCount`, `TurnOrder`, `CountdownTimer`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, `OrderList`, `WinCelebration`). The "your move" glow is the shell's, driven by the module's `needsAction`. Each game's player-facing rules live in `games/<id>/RULES.md`: plain Markdown that the shell's **How to play** button (room header, in the lobby and during play) renders, and that people and Claude can read directly. A game's section of this plan is its spec; `RULES.md` is the short version for players. Auto-generating settings forms from zod is deferred until there are 3+ games.
 
 ## 3. Core room behaviour
 
@@ -737,7 +737,7 @@ PLAYING -> RESULTS -> new_game -> PLAYING
 
 ### Client
 - **Watch page**: a `SpectatorView` like Tic-Tac-Toe's: the board large, the players' chips (colour, name, score), whose move it is with the line length, and on `RESULTS` the outcome and the scoreboard.
-- **Animation** (on the board, so players and the TV both see it): a newly dropped disc falls from above the board into its spot with a small bounce, and a line won while watching pulses once the disc lands. Not on first render; off under `prefers-reduced-motion`.
+- **Animation** (on the board, so players and the TV both see it): a newly dropped disc falls from above the board into its spot with a small bounce, and a line won while watching pulses once the disc lands, with a `WinCelebration` (confetti in the winner's colour, "{name} wins!" or "You win!") for about 3.5 seconds. Not on first render; motion is off under `prefers-reduced-motion` (the card still shows).
 
 ## 7f. Ballpark (`games/ballpark`)
 
