@@ -1,5 +1,6 @@
 import { assertValidGame } from '@wsfg/core/contract'
 import { DISCONNECT_GRACE_MS } from '@wsfg/core/kit'
+import { SPECTATOR_ID } from '@wsfg/core/protocol'
 import { describe, expect, it } from 'vitest'
 import { imposter } from '../server/game.ts'
 import { REVEAL_MS } from '../shared/index.ts'
@@ -542,12 +543,20 @@ describe('rounds and players', () => {
   it('shows a late joiner a waiting view without the word', () => {
     const sim = newGame()
     sim.join({ id: 'p5' })
-    expect(sim.view('p5').you).toEqual({ role: 'waiting', word: null, category: null, hint: null, vote: null })
+    // With a hint the imposter knows the category, so it's public; never the word or the hint.
+    expect(sim.view('p5').you).toEqual({ role: 'waiting', word: null, category: 'Animals', hint: null, vote: null })
     playClues(sim)
     expect(sim.act('p5', { type: 'cast_vote', targetId: 'p1' })).toEqual({
       ok: false,
       error: 'You are not in this round',
     })
+  })
+
+  it("hides the category from outsiders when the imposter doesn't get it", () => {
+    const sim = newGame({ settings: { imposterHint: 'none' } })
+    sim.join({ id: 'p5' })
+    expect(sim.view('p5').you.category).toBeNull()
+    expect(sim.view(SPECTATOR_ID).you.category).toBeNull()
   })
 
   it('voids the round if the imposter leaves before the reveal', () => {

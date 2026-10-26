@@ -389,12 +389,15 @@ CLUES -> VOTING -> REVEAL -> (GUESS_CHECK) -> RESULTS -> (next_round -> CLUES | 
   }
 }
 ```
-`you.word` is `null` for the imposter. Ballots (who voted for whom; clients count them) are hidden until REVEAL and stay shown through RESULTS; `imposterId` appears from REVEAL onward. `secrets` declares: `ballots` are hidden during VOTING; `secretWord` is visible to crew always, to the imposter only in `RESULTS`; `imposterId` is visible to the imposter always, to others from `REVEAL`. The core leak test checks this.
+`you.word` is `null` for the imposter. Ballots (who voted for whom; clients count them) are hidden until REVEAL and stay shown through RESULTS; `imposterId` appears from REVEAL onward. `secrets` declares: `ballots` are hidden during VOTING; `secretWord` is visible to crew always, to the imposter only in `RESULTS`; `imposterId` is visible to the imposter always, to others from `REVEAL`; `category` goes to the crew always and, when the imposter gets it too (a hint setting other than none), to everyone, outsiders and the TV included. The core leak test checks this.
 
 ### Hold-to-reveal (physical table)
 Players sit together, so the imposter could glance at a neighbour's phone. **The word is never on screen at rest:**
 - The role card shows "Hold to see your word" and reveals the word only while pressed (pointer/touch down), hiding it on release. The imposter's card behaves identically (showing their category/hint) so nobody can tell roles apart by how others use their phones.
 - The judge's GUESS_CHECK screen shows **Got it / Missed it** with the secret word behind the same hold-to-reveal.
+
+### Watch page
+A `SpectatorView` showing only what every player knows until the reveal: the category when it's public (otherwise "Secret category"), whose turn it is with the turn order and rotation progress, the clues in order as they're sent (typed mode; in spoken mode the TV mostly shows the turn order), and the vote progress (who has voted, never for whom). Then the imposter and the vote breakdown, the guess and the judge, and in `RESULTS` the word, who won and the scores. Each phase's card pops in as it arrives; clues pop in on phones too.
 
 ### Word library
 Tables in `games.db` (Imposter migrations):

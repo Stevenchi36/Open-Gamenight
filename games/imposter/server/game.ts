@@ -446,7 +446,8 @@ function view(state: ImposterState, viewerId: PlayerId): ImposterView {
   const you: ImposterView['you'] = {
     role: !inRound ? 'waiting' : isImposter ? 'imposter' : 'crew',
     word: seesWord ? state.secret.word : null,
-    category: seesWord || (isImposter && imposterHint !== 'none') ? state.secret.category : null,
+    // With a hint the imposter has the category too, so it's public: outsiders (the TV) get it.
+    category: seesWord || imposterHint !== 'none' ? state.secret.category : null,
     hint: isImposter && imposterHint === 'category+hint' ? state.secret.hint : null,
     vote: state.phase === 'VOTING' ? (state.ballots[viewerId] ?? null) : null,
   }
@@ -574,6 +575,12 @@ export const imposter = defineGame<ImposterState, ClientAction, ImposterTimer, I
           ? []
           : [s.secret.word],
       variants: (s) => [{ ...s, secret: { ...s.secret, word: 'Zz Variant Word' } }],
+    },
+    {
+      // Without a hint the imposter doesn't get it, so neither does anyone outside the round (a TV they can see).
+      name: 'category',
+      visibleTo: (s, viewerId) => s.settings.imposterHint !== 'none' || (viewerId !== s.imposterId && s.roundPlayers.includes(viewerId)),
+      variants: (s) => [{ ...s, secret: { ...s.secret, category: 'Zz Variant Category' } }],
     },
     {
       name: 'imposterId',
