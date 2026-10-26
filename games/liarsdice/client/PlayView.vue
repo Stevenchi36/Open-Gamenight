@@ -8,10 +8,19 @@
     <BiddingPhase v-if="view.phase === 'BIDDING'" v-bind="phaseProps" />
     <RevealPhase v-else-if="view.phase === 'REVEAL'" v-bind="phaseProps" />
     <ResultsPhase v-else-if="view.phase === 'RESULTS'" v-bind="phaseProps" />
+
+    <!-- Here, not in ResultsPhase: it has to be on screen before RESULTS arrives to see the win happen live. -->
+    <WinCelebration
+      :active="!!view.winnerId"
+      :title="view.winnerId === me ? 'You win the match!' : `${nameOf(room, view.winnerId)} wins!`"
+      subtitle="Last dice standing"
+      :delay="400"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { nameOf, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import BiddingPhase from './phases/BiddingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'

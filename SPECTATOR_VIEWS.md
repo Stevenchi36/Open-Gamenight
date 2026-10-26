@@ -2,7 +2,7 @@
 
 Games with no `SpectatorView` yet. On the watch page (`/watch/:code`) they show only the player list and a note saying the game has no TV view yet. See `PLAN.md` § Spectators and `docs/decisions.md`.
 
-**Done:** Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card, Flock, Color Mix, Ballpark.
+**Done:** Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card, Flock, Color Mix, Ballpark, Liar's Dice.
 
 ## How to add one
 
@@ -43,7 +43,7 @@ Per game, in order:
 2. **Card games (done):** `CardTable` flights (each game's `client/flights.ts`) for Cheat, Gone Fishin' and Last Card: the deal, cards arcing between seats, the pile and your hand, flips when turned up, a Cheat call's reveal and pickup, Last Card's 7-0 swaps, Gone Fishin's books popping in, and new cards dropping into your hand. Their TV views get it by using the game's table.
 3. **Dots and Boxes (done):** the line draws in, and a claimed box grows in, in its owner's colour.
 4. **Tic-Tac-Toe (done):** a mark pops into its square, and a winning line pulses.
-5. **Win celebration:** core `WinCelebration` (confetti burst and a "{name} wins!" card, plus a podium when given `standings`) is in every game with a TV view: Tic-Tac-Toe, Drop Line, Dots and Boxes, Cheat, Gone Fishin', Last Card, Flock, Color Mix and Ballpark. Add it to each new TV view's game with a winner (Liar's Dice next), on the play view and the TV; mount it outside any results-only branch so it sees the win arrive.
+5. **Win celebration:** core `WinCelebration` (confetti burst and a "{name} wins!" card, plus a podium when given `standings`) is in every game with a TV view: Tic-Tac-Toe, Drop Line, Dots and Boxes, Cheat, Gone Fishin', Last Card, Flock, Color Mix, Ballpark and Liar's Dice. Add it to each new TV view's game with a winner, on the play view and the TV; mount it outside any results-only branch so it sees the win arrive.
 6. **TV turn pulse (done for existing views):** the large seat chips and `CardTable`'s turn seat (when `me` is `SPECTATOR_ID`) keep pulsing. New TV views that show the turn some other way should pulse it too.
 
 ## Suggested order

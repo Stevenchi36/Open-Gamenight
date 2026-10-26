@@ -503,6 +503,10 @@ BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
 ### Hold-to-reveal
 Your dice sit behind `HoldToReveal`, like Imposter's role card: phones lie on a shared table.
 
+### Client (watch page and win)
+- **Watch page**: a `SpectatorView` with a card per seat showing its dice as hidden dice (counts, never faces; the turn's card pulses), the current bid big, earlier bids this round, and the matches won. On a call, the outcome and everyone's dice with the counted ones lit, each player's turning up in turn when it happens live.
+- **Win**: a `WinCelebration` when the match is won, on your phone and the TV.
+
 ## 7b. Flock (`games/flock`)
 
 The third game: everyone answers the same question and tries to give the answer most people give. The first game with free-text answers that are compared with each other, and the second with a library (questions), managed like Imposter's words. Its id was `herd` until the rename from Herd Mentality; `renamedFrom: ['herd']` and a rename migration moved existing data over, and the migrations were later squashed onto `flock`.
