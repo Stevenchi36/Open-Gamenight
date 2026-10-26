@@ -6,14 +6,28 @@
           <div class="text-body-small text-medium-emphasis">Room code</div>
           <div class="text-headline-small room-code font-weight-bold">{{ room.code }}</div>
         </div>
-        <v-chip v-if="room.spectators > 0" size="small" variant="tonal" prepend-icon="mdi-television">
-          {{ room.spectators }} watching
-        </v-chip>
+        <div
+          v-if="room.spectators > 0"
+          class="d-flex align-center ga-1 text-body-medium text-medium-emphasis"
+          :title="`${room.spectators} watching`"
+          :aria-label="`${room.spectators} watching`"
+        >
+          <v-icon icon="mdi-eye" size="small" /> {{ room.spectators }}
+        </div>
         <v-spacer />
-        <RulesDialog v-if="gameModule" :game="gameModule" />
-        <v-btn variant="tonal" prepend-icon="mdi-link-variant" @click="copyLink">Invite</v-btn>
-        <v-btn variant="tonal" prepend-icon="mdi-television" @click="showTv = true">TV</v-btn>
-        <v-btn variant="text" prepend-icon="mdi-exit-run" @click="leave">Leave</v-btn>
+        <RulesDialog v-if="gameModule" :game="gameModule">
+          <template #activator="{ props: activator }">
+            <v-btn
+              v-bind="activator"
+              icon="mdi-help-circle-outline"
+              variant="tonal"
+              title="How to play"
+              aria-label="How to play"
+            />
+          </template>
+        </RulesDialog>
+        <v-btn icon="mdi-link-variant" variant="tonal" title="Invite" aria-label="Invite" @click="copyLink" />
+        <v-btn icon="mdi-exit-run" variant="text" title="Leave" aria-label="Leave" @click="leave" />
       </div>
       <!-- Floated, so the play view's top row (round, score) wraps beside it instead of under it. -->
       <v-btn
