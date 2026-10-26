@@ -1,19 +1,17 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <DotsBoard
-        :grid="view.grid"
-        :h="view.h"
-        :v="view.v"
-        :boxes="view.boxes"
-        :last="view.last"
-        :initials="initials"
-        :playable="false"
-        :seat="null"
-      />
-    </v-col>
+  <SpectatorLayout>
+    <DotsBoard
+      :grid="view.grid"
+      :h="view.h"
+      :v="view.v"
+      :boxes="view.boxes"
+      :last="view.last"
+      :initials="initials"
+      :playable="false"
+      :seat="null"
+    />
 
-    <v-col cols="12" md="4">
+    <template #side>
       <SeatChips :view="view" :room="room" :me="SPECTATOR_ID" size="large" />
 
       <template v-if="view.phase === 'PLAYING'">
@@ -26,7 +24,7 @@
 
       <div class="text-label-large">Games won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
-    </v-col>
+    </template>
 
     <WinCelebration
       :active="view.outcome === 'win'"
@@ -36,7 +34,7 @@
       :colors="winnerConfetti(view)"
       :delay="400"
     />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -44,7 +42,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import { nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { DotsSettings, DotsView } from '../shared/index.ts'
 import DotsBoard from './DotsBoard.vue'

@@ -1,40 +1,38 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <template v-if="view.phase === 'PLAYING'">
-        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.log.length} · ${turnLine}`">{{ moveText(last, SPECTATOR_ID, name, view.settings.sevenZero) }}</StatusCard>
-        <StatusCard v-else prominent overline="New round" :title="`${name(view.turn)} goes first`">
-          <template v-if="view.pendingDraw > 0">They face a +{{ view.pendingDraw }}.</template>
-        </StatusCard>
-        <v-alert v-if="view.exposed" color="error" variant="tonal" class="mb-4 text-headline-small" icon="mdi-hand-back-right">
-          {{ name(view.exposed) }} is on one card and didn't call it: anyone can catch them!
-        </v-alert>
-      </template>
-      <template v-else>
-        <StatusCard v-if="view.outcome === 'abandoned'" prominent title="Round over">Not enough players were left to finish it.</StatusCard>
-        <StatusCard v-else prominent color="success" :overline="points && view.champion ? `Reached ${view.settings.target} points` : 'Out of cards'" :title="resultTitle(view, SPECTATOR_ID, name)">
-          <template v-if="points">They score {{ view.roundPoints }} {{ view.roundPoints === 1 ? 'point' : 'points' }} from the cards left.</template>
-        </StatusCard>
-      </template>
+  <SpectatorLayout>
+    <template v-if="view.phase === 'PLAYING'">
+      <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.log.length} · ${turnLine}`">{{ moveText(last, SPECTATOR_ID, name, view.settings.sevenZero) }}</StatusCard>
+      <StatusCard v-else prominent overline="New round" :title="`${name(view.turn)} goes first`">
+        <template v-if="view.pendingDraw > 0">They face a +{{ view.pendingDraw }}.</template>
+      </StatusCard>
+      <v-alert v-if="view.exposed" color="error" variant="tonal" class="mb-4 text-headline-small" icon="mdi-hand-back-right">
+        {{ name(view.exposed) }} is on one card and didn't call it: anyone can catch them!
+      </v-alert>
+    </template>
+    <template v-else>
+      <StatusCard v-if="view.outcome === 'abandoned'" prominent title="Round over">Not enough players were left to finish it.</StatusCard>
+      <StatusCard v-else prominent color="success" :overline="points && view.champion ? `Reached ${view.settings.target} points` : 'Out of cards'" :title="resultTitle(view, SPECTATOR_ID, name)">
+        <template v-if="points">They score {{ view.roundPoints }} {{ view.roundPoints === 1 ? 'point' : 'points' }} from the cards left.</template>
+      </StatusCard>
+    </template>
 
-      <LastTable :view="view" :room="room" :me="SPECTATOR_ID" layout="table" />
+    <LastTable :view="view" :room="room" :me="SPECTATOR_ID" layout="table" />
 
-      <v-card v-if="leftovers.length > 0" class="mb-4" title="Cards left">
-        <v-card-text>
-          <div v-for="seat in leftovers" :key="seat.id" class="mb-3">
-            <div class="text-body-large mb-1">
-              {{ name(seat.id) }}
-              <span v-if="points" class="text-medium-emphasis">· {{ handPoints(seat.hand) }} pts</span>
-            </div>
-            <div class="d-flex flex-wrap ga-1">
-              <LcCard v-for="(card, i) in seat.hand" :key="i" :card="card" />
-            </div>
+    <v-card v-if="leftovers.length > 0" class="mb-4" title="Cards left">
+      <v-card-text>
+        <div v-for="seat in leftovers" :key="seat.id" class="mb-3">
+          <div class="text-body-large mb-1">
+            {{ name(seat.id) }}
+            <span v-if="points" class="text-medium-emphasis">· {{ handPoints(seat.hand) }} pts</span>
           </div>
-        </v-card-text>
-      </v-card>
-    </v-col>
+          <div class="d-flex flex-wrap ga-1">
+            <LcCard v-for="(card, i) in seat.hand" :key="i" :card="card" />
+          </div>
+        </div>
+      </v-card-text>
+    </v-card>
 
-    <v-col cols="12" md="4">
+    <template #side>
       <v-card class="mb-4">
         <v-card-text>
           <div class="text-label-large">{{ points ? `Game ${view.game} · first to ${view.settings.target}` : `Round ${view.round}` }}</div>
@@ -61,10 +59,10 @@
       </template>
       <div class="text-label-large">{{ points ? 'Games won' : 'Rounds won' }}</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="winGained" />
-    </v-col>
+    </template>
 
     <WinCelebration :active="gameWon(view)" :title="resultTitle(view, SPECTATOR_ID, name)" :subtitle="points ? `Reached ${view.settings.target} points` : 'Out of cards'" :delay="300" />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -73,7 +71,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { MoveLog, moveLogEntries, nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import { MoveLog, moveLogEntries, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import { handPoints, type LastCardSettings, type LastCardView } from '../shared/index.ts'
 import LastTable from './LastTable.vue'

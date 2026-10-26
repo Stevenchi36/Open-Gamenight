@@ -1,39 +1,37 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <template v-if="view.phase === 'GUESSING'">
-        <QuestionCard :question="view.question" :deadline="view.deadline" :server-now="serverNow" />
-        <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.guessed" label="guessed" large />
-      </template>
-      <template v-else-if="view.phase === 'BETTING'">
-        <QuestionCard compact :question="view.question" :deadline="view.deadline" :server-now="serverNow" />
-        <div class="text-title-large text-center mb-3">{{ howToWin }}</div>
-        <SlotBoard :slots="view.slots" :unit="view.question.unit" :room="room" :me="SPECTATOR_ID" :bets="view.bets" :stagger="stagger" class="tv-slots" />
-        <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.betted" label="bet" large />
-      </template>
-      <template v-else-if="result">
-        <StatusCard v-if="gameOver" prominent color="success" overline="Game over" :title="winnerTitle">
-          Highest {{ settings.scoring === 'chips' ? 'chips' : 'score' }} after {{ view.totalRounds }} question{{ view.totalRounds === 1 ? '' : 's' }}.
-        </StatusCard>
-        <StatusCard prominent color="primary" :overline="view.question.text" :title="formatValue(result.answer, view.question.unit)">
-          <div v-if="result.fact" class="mb-1">{{ result.fact }}</div>
-          <div class="text-title-large">{{ headline }}</div>
-        </StatusCard>
-        <SlotBoard
-          v-if="view.slots.length"
-          :slots="view.slots"
-          :unit="view.question.unit"
-          :room="room"
-          :me="SPECTATOR_ID"
-          :bets="view.bets"
-          :winning-ids="result.winningSlotIds"
-          class="tv-slots"
-        />
-        <div v-else class="text-title-large text-medium-emphasis text-center mb-4">Nobody guessed.</div>
-      </template>
-    </v-col>
+  <SpectatorLayout>
+    <template v-if="view.phase === 'GUESSING'">
+      <QuestionCard :question="view.question" :deadline="view.deadline" :server-now="serverNow" />
+      <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.guessed" label="guessed" large />
+    </template>
+    <template v-else-if="view.phase === 'BETTING'">
+      <QuestionCard compact :question="view.question" :deadline="view.deadline" :server-now="serverNow" />
+      <div class="text-title-large text-center mb-3">{{ howToWin }}</div>
+      <SlotBoard :slots="view.slots" :unit="view.question.unit" :room="room" :me="SPECTATOR_ID" :bets="view.bets" :stagger="stagger" class="tv-slots" />
+      <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.betted" label="bet" large />
+    </template>
+    <template v-else-if="result">
+      <StatusCard v-if="gameOver" prominent color="success" overline="Game over" :title="winnerTitle">
+        Highest {{ settings.scoring === 'chips' ? 'chips' : 'score' }} after {{ view.totalRounds }} question{{ view.totalRounds === 1 ? '' : 's' }}.
+      </StatusCard>
+      <StatusCard prominent color="primary" :overline="view.question.text" :title="formatValue(result.answer, view.question.unit)">
+        <div v-if="result.fact" class="mb-1">{{ result.fact }}</div>
+        <div class="text-title-large">{{ headline }}</div>
+      </StatusCard>
+      <SlotBoard
+        v-if="view.slots.length"
+        :slots="view.slots"
+        :unit="view.question.unit"
+        :room="room"
+        :me="SPECTATOR_ID"
+        :bets="view.bets"
+        :winning-ids="result.winningSlotIds"
+        class="tv-slots"
+      />
+      <div v-else class="text-title-large text-medium-emphasis text-center mb-4">Nobody guessed.</div>
+    </template>
 
-    <v-col cols="12" md="4">
+    <template #side>
       <v-card class="mb-4">
         <v-card-text>
           <div class="text-label-large">Question {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</div>
@@ -43,7 +41,7 @@
       </v-card>
       <div v-if="settings.scoring === 'chips'" class="text-label-large">Chips</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="result?.pointsAwarded" />
-    </v-col>
+    </template>
 
     <WinCelebration
       :active="gameOver"
@@ -52,7 +50,7 @@
       :standings="scoreStandings(view.scores, result?.winnerIds ?? [], name, unitOf)"
       :delay="600"
     />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -62,7 +60,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, scoreStandings, StatusCard, WhoAnswered, winTitle, WinCelebration } from '@wsfg/core/ui'
+import { nameOf, ScoreBoard, scoreStandings, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration, winTitle } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import { TOO_HIGH, type BallparkSettings, type BallparkView } from '../shared/index.ts'
 import { formatValue } from './format.ts'

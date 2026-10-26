@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-4" :style="{ maxWidth: room ? '1400px' : '560px' }">
+  <v-container class="py-4" :class="{ 'watch-room': room }" :style="{ maxWidth: room ? '1400px' : '560px' }">
     <template v-if="room">
       <div class="watch-header mb-4">
         <div class="d-flex align-center flex-wrap ga-4">
@@ -35,6 +35,7 @@
       <component
         :is="spectatorView"
         v-else-if="spectatorView && game"
+        class="watch-game"
         :view="game"
         :room="room"
         :settings="room.game.settings"
@@ -175,6 +176,19 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* From md up a room fills exactly one screen and the game view takes what the header leaves
+   (SpectatorLayout fits the game into it); a phone scrolls as usual. */
+@media (min-width: 960px) {
+  .watch-room {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+  .watch-game {
+    flex: 1;
+    min-height: 0;
+  }
+}
 /* Equal side columns keep the game name centred on the screen, not between the two sides. */
 .watch-header {
   display: grid;

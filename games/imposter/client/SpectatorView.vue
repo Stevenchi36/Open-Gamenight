@@ -1,60 +1,58 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <div :key="view.phase" :class="{ 'phase-in': live }">
-        <template v-if="view.phase === 'CLUES'">
-          <StatusCard prominent :overline="clueOverline" :title="typed ? `${current} is thinking of a clue` : `${current} is speaking`">
-            <div v-if="view.turn.currentPlayerId && !isConnected(room, view.turn.currentPlayerId)">Away. Skipping soon if they don't come back.</div>
-            <CountdownTimer :deadline="view.turn.deadline" :server-now="serverNow" />
-          </StatusCard>
-          <v-progress-linear :model-value="progress" color="primary" rounded height="8" class="mb-4" />
-          <TurnOrder :room="room" :order="view.turn.order" :current="view.turn.currentPlayerId" :me="SPECTATOR_ID" large class="mb-4" />
-        </template>
+  <SpectatorLayout>
+    <div :key="view.phase" :class="{ 'phase-in': live }">
+      <template v-if="view.phase === 'CLUES'">
+        <StatusCard prominent :overline="clueOverline" :title="typed ? `${current} is thinking of a clue` : `${current} is speaking`">
+          <div v-if="view.turn.currentPlayerId && !isConnected(room, view.turn.currentPlayerId)">Away. Skipping soon if they don't come back.</div>
+          <CountdownTimer :deadline="view.turn.deadline" :server-now="serverNow" />
+        </StatusCard>
+        <v-progress-linear :model-value="progress" color="primary" rounded height="8" class="mb-4" />
+        <TurnOrder :room="room" :order="view.turn.order" :current="view.turn.currentPlayerId" :me="SPECTATOR_ID" large class="mb-4" />
+      </template>
 
-        <template v-else-if="view.phase === 'VOTING'">
-          <StatusCard prominent color="primary" :overline="category ? `Category: ${category}` : `Round ${view.round}`" title="Who is the imposter?">
-            Everyone votes on their phone. You can change your vote until everyone has voted.
-          </StatusCard>
-          <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.voted" label="voted" large />
-        </template>
+      <template v-else-if="view.phase === 'VOTING'">
+        <StatusCard prominent color="primary" :overline="category ? `Category: ${category}` : `Round ${view.round}`" title="Who is the imposter?">
+          Everyone votes on their phone. You can change your vote until everyone has voted.
+        </StatusCard>
+        <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.voted" label="voted" large />
+      </template>
 
-        <template v-else-if="result && view.phase === 'REVEAL'">
-          <StatusCard prominent :color="result.caught ? 'success' : 'error'" :overline="result.caught ? 'Caught!' : 'The imposter escaped'" :title="`${name(result.imposterId)} was the imposter`">
-            {{ revealDetail }}
-          </StatusCard>
-        </template>
+      <template v-else-if="result && view.phase === 'REVEAL'">
+        <StatusCard prominent :color="result.caught ? 'success' : 'error'" :overline="result.caught ? 'Caught!' : 'The imposter escaped'" :title="`${name(result.imposterId)} was the imposter`">
+          {{ revealDetail }}
+        </StatusCard>
+      </template>
 
-        <template v-else-if="result && view.phase === 'GUESS_CHECK'">
-          <StatusCard v-if="typed && result.guess !== null" prominent :overline="`${name(result.imposterId)} guessed`" :title="result.guess">{{ judgeLine }}</StatusCard>
-          <StatusCard v-else prominent overline="Last chance" :title="`${name(result.imposterId)} is guessing the word`">{{ judgeLine }}</StatusCard>
-        </template>
+      <template v-else-if="result && view.phase === 'GUESS_CHECK'">
+        <StatusCard v-if="typed && result.guess !== null" prominent :overline="`${name(result.imposterId)} guessed`" :title="result.guess">{{ judgeLine }}</StatusCard>
+        <StatusCard v-else prominent overline="Last chance" :title="`${name(result.imposterId)} is guessing the word`">{{ judgeLine }}</StatusCard>
+      </template>
 
-        <template v-else-if="result">
-          <StatusCard v-if="result.voided" prominent title="Round cancelled">The imposter left, so nobody scores this round.</StatusCard>
-          <StatusCard v-else prominent :color="result.imposterWon ? 'error' : 'success'" :overline="result.imposterWon ? 'The imposter wins' : 'The crew wins'">
-            <template #title>The word was {{ result.secretWord }}</template>
-            {{ name(result.imposterId) }} was the imposter{{ result.caught ? ' and got caught' : ' and escaped' }}.
-            <div v-if="result.guessRequired" class="mt-1">
-              Their guess<template v-if="result.guess">, "{{ result.guess }}",</template> was {{ result.guessCorrect ? 'right' : 'wrong' }}.
-            </div>
-          </StatusCard>
-        </template>
-      </div>
+      <template v-else-if="result">
+        <StatusCard v-if="result.voided" prominent title="Round cancelled">The imposter left, so nobody scores this round.</StatusCard>
+        <StatusCard v-else prominent :color="result.imposterWon ? 'error' : 'success'" :overline="result.imposterWon ? 'The imposter wins' : 'The crew wins'">
+          <template #title>The word was {{ result.secretWord }}</template>
+          {{ name(result.imposterId) }} was the imposter{{ result.caught ? ' and got caught' : ' and escaped' }}.
+          <div v-if="result.guessRequired" class="mt-1">
+            Their guess<template v-if="result.guess">, "{{ result.guess }}",</template> was {{ result.guessCorrect ? 'right' : 'wrong' }}.
+          </div>
+        </StatusCard>
+      </template>
+    </div>
 
-      <VoteBreakdown
-        v-if="result && !result.voided"
-        :room="room"
-        :ballots="result.votedFor"
-        :voters="view.roundPlayers"
-        :marked-id="result.imposterId"
-        marked-label="imposter"
-        class="tv-votes"
-      />
-      <ClueList v-if="typed" :view="view" :room="room" large />
-      <div v-else-if="view.phase === 'CLUES'" class="text-title-large text-medium-emphasis text-center">Clues are said out loud this round.</div>
-    </v-col>
+    <VoteBreakdown
+      v-if="result && !result.voided"
+      :room="room"
+      :ballots="result.votedFor"
+      :voters="view.roundPlayers"
+      :marked-id="result.imposterId"
+      marked-label="imposter"
+      class="tv-votes"
+    />
+    <ClueList v-if="typed" :view="view" :room="room" large />
+    <div v-else-if="view.phase === 'CLUES'" class="text-title-large text-medium-emphasis text-center">Clues are said out loud this round.</div>
 
-    <v-col cols="12" md="4">
+    <template #side>
       <v-card class="mb-4">
         <v-card-text>
           <div class="text-label-large">Round {{ view.round }}</div>
@@ -65,8 +63,8 @@
         </v-card-text>
       </v-card>
       <ScoreBoard :scores="view.scores" :room="room" :gained="result?.pointsAwarded" />
-    </v-col>
-  </v-row>
+    </template>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -77,7 +75,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { CountdownTimer, isConnected, nameOf, ScoreBoard, StatusCard, TurnOrder, VoteBreakdown, WhoAnswered } from '@wsfg/core/ui'
+import { CountdownTimer, isConnected, nameOf, ScoreBoard, SpectatorLayout, StatusCard, TurnOrder, VoteBreakdown, WhoAnswered } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import type { ImposterSettings, ImposterView } from '../shared/index.ts'
 import ClueList from './ClueList.vue'

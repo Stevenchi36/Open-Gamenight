@@ -1,21 +1,19 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <template v-if="view.phase === 'PLAYING'">
-        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.logStart + view.log.length} · ${name(view.turn)}'s turn`">{{ moveText(last, SPECTATOR_ID, name) }}</StatusCard>
-        <StatusCard v-else prominent overline="New game" :title="`${name(view.turn)} goes first`" />
-      </template>
-      <template v-else>
-        <StatusCard v-if="view.outcome === 'abandoned'" prominent title="Game over">Not enough players were left to finish it.</StatusCard>
-        <StatusCard v-else prominent color="success" overline="All 13 books are down" :title="resultTitle(view, SPECTATOR_ID, name)">
-          {{ topBooks }} {{ topBooks === 1 ? 'book' : 'books' }}{{ view.winnerIds.length > 1 ? ' each' : '' }}
-        </StatusCard>
-      </template>
+  <SpectatorLayout>
+    <template v-if="view.phase === 'PLAYING'">
+      <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.logStart + view.log.length} · ${name(view.turn)}'s turn`">{{ moveText(last, SPECTATOR_ID, name) }}</StatusCard>
+      <StatusCard v-else prominent overline="New game" :title="`${name(view.turn)} goes first`" />
+    </template>
+    <template v-else>
+      <StatusCard v-if="view.outcome === 'abandoned'" prominent title="Game over">Not enough players were left to finish it.</StatusCard>
+      <StatusCard v-else prominent color="success" overline="All 13 books are down" :title="resultTitle(view, SPECTATOR_ID, name)">
+        {{ topBooks }} {{ topBooks === 1 ? 'book' : 'books' }}{{ view.winnerIds.length > 1 ? ' each' : '' }}
+      </StatusCard>
+    </template>
 
-      <FishTable :view="view" :room="room" :me="SPECTATOR_ID" layout="table" />
-    </v-col>
+    <FishTable :view="view" :room="room" :me="SPECTATOR_ID" layout="table" />
 
-    <v-col cols="12" md="4">
+    <template #side>
       <v-card class="mb-4">
         <v-card-text>
           <div class="text-label-large">Game {{ view.game }}</div>
@@ -32,7 +30,7 @@
 
       <div class="text-label-large">Games won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
-    </v-col>
+    </template>
 
     <WinCelebration
       :active="view.outcome === 'win'"
@@ -41,7 +39,7 @@
       :standings="standings(view, SPECTATOR_ID, name)"
       :delay="300"
     />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -50,7 +48,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { MoveLog, moveLogEntries, nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import { MoveLog, moveLogEntries, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { GoneFishinSettings, GoneFishinView } from '../shared/index.ts'
 import FishTable from './FishTable.vue'

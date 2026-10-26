@@ -1,38 +1,36 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <template v-if="view.phase === 'ORDERING'">
-        <ThemeCard :theme="view.theme" />
-      </template>
-      <template v-else-if="result">
-        <StatusCard v-if="done" prominent :color="color" :overline="view.theme.text" :title="headline">{{ detail }}</StatusCard>
-        <StatusCard v-else prominent :overline="view.theme.text" title="Turning the cards over…" />
-      </template>
+  <SpectatorLayout>
+    <template v-if="view.phase === 'ORDERING'">
+      <ThemeCard :theme="view.theme" />
+    </template>
+    <template v-else-if="result">
+      <StatusCard v-if="done" prominent :color="color" :overline="view.theme.text" :title="headline">{{ detail }}</StatusCard>
+      <StatusCard v-else prominent :overline="view.theme.text" title="Turning the cards over…" />
+    </template>
 
-      <div class="tv-line">
-        <LineEnd :theme="view.theme" end="low" />
-        <!-- The move transition slides cards to their new places as the room rearranges the line. -->
-        <TransitionGroup tag="div" name="line" class="d-flex flex-column ga-2" role="list">
-          <v-card v-for="(item, i) in view.line" :key="item.id" variant="tonal" class="px-4 py-3" role="listitem">
-            <LineCard :item="item" :room="room" :me="SPECTATOR_ID">
-              <template #append>
-                <template v-if="view.phase === 'ORDERING'">
-                  <v-icon v-if="view.ready.includes(item.playerId)" color="success" :aria-label="`${name(item.playerId)} is ready`">mdi-check-circle</v-icon>
-                </template>
-                <div v-else-if="i < turned" class="d-flex align-center ga-2 number--in">
-                  <v-icon :color="isWrong(item.id) ? 'error' : 'success'">{{ isWrong(item.id) ? 'mdi-close-circle' : 'mdi-check-circle' }}</v-icon>
-                  <v-avatar :color="isWrong(item.id) ? 'error' : 'success'" size="56" class="text-headline-small font-weight-bold">{{ item.number }}</v-avatar>
-                </div>
-                <v-avatar v-else variant="tonal" size="56"><v-icon>mdi-help</v-icon></v-avatar>
+    <div class="tv-line">
+      <LineEnd :theme="view.theme" end="low" />
+      <!-- The move transition slides cards to their new places as the room rearranges the line. -->
+      <TransitionGroup tag="div" name="line" class="d-flex flex-column ga-2" role="list">
+        <v-card v-for="(item, i) in view.line" :key="item.id" variant="tonal" class="px-4 py-3" role="listitem">
+          <LineCard :item="item" :room="room" :me="SPECTATOR_ID">
+            <template #append>
+              <template v-if="view.phase === 'ORDERING'">
+                <v-icon v-if="view.ready.includes(item.playerId)" color="success" :aria-label="`${name(item.playerId)} is ready`">mdi-check-circle</v-icon>
               </template>
-            </LineCard>
-          </v-card>
-        </TransitionGroup>
-        <LineEnd :theme="view.theme" end="high" />
-      </div>
-    </v-col>
+              <div v-else-if="i < turned" class="d-flex align-center ga-2 number--in">
+                <v-icon :color="isWrong(item.id) ? 'error' : 'success'">{{ isWrong(item.id) ? 'mdi-close-circle' : 'mdi-check-circle' }}</v-icon>
+                <v-avatar :color="isWrong(item.id) ? 'error' : 'success'" size="56" class="text-headline-small font-weight-bold">{{ item.number }}</v-avatar>
+              </div>
+              <v-avatar v-else variant="tonal" size="56"><v-icon>mdi-help</v-icon></v-avatar>
+            </template>
+          </LineCard>
+        </v-card>
+      </TransitionGroup>
+      <LineEnd :theme="view.theme" end="high" />
+    </div>
 
-    <v-col cols="12" md="4">
+    <template #side>
       <v-card class="mb-4">
         <v-card-text>
           <div class="text-label-large">Round {{ view.round }}{{ view.totalRounds !== null ? ` of ${view.totalRounds}` : '' }}</div>
@@ -46,10 +44,10 @@
         <div class="text-body-large text-center mb-2">Players drag the clues into order on their phones, lowest number at the top.</div>
         <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.ready" label="ready" large />
       </template>
-    </v-col>
+    </template>
 
     <WinCelebration :active="result?.outcome === 'won'" title="The team made it!" :subtitle="detail" :delay="celebrateDelay" />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -60,7 +58,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, StatusCard, WhoAnswered, WinCelebration } from '@wsfg/core/ui'
+import { nameOf, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration } from '@wsfg/core/ui'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import type { InOrderSettings, InOrderView } from '../shared/index.ts'
 import LineCard from './LineCard.vue'

@@ -1,19 +1,17 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <DropBoard
-        :columns="view.columns"
-        :cols="view.cols"
-        :rows="view.rows"
-        :last="view.last"
-        :line="view.line"
-        :playable="false"
-        :disc="null"
-        large
-      />
-    </v-col>
+  <SpectatorLayout>
+    <DropBoard
+      :columns="view.columns"
+      :cols="view.cols"
+      :rows="view.rows"
+      :last="view.last"
+      :line="view.line"
+      :playable="false"
+      :disc="null"
+      large
+    />
 
-    <v-col cols="12" md="4">
+    <template #side>
       <DiscChips :view="view" :room="room" :me="SPECTATOR_ID" size="large" />
 
       <StatusCard v-if="view.phase === 'PLAYING'" prominent :overline="overline" :title="`${name(view.turn)}'s move`">
@@ -27,7 +25,7 @@
         <div class="text-label-large">Games won</div>
         <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
       </template>
-    </v-col>
+    </template>
 
     <WinCelebration
       :active="view.outcome === 'win'"
@@ -36,7 +34,7 @@
       :colors="winnerConfetti(view)"
       :delay="LANDED_MS"
     />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -45,7 +43,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { isConnected, nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import { isConnected, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { DropLineSettings, DropLineView } from '../shared/index.ts'
 import { LANDED_MS, winnerConfetti } from './celebration.ts'

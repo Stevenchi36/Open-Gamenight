@@ -1,10 +1,8 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <GameBoard :board="view.board" :line="view.line" :playable="false" large />
-    </v-col>
+  <SpectatorLayout>
+    <GameBoard :board="view.board" :line="view.line" :playable="false" large />
 
-    <v-col cols="12" md="4">
+    <template #side>
       <MarkChips :view="view" :room="room" :me="SPECTATOR_ID" size="large" />
 
       <StatusCard v-if="view.phase === 'PLAYING'" prominent :overline="`Game ${view.game}`" :title="`${name(view.turn)}'s move`">
@@ -18,10 +16,10 @@
         <div class="text-label-large">Games won</div>
         <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
       </template>
-    </v-col>
+    </template>
 
     <WinCelebration :active="view.outcome === 'win'" :title="`${name(view.winnerId)} wins!`" subtitle="Three in a row" :delay="400" />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -30,7 +28,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { isConnected, nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import { isConnected, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { TicTacToeSettings, TicTacToeView } from '../shared/index.ts'
 import GameBoard from './GameBoard.vue'

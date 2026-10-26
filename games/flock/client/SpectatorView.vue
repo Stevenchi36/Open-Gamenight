@@ -1,32 +1,30 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <template v-if="view.phase === 'ANSWERING'">
-        <QuestionCard :question="view.question" :deadline="view.deadline" :server-now="serverNow" />
-        <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.answered" label="answered" large />
-      </template>
-      <template v-else>
-        <StatusCard v-if="gameOver" prominent color="success" overline="Game over" :title="winnerTitle">
-          First to {{ settings.scoreLimit }} point{{ settings.scoreLimit === 1 ? '' : 's' }}.
-        </StatusCard>
-        <StatusCard v-if="view.phase === 'REVIEW'" compact color="primary" :overline="view.question.category" :title="view.question.text">
-          {{ name(room.hostId) }} is checking for answers that mean the same thing.
-        </StatusCard>
-        <StatusCard v-else prominent :color="flock ? 'success' : undefined" :overline="view.question.text" :title="flock ? flock.label : 'No flock'">
-          {{ flockSummary(view, 'final') }}
-        </StatusCard>
+  <SpectatorLayout>
+    <template v-if="view.phase === 'ANSWERING'">
+      <QuestionCard :question="view.question" :deadline="view.deadline" :server-now="serverNow" />
+      <WhoAnswered :room="room" :players="view.roundPlayers" :done="view.answered" label="answered" large />
+    </template>
+    <template v-else>
+      <StatusCard v-if="gameOver" prominent color="success" overline="Game over" :title="winnerTitle">
+        First to {{ settings.scoreLimit }} point{{ settings.scoreLimit === 1 ? '' : 's' }}.
+      </StatusCard>
+      <StatusCard v-if="view.phase === 'REVIEW'" compact color="primary" :overline="view.question.category" :title="view.question.text">
+        {{ name(room.hostId) }} is checking for answers that mean the same thing.
+      </StatusCard>
+      <StatusCard v-else prominent :color="flock ? 'success' : undefined" :overline="view.question.text" :title="flock ? flock.label : 'No flock'">
+        {{ flockSummary(view, 'final') }}
+      </StatusCard>
 
-        <v-alert v-if="blackSheepMoved" variant="tonal" color="grey" class="mb-4 text-title-large">
-          <template #prepend><BlackSheep size="large" /></template>
-          {{ name(view.result!.blackSheepTo) }} was the only odd one out, so they're the black sheep now.
-        </v-alert>
+      <v-alert v-if="blackSheepMoved" variant="tonal" color="grey" class="mb-4 text-title-large">
+        <template #prepend><BlackSheep size="large" /></template>
+        {{ name(view.result!.blackSheepTo) }} was the only odd one out, so they're the black sheep now.
+      </v-alert>
 
-        <GroupList :groups="view.groups" :flock-id="view.flockId" :room="room" :stagger="stagger" class="tv-groups" />
-        <div v-if="view.phase === 'REVIEW'" class="text-title-large text-center mb-4">{{ flockSummary(view, 'so far') }}</div>
-      </template>
-    </v-col>
+      <GroupList :groups="view.groups" :flock-id="view.flockId" :room="room" :stagger="stagger" class="tv-groups" />
+      <div v-if="view.phase === 'REVIEW'" class="text-title-large text-center mb-4">{{ flockSummary(view, 'so far') }}</div>
+    </template>
 
-    <v-col cols="12" md="4">
+    <template #side>
       <v-card class="mb-4">
         <v-card-text>
           <div class="text-label-large">Question {{ view.round }}</div>
@@ -40,7 +38,7 @@
       <ScoreBoard :scores="view.scores" :room="room" :gained="view.result?.pointsAwarded">
         <template #badge="{ id }"><BlackSheep v-if="id === view.blackSheepId" class="ml-1" /></template>
       </ScoreBoard>
-    </v-col>
+    </template>
 
     <WinCelebration
       :active="gameOver"
@@ -49,7 +47,7 @@
       :standings="scoreStandings(view.scores, view.result?.winnerIds ?? [], name)"
       :delay="600"
     />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -59,7 +57,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, scoreStandings, StatusCard, WhoAnswered, winTitle, WinCelebration } from '@wsfg/core/ui'
+import { nameOf, ScoreBoard, scoreStandings, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration, winTitle } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import type { FlockSettings, FlockView } from '../shared/index.ts'
 import BlackSheep from './BlackSheep.vue'

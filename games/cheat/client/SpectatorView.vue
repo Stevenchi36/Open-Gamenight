@@ -1,30 +1,28 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="8">
-      <template v-if="view.phase === 'PLAYING'">
-        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.logStart + view.log.length} · ${turnLine}`">
-          {{ moveText(last, SPECTATOR_ID, name) }}
-          <div v-if="last.kind === 'call'" class="d-flex flex-wrap ga-2 mt-3" :aria-label="`Turned up: ${last.cards.map((c) => c.rank).join(', ')}`">
-            <PlayingCard v-for="card in last.cards" :key="card.rank + card.suit" :card="card" :class="{ 'card--false': card.rank !== last.claim }" />
-          </div>
-        </StatusCard>
-        <StatusCard v-else prominent overline="New game" :title="`${name(view.turn)} goes first`" />
+  <SpectatorLayout>
+    <template v-if="view.phase === 'PLAYING'">
+      <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.logStart + view.log.length} · ${turnLine}`">
+        {{ moveText(last, SPECTATOR_ID, name) }}
+        <div v-if="last.kind === 'call'" class="d-flex flex-wrap ga-2 mt-3" :aria-label="`Turned up: ${last.cards.map((c) => c.rank).join(', ')}`">
+          <PlayingCard v-for="card in last.cards" :key="card.rank + card.suit" :card="card" :class="{ 'card--false': card.rank !== last.claim }" />
+        </div>
+      </StatusCard>
+      <StatusCard v-else prominent overline="New game" :title="`${name(view.turn)} goes first`" />
 
-        <v-alert v-if="secondsLeft !== null && view.top" color="error" variant="tonal" class="mb-4 text-headline-small" icon="mdi-bullhorn">
-          {{ name(view.top.playerId) }}'s {{ claimText(view.top.count, view.top.claim) }}: anyone can call Cheat! {{ secondsLeft }}s
-        </v-alert>
-      </template>
-      <template v-else>
-        <StatusCard v-if="view.outcome === 'abandoned'" prominent title="Game over">Not enough players were left to finish it.</StatusCard>
-        <StatusCard v-else prominent color="success" overline="Out of cards" :title="`${name(view.winnerId)} wins`">
-          {{ last ? moveText(last, SPECTATOR_ID, name) : '' }}
-        </StatusCard>
-      </template>
+      <v-alert v-if="secondsLeft !== null && view.top" color="error" variant="tonal" class="mb-4 text-headline-small" icon="mdi-bullhorn">
+        {{ name(view.top.playerId) }}'s {{ claimText(view.top.count, view.top.claim) }}: anyone can call Cheat! {{ secondsLeft }}s
+      </v-alert>
+    </template>
+    <template v-else>
+      <StatusCard v-if="view.outcome === 'abandoned'" prominent title="Game over">Not enough players were left to finish it.</StatusCard>
+      <StatusCard v-else prominent color="success" overline="Out of cards" :title="`${name(view.winnerId)} wins`">
+        {{ last ? moveText(last, SPECTATOR_ID, name) : '' }}
+      </StatusCard>
+    </template>
 
-      <CheatTable :view="view" :room="room" :me="SPECTATOR_ID" layout="table" />
-    </v-col>
+    <CheatTable :view="view" :room="room" :me="SPECTATOR_ID" layout="table" />
 
-    <v-col cols="12" md="4">
+    <template #side>
       <v-card v-if="view.phase === 'PLAYING'" class="mb-4">
         <v-card-text>
           <div class="text-label-large">Game {{ view.game }} · next claim</div>
@@ -40,7 +38,7 @@
 
       <div class="text-label-large">Games won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
-    </v-col>
+    </template>
 
     <WinCelebration
       :active="view.outcome === 'win'"
@@ -49,7 +47,7 @@
       :standings="standings(view, SPECTATOR_ID, name)"
       :delay="FLIGHT_MS"
     />
-  </v-row>
+  </SpectatorLayout>
 </template>
 
 <script setup lang="ts">
@@ -58,7 +56,7 @@
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
-import { FLIGHT_MS, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, StatusCard, useCountdown, WinCelebration } from '@wsfg/core/ui'
+import { FLIGHT_MS, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, SpectatorLayout, StatusCard, useCountdown, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { CheatSettings, CheatView } from '../shared/index.ts'
 import CheatTable from './CheatTable.vue'
