@@ -21,6 +21,10 @@ Build from the shared pieces, and grow them rather than copying:
 
 When a game needs something a second game could use, add it to `kit` or `ui` (with a core test for `kit`) and record it in `docs/decisions.md`. Keep it in the game only when it carries that game's rules or words.
 
+## Naming
+
+Never name a game, or its pieces and branding, after a trademarked game (Connect Four, UNO, Wits & Wagers, Herd Mentality): mechanics are free to use, names aren't. Give it a custom name (Drop Line, Last Card, Ballpark, Flock), or a traditional generic one nobody owns (Tic-Tac-Toe, Cheat, Dots and Boxes). The id follows the name, so settle it before scaffolding, and record why in the game's first `docs/decisions.md` entry.
+
 ## Adding a game
 
 1. **Spec.** Write the game's section in `PLAN.md` (rules, settings, state machine, actions, view, secrets) and its decisions in `docs/decisions.md`. Done when every phase, action and secret is named there.
