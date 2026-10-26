@@ -261,10 +261,10 @@ async function shareLink(url: string, title: string, copied: string) {
 </script>
 
 <style scoped>
-/* Pulled up level with the play view's first line of text; the negative bottom margin keeps it
-   from also narrowing the card under that line. */
+/* Centred on the play view's first line of text (28px button, 24px line); the negative bottom
+   margin keeps it from also narrowing the card under that line. */
 .menu-button {
   float: right;
-  margin: -6px 0 -12px 8px;
+  margin: -2px 0 -12px 8px;
 }
 </style>
