@@ -94,7 +94,7 @@ import { useRouter } from 'vue-router'
 import AttentionGlow from '../components/AttentionGlow.vue'
 import LobbyView from '../components/LobbyView.vue'
 import RulesDialog from '../components/RulesDialog.vue'
-import { joinRoom, lastName, leaveRoom, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
+import { joinRoom, lastName, leaveRoom, resumeSeat, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
 
 const props = defineProps<{ code: string }>()
 const router = useRouter()
@@ -116,8 +116,10 @@ const showTv = ref(false)
 const watchSite = `${location.host}/watch`
 
 onMounted(() => {
-  // A saved token for this room: the store sends `reconnect` on (re)connect.
+  // A saved token for this room: the store sends `reconnect` on (re)connect, and resumeSeat
+  // covers an open socket (coming back from the watch page).
   if (!room.value && savedRoom()?.code === props.code) {
+    resumeSeat(props.code)
     rejoining.value = true
     setTimeout(() => (rejoining.value = false), 5000)
   }

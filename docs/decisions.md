@@ -46,6 +46,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **The leak test checks `SPECTATOR_ID` in every state, and fails a secret that's visible to the spectator but hidden from some player.** A `visibleTo` written as "anyone except X" would otherwise quietly let the spectator in, and the harness skips viewers `visibleTo` allows.
 - **Anyone with the code can watch (guests too, rate-limited like joins, at most 8 per room); players see a watcher count, and the host can't remove spectators.** The code already gates joining, which shows more; a spectator holds nothing secret, and the count keeps watching visible.
 - **Spectators don't keep a room alive, and switching a tab from playing to watching detaches its seat instead of leaving.** A TV left on shouldn't hold a creator's room slot; the person whose browser it is keeps their seat to go back to.
+- **Leaving the watch page never reconnects a saved seat; only opening that room's page does.** The same account may be playing that seat on a phone by then, and an automatic reconnect from the TV would pull it away ("You joined from another tab or device").
 - **Games opt into the watch page with an optional `SpectatorView` (no `send` or `me`); without one it shows the player list.** A play view's "you'll be dealt in next game" outsider screen is wrong on a TV, and props without `send` make a display-only view by construction.
 
 ## Stack

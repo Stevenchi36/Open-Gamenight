@@ -7,7 +7,7 @@
  * server is restarting (shown as a calm message instead of a spinner).
  *
  * Watching (the watch page) sends `spectate_room` instead, on every (re)connect. It never
- * touches the saved seat, so leaving the watch page can take that seat back.
+ * touches the saved seat; opening that room's page again takes the seat back (resumeSeat).
  */
 import type { ClientMessage, RoomView, ServerMessage, SessionUser } from '@wsfg/core/protocol'
 import { parseServerMessage, SPECTATOR_ID } from '@wsfg/core/protocol'
@@ -128,18 +128,28 @@ export function watchRoom(code: string): void {
   else connect() // onopen sends it
 }
 
-/** Leave the watch page: stop spectating and, if this browser has a seat, take it back. */
+/**
+ * Leave the watch page. A saved seat is left alone: the same account may be playing it on
+ * another device now, and reconnecting here would pull it away. The room page takes it back.
+ */
 export function stopWatching(): void {
   if (!watching) return
   watching = null
   const spectating = state.room?.you.id === SPECTATOR_ID
   clearView(null)
+  if (spectating) send({ type: 'leave' })
+}
+
+/**
+ * Take this browser's saved seat in `code` back over an open socket (the room page, after
+ * watching). A fresh socket needs no call: it reconnects on open.
+ */
+export function resumeSeat(code: string): void {
   const saved = savedRoom()
-  if (saved && socket?.readyState === WebSocket.OPEN) {
-    // reconnect also ends the spectating on the server
-    reconnecting = saved
-    sendNow(socket, { type: 'reconnect', code: saved.code, token: saved.token })
-  } else if (spectating) send({ type: 'leave' })
+  if (saved?.code !== code || socket?.readyState !== WebSocket.OPEN || reconnecting) return
+  if (state.room?.code === code && state.room.you.id !== SPECTATOR_ID) return
+  reconnecting = saved
+  sendNow(socket, { type: 'reconnect', code: saved.code, token: saved.token })
 }
 
 /** Forget a remembered room without telling the server (e.g. it no longer exists). */
