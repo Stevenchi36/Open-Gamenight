@@ -6,6 +6,7 @@
       :size="size"
       :color="view.turn === view.discs[disc] ? 'primary' : undefined"
       :variant="view.turn === view.discs[disc] ? 'flat' : 'tonal'"
+      :class="{ 'turn-pulse': size === 'large' && view.turn === view.discs[disc] }"
       :prepend-icon="isConnected(room, view.discs[disc]) ? undefined : 'mdi-wifi-off'"
     >
       <span class="dl-dot mr-2" :class="`dl-dot--${disc}`" />
@@ -39,5 +40,19 @@ const DISCS: Disc[] = ['red', 'blue']
 }
 .dl-dot--blue {
   background: #1e88e5;
+}
+/* Large chips are the TV's: watched from across the room, so the turn keeps pulsing. */
+.turn-pulse {
+  animation: turn-pulse 1.6s ease-in-out infinite;
+}
+@keyframes turn-pulse {
+  50% {
+    box-shadow: 0 0 0 8px rgba(var(--v-theme-primary), 0.2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn-pulse {
+    animation: none;
+  }
 }
 </style>

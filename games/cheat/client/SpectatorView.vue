@@ -41,6 +41,14 @@
       <div class="text-overline">Games won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
     </v-col>
+
+    <WinCelebration
+      :active="view.outcome === 'win'"
+      :title="`${name(view.winnerId)} wins!`"
+      subtitle="Out of cards"
+      :standings="standings(view, SPECTATOR_ID, name)"
+      :delay="FLIGHT_MS"
+    />
   </v-row>
 </template>
 
@@ -50,11 +58,11 @@
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
-import { MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, StatusCard, useCountdown } from '@wsfg/core/ui'
+import { FLIGHT_MS, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, StatusCard, useCountdown, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { CheatSettings, CheatView } from '../shared/index.ts'
 import CheatTable from './CheatTable.vue'
-import { claimsText, claimText, moveText, moveTone } from './text.ts'
+import { claimsText, claimText, moveText, moveTone, standings } from './text.ts'
 
 const props = defineProps<SpectatorViewProps<CheatView, CheatSettings>>()
 

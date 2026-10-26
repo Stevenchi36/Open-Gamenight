@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { claimsText, claimText, moveText } from '../client/text.ts'
-import type { Move } from '../shared/index.ts'
+import { claimsText, claimText, moveText, standings } from '../client/text.ts'
+import type { CheatView, Move } from '../shared/index.ts'
 
 const name = (id: string) => id.toUpperCase()
 
@@ -33,5 +33,21 @@ describe('moveText', () => {
     expect(moveText({ ...call, lied: false, pickerId: 'b', picked: 1 }, 'b', name)).toBe(
       "You called Cheat on A's two sevens: all true. You pick up the pile (1 card).",
     )
+  })
+})
+
+describe('standings', () => {
+  it('places by fewest cards left, ties sharing a place, and leaves out leavers', () => {
+    const seats = [
+      { id: 'a', cards: 3, left: false },
+      { id: 'b', cards: 0, left: false },
+      { id: 'c', cards: 3, left: false },
+      { id: 'd', cards: 1, left: true },
+    ]
+    expect(standings({ seats } as CheatView, 'c', name)).toEqual([
+      { id: 'b', name: 'B', place: 1, detail: 'Out of cards' },
+      { id: 'a', name: 'A', place: 2, detail: '3 cards left' },
+      { id: 'c', name: 'You', place: 2, detail: '3 cards left' },
+    ])
   })
 })

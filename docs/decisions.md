@@ -54,6 +54,8 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Move lists use core `MoveLog`: numbered from the game's first move and tinted by how the move went for the player who made it (each game's `moveTone`), not for the viewer.** Numbers tie the TV's big latest move ("Move 12") to the list under it, and one meaning of green and red reads the same on every phone and the TV. Neutral moves stay plain, so colour marks the moments that mattered.
 - **Last Card celebrates the game's win: in points scoring only when someone reaches the target, in rounds scoring every round won.** A points round win is one step toward the game, and confetti every few minutes would wear out the moment; in rounds scoring each round is the whole game.
 - **Games that end with placings pass `standings` to `WinCelebration` for a podium (2nd, 1st, 3rd; gold, silver, bronze) with 4th and below listed under it; places come from kit `placings` (ties share a place, the next skips).** One rule for ties everywhere, and an empty step keeps 1st in the middle. Leavers aren't placed, as they can't win. With fewer than 3 placed it's the plain card: a podium of two says nothing the title doesn't.
+- **Cheat's podium places by fewest cards left.** Only the first out wins, but cards left is how close everyone else came, and it's on the table for all to see.
+- **The TV's turn marker keeps pulsing; on phones it doesn't.** A TV is watched from across the room, between glances, so the turn has to catch the eye; on a phone, the player's own "your move" cue does that job and a constant pulse would just be noise.
 
 ## Stack
 - **TypeScript everywhere, pnpm workspaces.** Shared protocol and view types can't drift between server and client.

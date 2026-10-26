@@ -6,6 +6,7 @@
       :size="size"
       :color="view.turn === view.marks[mark] ? 'primary' : undefined"
       :variant="view.turn === view.marks[mark] ? 'flat' : 'tonal'"
+      :class="{ 'turn-pulse': size === 'large' && view.turn === view.marks[mark] }"
       :prepend-icon="isConnected(room, view.marks[mark]) ? MARK_ICONS[mark] : 'mdi-wifi-off'"
     >
       {{ nameOf(room, view.marks[mark]) }}{{ view.marks[mark] === me ? ' (you)' : '' }}
@@ -26,3 +27,20 @@ defineProps<{ view: TicTacToeView; room: RoomView; me: PlayerId; size?: 'default
 const MARKS: Mark[] = ['X', 'O']
 const MARK_ICONS: Record<Mark, string> = { X: 'mdi-close', O: 'mdi-circle-outline' }
 </script>
+
+<style scoped>
+/* Large chips are the TV's: watched from across the room, so the turn keeps pulsing. */
+.turn-pulse {
+  animation: turn-pulse 1.6s ease-in-out infinite;
+}
+@keyframes turn-pulse {
+  50% {
+    box-shadow: 0 0 0 8px rgba(var(--v-theme-primary), 0.2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn-pulse {
+    animation: none;
+  }
+}
+</style>

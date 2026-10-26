@@ -1,6 +1,7 @@
 import type { PlayerId } from '@wsfg/core/contract'
-import { rankName, type Rank } from '@wsfg/core/kit'
-import type { Move } from '../shared/index.ts'
+import { placings, rankName, type Rank } from '@wsfg/core/kit'
+import type { Standing } from '@wsfg/core/client'
+import type { CheatView, Move } from '../shared/index.ts'
 
 const NUMBERS = ['no', 'one', 'two', 'three', 'four']
 
@@ -40,4 +41,17 @@ export function moveText(move: Move, me: PlayerId, name: (id: PlayerId) => strin
 /** For the move list: a call that caught a lie paid off for the caller, one on an honest play didn't. */
 export function moveTone(move: Move): 'success' | 'error' | null {
   return move.kind === 'call' ? (move.lied ? 'success' : 'error') : null
+}
+
+/** Places by fewest cards left for the win podium. Leavers can't win, so they aren't placed. */
+export function standings(view: CheatView, me: PlayerId, name: (id: PlayerId) => string): Standing[] {
+  return placings(
+    view.seats.filter((s) => !s.left),
+    (s) => -s.cards,
+  ).map(({ item, place }) => ({
+    id: item.id,
+    name: item.id === me ? 'You' : name(item.id),
+    place,
+    detail: item.cards === 0 ? 'Out of cards' : `${item.cards} ${item.cards === 1 ? 'card' : 'cards'} left`,
+  }))
 }

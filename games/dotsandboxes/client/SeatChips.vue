@@ -6,6 +6,7 @@
       :size="size"
       :color="view.turn === seat.id ? 'primary' : undefined"
       :variant="view.turn === seat.id ? 'flat' : 'tonal'"
+      :class="{ 'turn-pulse': size === 'large' && view.turn === seat.id }"
       :disabled="seat.left"
       :prepend-icon="seat.left ? 'mdi-logout' : isConnected(room, seat.id) ? undefined : 'mdi-wifi-off'"
     >
@@ -33,5 +34,19 @@ defineProps<{ view: DotsView; room: RoomView; me: PlayerId; size?: 'default' | '
   width: 12px;
   height: 12px;
   border-radius: 50%;
+}
+/* Large chips are the TV's: watched from across the room, so the turn keeps pulsing. */
+.turn-pulse {
+  animation: turn-pulse 1.6s ease-in-out infinite;
+}
+@keyframes turn-pulse {
+  50% {
+    box-shadow: 0 0 0 8px rgba(var(--v-theme-primary), 0.2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn-pulse {
+    animation: none;
+  }
 }
 </style>

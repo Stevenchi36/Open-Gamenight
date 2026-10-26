@@ -74,7 +74,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { PlayerId } from '../contract.ts'
 import type { Card } from '../kit.ts'
-import type { RoomView } from '../protocol.ts'
+import { SPECTATOR_ID, type RoomView } from '../protocol.ts'
 import { type CardFlight, FLIGHT_MS, MAX_FLIGHT_CARDS, reducedMotion } from './flights.ts'
 import { isConnected, nameOf } from './helpers.ts'
 import PlayingCard from './PlayingCard.vue'
@@ -116,6 +116,8 @@ function setLayout(value: Layout) {
 const isTappable = (id: PlayerId) => props.tappable.includes(id)
 const seatClasses = (id: PlayerId) => ({
   'card-table__seat--turn': id === props.turn,
+  // The TV is watched from across the room, so its turn seat keeps pulsing.
+  'card-table__seat--pulse': id === props.turn && props.me === SPECTATOR_ID,
   'card-table__seat--tappable': isTappable(id),
   'card-table__seat--selected': id === props.selected,
   'card-table__seat--dimmed': props.dimmed.includes(id),
@@ -320,6 +322,19 @@ function done(key: string) {
 .card-table__seat--turn {
   border-color: rgb(var(--v-theme-primary));
   box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.25);
+}
+.card-table__seat--pulse {
+  animation: card-table-pulse 1.6s ease-in-out infinite;
+}
+@keyframes card-table-pulse {
+  50% {
+    box-shadow: 0 0 0 9px rgba(var(--v-theme-primary), 0.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-table__seat--pulse {
+    animation: none;
+  }
 }
 .card-table__seat--tappable {
   cursor: pointer;

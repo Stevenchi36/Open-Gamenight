@@ -2,7 +2,7 @@
   <svg class="db-board mx-auto mb-4" :viewBox="`0 0 ${size} ${size}`" :style="{ maxWidth: `${(grid + 1) * 60}px` }" role="group" aria-label="Board">
     <template v-for="(row, r) in boxes" :key="`b${r}`">
       <template v-for="(owner, c) in row" :key="`b${r},${c}`">
-        <g v-if="owner !== null" class="db-box">
+        <g v-if="owner !== null" class="db-box" :class="{ 'db-box--claimed': claimed.includes(`${r},${c}`) }">
           <rect :x="x(c) + 3" :y="x(r) + 3" :width="S - 6" :height="S - 6" rx="4" :fill="seatColor(owner)" />
           <text :x="x(c) + S / 2" :y="x(r) + S / 2" class="db-initial">{{ initials[owner] }}</text>
         </g>
@@ -27,7 +27,7 @@
     </template>
 
     <template v-for="l in lines" :key="`d${key(l)}`">
-      <line v-if="l.drawn" class="db-line" :class="{ 'db-line--last': isLast(l) }" v-bind="ends(l)" />
+      <line v-if="l.drawn" class="db-line" :class="{ 'db-line--last': isLast(l), 'db-line--drawing': drawing === key(l) }" v-bind="ends(l)" />
     </template>
 
     <template v-for="r in grid + 1" :key="`r${r}`">
@@ -39,7 +39,9 @@
 <script setup lang="ts">
 // The grid as SVG. Each undrawn line's tap target is the diamond between its two dots
 // and the centres of the boxes either side, so targets tile the board without overlapping.
-import { computed } from 'vue'
+// A line drawn while the board is on screen draws in from its first dot, and the boxes it
+// claims then fill in; the first render shows the board as it stands, so nothing replays.
+import { computed, ref, watch } from 'vue'
 import type { Line } from '../shared/index.ts'
 import { seatColor } from './text.ts'
 
@@ -69,6 +71,24 @@ const lines = computed(() => [
 
 const key = (l: Line) => `${l.dir}${l.row},${l.col}`
 const isLast = (l: Line) => !!props.last && key(props.last) === key(l)
+
+// Every broadcast brings new objects, so compare keys and owners, not references.
+const drawing = ref<string | null>(null)
+const claimed = ref<string[]>([])
+watch(
+  () => props.last,
+  (now, before) => {
+    // Cleared on a new game, so its first line animates even where the last game's ended.
+    if (!now) drawing.value = null
+    else if (!(before && key(before) === key(now))) drawing.value = key(now)
+  },
+)
+watch(
+  () => props.boxes,
+  (now, before) => {
+    claimed.value = now.flatMap((row, r) => row.flatMap((owner, c) => (owner !== null && before[r]?.[c] == null ? [`${r},${c}`] : [])))
+  },
+)
 
 function ends(l: Line) {
   const x1 = x(l.col)
@@ -142,5 +162,35 @@ function label(l: Line): string {
 .db-dot {
   fill: rgb(var(--v-theme-on-surface));
   pointer-events: none;
+}
+
+/* Every line is one dot spacing (S = 40) long, so a 40 dash slides in from its first dot. */
+.db-line--drawing {
+  stroke-dasharray: 40;
+  animation: db-draw 0.25s ease-out;
+}
+@keyframes db-draw {
+  from {
+    stroke-dashoffset: 40;
+  }
+}
+/* Waits for the line that closed it, then grows from its centre. */
+.db-box--claimed {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: db-claim 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
+}
+@keyframes db-claim {
+  from {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .db-line--drawing,
+  .db-box--claimed {
+    animation: none;
+  }
 }
 </style>

@@ -19,6 +19,8 @@
         <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
       </template>
     </v-col>
+
+    <WinCelebration :active="view.outcome === 'win'" :title="`${name(view.winnerId)} wins!`" subtitle="Three in a row" :delay="400" />
   </v-row>
 </template>
 
@@ -28,7 +30,7 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { isConnected, nameOf, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { isConnected, nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { TicTacToeSettings, TicTacToeView } from '../shared/index.ts'
 import GameBoard from './GameBoard.vue'

@@ -180,7 +180,7 @@ A spectator is a screen that shows a room's game without taking part: a TV every
 - **What they can send:** only `leave`. Anything else gets `forbidden`. Game notices go to players only.
 - **Secrecy:** the leak test checks `SPECTATOR_ID` as a viewer in every state, and adds a rule: a secret visible to the spectator must be visible to every player. A spectator only ever sees what's public at that moment.
 - **Players see a watcher count** (`RoomView.spectators`) in the room header. The host can't remove spectators; they hold nothing secret.
-- **Client:** `/watch/:code` (and `/watch` to enter a code; linked from the home page and from the room header's **TV** button, which shares the watch link). The page is wide, display-only, with the room code and join link always shown, a full-screen button, and a screen wake lock while open. In the lobby it shows the game and the players; during play it renders the game's `SpectatorView`, or, for a game without one, the player list and a note that the game has no TV view yet. `CardTable` takes a `layout` prop so a spectator view can fix it to the table and hide the toggle.
+- **Client:** `/watch/:code` (and `/watch` to enter a code; linked from the home page and from the room header's **TV** button, which shares the watch link). The page is wide, display-only, with the room code and join link always shown, a full-screen button, and a screen wake lock while open. In the lobby it shows the game and the players; during play it renders the game's `SpectatorView`, or, for a game without one, the player list and a note that the game has no TV view yet. `CardTable` takes a `layout` prop so a spectator view can fix it to the table and hide the toggle. On the TV the turn keeps pulsing (the large seat chips, and `CardTable`'s turn seat when `me` is `SPECTATOR_ID`), so it reads from across the room.
 
 ## 4. WebSocket protocol (`packages/core/protocol.ts`)
 
@@ -680,6 +680,7 @@ PLAYING -> RESULTS -> new_game -> PLAYING
 
 ### Client
 - **Watch page**: a `SpectatorView` with the board large, the players' chips (mark, name, score), whose move it is, and on `RESULTS` the outcome and the scoreboard.
+- **Animation**: a mark placed while watching pops into its square, and a line won then pulses, followed by a `WinCelebration` ("{name} wins!" or "You win!") on your phone and the TV. Not on first render; off under `prefers-reduced-motion`.
 
 ## 7e. Drop Line (`games/dropline`)
 
@@ -1150,6 +1151,7 @@ type Move =                                     // public: what the table saw an
 - **Your hand**: below the table, sorted by rank; tap cards to pick up to 4 (picked cards rise). On your turn with Next rank, the button reads **Play 2 as sevens**; with Nearby, pick the rank first from the allowed three. During the call time the button waits with a countdown.
 - **Cheat!**: a big button for everyone but the latest play's player, naming the play ("Cheat! Bea's two sevens"), while it's open.
 - The latest move shows in a status card above the table; after a call it shows the turned-up cards, marked true or false.
+- **Win**: a `WinCelebration` once the last play has landed, on your phone and the TV, with a podium of places by fewest cards left (ties share a place; leavers aren't placed).
 - `needsAction`: your turn (stage `play`), or the host on `RESULTS`. Not a callable play: the cue would hint that calling is wise.
 
 ## 7k. Dots and Boxes (`games/dotsandboxes`)
@@ -1202,7 +1204,7 @@ type Line = { dir: 'h' | 'v', row, col }
 `secrets` is empty, as in Drop Line.
 
 ### Client
-- **Board**: an SVG of dots, drawn lines and claimed boxes (filled in the owner's colour, with their initial so colour isn't the only cue). Every undrawn line's tap target is the diamond between its two dots and the centres of the boxes either side, so targets tile the board without overlapping and stay large on a phone. Hovering previews the line in your colour; the latest line is highlighted.
+- **Board**: an SVG of dots, drawn lines and claimed boxes (filled in the owner's colour, with their initial so colour isn't the only cue). Every undrawn line's tap target is the diamond between its two dots and the centres of the boxes either side, so targets tile the board without overlapping and stay large on a phone. Hovering previews the line in your colour; the latest line is highlighted. A line drawn while watching draws in from its first dot, and any box it closes then grows in, in its owner's colour (not on first render; off under `prefers-reduced-motion`).
 - **Seats**: a chip per seat in turn order: colour, name, boxes this game; the turn is highlighted, disconnects show the wifi-off icon, leavers are dimmed.
 - **Watch page**: a `SpectatorView` with the seats, the board and the scoreboard.
 - **Win**: on the play view and the watch page, a `WinCelebration` with confetti in the winners' colours and a podium of places by boxes (ties share a place; leavers aren't placed).
