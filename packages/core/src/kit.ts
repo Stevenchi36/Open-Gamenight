@@ -69,6 +69,15 @@ export function addPoints(scores: Scores, points: Scores): Scores {
   return next
 }
 
+/**
+ * Highest value first, with places as in sport: equal values share a place and the next
+ * place skips ("1st, 1st, 3rd"). Ties keep their input order.
+ */
+export function placings<T>(items: readonly T[], value: (item: T) => number): { item: T; place: number }[] {
+  const sorted = [...items].sort((a, b) => value(b) - value(a))
+  return sorted.map((item) => ({ item, place: sorted.findIndex((other) => value(other) === value(item)) + 1 }))
+}
+
 /** A copy of a per-player record without one player. */
 export function withoutPlayer<T>(record: Record<PlayerId, T>, id: PlayerId): Record<PlayerId, T> {
   const next = { ...record }

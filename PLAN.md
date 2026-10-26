@@ -906,6 +906,9 @@ type Move = {                               // public: what the table saw and he
 ```
 `secrets` declares: each hand is visible only to its owner (variant: swap a card between two other players' hands, or between another hand and the pond, and the viewer's view must not change), and the pond's order is visible to nobody. A card drawn while fishing isn't in `Move` unless it was a lucky catch. Everything in `Move` is public because at a real table it's said out loud. The leak test covers both Lucky catch settings, a leaver, and RESULTS.
 
+### Client
+- **Win**: when a game ends while you watch, a `WinCelebration` with a podium of places by books (ties share a place; leavers aren't placed).
+
 ### Your hand
 Shown openly, not behind `HoldToReveal`: you need it on every turn, and a hand of cards is held, not left on the table. Cards are grouped by rank; tapping a rank selects it for the next ask.
 
@@ -1196,6 +1199,7 @@ type Line = { dir: 'h' | 'v', row, col }
 - **Board**: an SVG of dots, drawn lines and claimed boxes (filled in the owner's colour, with their initial so colour isn't the only cue). Every undrawn line's tap target is the diamond between its two dots and the centres of the boxes either side, so targets tile the board without overlapping and stay large on a phone. Hovering previews the line in your colour; the latest line is highlighted.
 - **Seats**: a chip per seat in turn order: colour, name, boxes this game; the turn is highlighted, disconnects show the wifi-off icon, leavers are dimmed.
 - **Watch page**: a `SpectatorView` with the seats, the board and the scoreboard.
+- **Win**: on the play view and the watch page, a `WinCelebration` with confetti in the winners' colours and a podium of places by boxes (ties share a place; leavers aren't placed).
 - `needsAction`: your turn, or the host on `RESULTS`.
 
 ## 8. Vue client (`apps/client`)

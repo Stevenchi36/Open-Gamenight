@@ -27,6 +27,15 @@
       <div class="text-overline">Games won</div>
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" />
     </v-col>
+
+    <WinCelebration
+      :active="view.outcome === 'win'"
+      :title="resultTitle(view, SPECTATOR_ID, name)"
+      :subtitle="`${mostBoxes(view)} boxes`"
+      :standings="standings(view, SPECTATOR_ID, name)"
+      :colors="winnerConfetti(view)"
+      :delay="400"
+    />
   </v-row>
 </template>
 
@@ -35,12 +44,12 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { DotsSettings, DotsView } from '../shared/index.ts'
 import DotsBoard from './DotsBoard.vue'
 import SeatChips from './SeatChips.vue'
-import { mostBoxes, resultTitle } from './text.ts'
+import { mostBoxes, resultTitle, standings, winnerConfetti } from './text.ts'
 
 const props = defineProps<SpectatorViewProps<DotsView, DotsSettings>>()
 

@@ -30,18 +30,27 @@
       <ScoreBoard :scores="view.scores" :room="room" :gained="gained" class="mb-4" />
       <NextRoundButton :room="room" :me="me" label="New game" waiting-for="to start a new game" @next="send({ type: 'new_game' })" />
     </template>
+
+    <WinCelebration
+      :active="view.outcome === 'win'"
+      :title="resultTitle(view, me, name)"
+      :subtitle="`${mostBoxes(view)} boxes`"
+      :standings="standings(view, me, name)"
+      :colors="winnerConfetti(view)"
+      :delay="400"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PlayViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
-import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import { COLORS, type ClientAction, type DotsSettings, type DotsView } from '../shared/index.ts'
 import DotsBoard from './DotsBoard.vue'
 import SeatChips from './SeatChips.vue'
-import { mostBoxes, resultTitle } from './text.ts'
+import { mostBoxes, resultTitle, standings, winnerConfetti } from './text.ts'
 
 const props = defineProps<PlayViewProps<DotsView, ClientAction, DotsSettings>>()
 

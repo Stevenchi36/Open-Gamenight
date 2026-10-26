@@ -1,4 +1,6 @@
 import type { PlayerId } from '@wsfg/core/contract'
+import { placings } from '@wsfg/core/kit'
+import type { Standing } from '@wsfg/core/client'
 import { COLORS, type Color, type DotsView } from '../shared/index.ts'
 
 /** Distinct in light and dark themes; red and blue match Drop Line's discs. */
@@ -16,4 +18,23 @@ export function resultTitle(view: DotsView, me: PlayerId, name: (id: PlayerId) =
 /** The winners' box count. */
 export function mostBoxes(view: DotsView): number {
   return Math.max(0, ...view.seats.filter((s) => view.winnerIds.includes(s.id)).map((s) => s.boxes))
+}
+
+/** Places by boxes for the win podium. Leavers can't win, so they aren't placed. */
+export function standings(view: DotsView, me: PlayerId, name: (id: PlayerId) => string): Standing[] {
+  return placings(
+    view.seats.filter((s) => !s.left),
+    (s) => s.boxes,
+  ).map(({ item, place }) => ({
+    id: item.id,
+    name: item.id === me ? 'You' : name(item.id),
+    place,
+    detail: `${item.boxes} ${item.boxes === 1 ? 'box' : 'boxes'}`,
+  }))
+}
+
+/** The winners' colours, with gold and white for sparkle. */
+export function winnerConfetti(view: DotsView): string[] {
+  const seats = view.seats.flatMap((s, i) => (view.winnerIds.includes(s.id) ? [seatColor(i)] : []))
+  return [...seats, ...seats, '#ffd54f', '#ffffff']
 }

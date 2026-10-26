@@ -18,16 +18,12 @@ import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import FishTable from '../FishTable.vue'
 import type { PhaseProps } from '../props.ts'
+import { resultTitle } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
 
 const iWon = computed(() => props.view.winnerIds.includes(props.me))
 const topBooks = computed(() => props.view.seats.find((s) => s.id === props.view.winnerIds[0])?.books.length ?? 0)
-const headline = computed(() => {
-  const ids = props.view.winnerIds
-  if (ids.length === 1) return iWon.value ? 'You win!' : `${nameOf(props.room, ids[0])} wins`
-  const names = ids.map((id) => (id === props.me ? 'You' : nameOf(props.room, id)))
-  return `${names.slice(0, -1).join(', ')} and ${names.at(-1)} tie`
-})
+const headline = computed(() => resultTitle(props.view, props.me, (id) => nameOf(props.room, id)))
 const gained = computed(() => Object.fromEntries(props.view.winnerIds.map((id) => [id, 1])))
 </script>

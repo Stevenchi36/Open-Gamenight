@@ -22,6 +22,18 @@ export interface PlayViewProps<V = unknown, A = unknown, Settings = unknown> {
  * Props the watch page passes to a game's SpectatorView: the view built for SPECTATOR_ID.
  * No `send` or `me`: a spectator only watches.
  */
+/**
+ * One row of a game's final placings, for `WinCelebration`'s podium. Build `place` with kit's `placings`.
+ * Here, not in `ui`, so a game's `text.ts` can use it without its tests loading `.vue` files.
+ */
+export interface Standing {
+  id: PlayerId
+  name: string
+  place: number
+  /** What earned the place, e.g. "7 boxes". */
+  detail?: string
+}
+
 export interface SpectatorViewProps<V = unknown, Settings = unknown> {
   view: V
   room: RoomView

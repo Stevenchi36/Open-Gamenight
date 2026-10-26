@@ -57,7 +57,7 @@ Per game, in order:
 2. **Card games** (core `CardTable`/`PlayingCard`, so Cheat, Gone Fishin' and Last Card all get it): cards slide from a seat to the pile, flip when turned up (Cheat's call, Last Card's discard), deal at the start of a game, and slide into place in your hand. Do this before group 1's TV views.
 3. **Dots and Boxes:** the line draws in, and a claimed box fills in its owner's colour.
 4. **Tic-Tac-Toe:** a small pop when a mark lands.
-5. **Win celebration everywhere:** core `WinCelebration` (confetti burst and a "{name} wins!" card) is in Drop Line; add it to every game with a winner, on the play view and the TV.
+5. **Win celebration everywhere:** core `WinCelebration` (confetti burst and a "{name} wins!" card, plus a podium when given `standings`) is in Drop Line, Dots and Boxes and Gone Fishin'. Add it to every game with a winner, on the play view and the TV; mount it outside any results-only branch so it sees the win arrive.
 6. **TV extras**, per game as its view is built: a pulse on the turn chip.
 
 ## Suggested order

@@ -9,6 +9,7 @@ import {
   isPresent,
   nextTurnOrder,
   pickConnected,
+  placings,
   rankName,
   secretBallots,
   sortCards,
@@ -86,6 +87,22 @@ describe('scores', () => {
 
   it('removes one player from a record', () => {
     expect(withoutPlayer({ a: 1, b: 2 }, 'a')).toEqual({ b: 2 })
+  })
+
+  it('places highest first, ties sharing a place and the next place skipping', () => {
+    const rows = [
+      { id: 'a', n: 2 },
+      { id: 'b', n: 5 },
+      { id: 'c', n: 5 },
+      { id: 'd', n: 1 },
+    ]
+    expect(placings(rows, (r) => r.n).map(({ item, place }) => [item.id, place])).toEqual([
+      ['b', 1],
+      ['c', 1],
+      ['a', 3],
+      ['d', 4],
+    ])
+    expect(placings([], () => 0)).toEqual([])
   })
 })
 
