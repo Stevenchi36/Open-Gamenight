@@ -1,5 +1,7 @@
 import { onUnmounted, ref, watch, type Ref } from 'vue'
+import type { Standing } from '../client.ts'
 import type { PlayerId } from '../contract.ts'
+import { placings } from '../kit.ts'
 import type { RoomView } from '../protocol.ts'
 
 export function nameOf(room: RoomView, id: PlayerId | null | undefined): string {
@@ -58,4 +60,28 @@ export function moveLogEntries<M>(
   const out: MoveLogEntry[] = []
   for (let i = upTo - 1; i >= 0 && out.length < max; i--) out.push({ n: i + 1, text: text(log[i]!), tone: tone(log[i]!) })
   return out
+}
+
+/**
+ * Final scores as `WinCelebration` standings: the winners share 1st (a game's own rule decides
+ * them, e.g. Flock's black sheep can't win), then everyone else by score, ties sharing a place.
+ */
+export function scoreStandings(
+  scores: Record<PlayerId, number>,
+  winnerIds: readonly PlayerId[],
+  name: (id: PlayerId) => string,
+  detail: (score: number) => string = (n) => `${n} ${n === 1 ? 'point' : 'points'}`,
+): Standing[] {
+  const entry = (id: PlayerId) => ({ id, name: name(id), detail: detail(scores[id] ?? 0) })
+  const rest = Object.keys(scores).filter((id) => !winnerIds.includes(id))
+  return [
+    ...winnerIds.map((id) => ({ ...entry(id), place: 1 })),
+    ...placings(rest, (id) => scores[id] ?? 0).map(({ item, place }) => ({ ...entry(item), place: place + winnerIds.length })),
+  ]
+}
+
+/** The win card's title: "You win!", "You win, together!", "Bea wins!", "Bea and Cal win!". */
+export function winTitle(winnerIds: readonly PlayerId[], me: PlayerId, name: (id: PlayerId) => string): string {
+  if (winnerIds.includes(me)) return winnerIds.length === 1 ? 'You win!' : 'You win, together!'
+  return `${winnerIds.map(name).join(' and ')} win${winnerIds.length === 1 ? 's' : ''}!`
 }

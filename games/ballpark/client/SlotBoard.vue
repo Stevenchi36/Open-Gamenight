@@ -1,11 +1,13 @@
 <template>
   <div class="mb-4">
     <v-card
-      v-for="slot in slots"
+      v-for="(slot, i) in slots"
       :key="slot.id"
       :color="winningIds?.includes(slot.id) ? 'success' : undefined"
       :variant="winningIds?.includes(slot.id) ? 'flat' : 'tonal'"
       class="mb-2"
+      :class="{ 'slot--in': stagger }"
+      :style="stagger ? { animationDelay: `${i * 150}ms` } : undefined"
       v-bind="pickable ? { onClick: () => emit('pick', slot.id) } : {}"
     >
       <v-card-text class="d-flex align-center ga-3 py-3">
@@ -57,6 +59,8 @@ const props = defineProps<{
   pickable?: boolean
   /** Your tokens get a remove button. */
   removable?: boolean
+  /** Cards drop in one after another (the TV's reveal). */
+  stagger?: boolean
 }>()
 const emit = defineEmits<{ pick: [slot: string]; remove: [slot: string] }>()
 
@@ -87,3 +91,20 @@ function tokensOn(slot: string): Token[] {
   return tokens.sort((a, b) => Number(b.mine) - Number(a.mine))
 }
 </script>
+
+<style scoped>
+.slot--in {
+  animation: slot-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+@keyframes slot-in {
+  from {
+    transform: translateY(-16px) scale(0.92);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slot--in {
+    animation: none;
+  }
+}
+</style>

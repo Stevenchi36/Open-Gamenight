@@ -562,6 +562,10 @@ ANSWERING -> (REVIEW) -> RESULTS -> next_round -> ANSWERING   (new_game after a 
 ```
 `secrets` declares: other players' answers are hidden during `ANSWERING` (variant check: a viewer's view must not change when another player's answer changes, including to the viewer's own answer).
 
+### Client (watch page and win)
+- **Watch page**: a `SpectatorView`. Answering: the question big with the timer and `WhoAnswered` (who has answered, never what). Review: the groups dropping in one by one when revealed live, updating as the host merges and splits, with the flock so far. Results: the flock's answer, the groups, the black sheep if it moved. The scores (with the black sheep's badge) stay alongside.
+- **Win**: when someone reaches the score limit, a `WinCelebration` with a podium (the winners first, as the black sheep can't win; then by score), on your phone and the TV.
+
 ### Question library
 ```sql
 CREATE TABLE flock_questions (
@@ -634,6 +638,10 @@ GUESSING -> RESULTS -> next_round -> GUESSING   (new_game after the last round)
 }
 ```
 `secrets` declares: other players' guesses and the answer are hidden during `GUESSING` (variant checks: a viewer's view must not change when another player's guess changes, including to the viewer's own guess, or when the answer changes).
+
+### Client (watch page and win)
+- **Watch page**: a `SpectatorView`. Guessing: the colours to mix big with the timer and `WhoAnswered` (who has guessed, never what). Results: the real mix beside the colours, then every guess dropping in from the furthest to the closest, so the winner lands last. The scores stay alongside.
+- **Win**: after the last round, a `WinCelebration` with a podium by score, on your phone and the TV.
 
 ## 7d. Tic-Tac-Toe (`games/tictactoe`)
 
@@ -821,6 +829,10 @@ GUESSING -> BETTING -> RESULTS -> next_round -> GUESSING   (new_game after the l
 }
 ```
 `secrets` declares: other players' guesses are hidden during `GUESSING`; the answer and fact are hidden until `RESULTS`; with hidden bets, other players' bets are hidden during `BETTING` (variant checks, as in Color Mix: a viewer's view must not change when another player's guess or bets change, or when the answer changes). The leak test covers both bet settings and both win rules.
+
+### Client (watch page and win)
+- **Watch page**: a `SpectatorView`. Guessing: the question big with its timer and `WhoAnswered` (who has guessed, never what). Betting: the board of guesses dropping in one by one when revealed live, tokens on it only with public bets, and who has bet. Results: the answer and fact, the closest guessers, the winning slot lit with everyone's tokens. The scores (or chips) stay alongside.
+- **Win**: after the last question, a `WinCelebration` with a podium by score or chips, on your phone and the TV.
 
 ### Hold-to-reveal
 Your sent guess, and your bets when bets are hidden, sit behind `HoldToReveal`: phones lie on the table.

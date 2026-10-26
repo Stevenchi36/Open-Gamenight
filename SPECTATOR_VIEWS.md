@@ -2,7 +2,7 @@
 
 Games with no `SpectatorView` yet. On the watch page (`/watch/:code`) they show only the player list and a note saying the game has no TV view yet. See `PLAN.md` § Spectators and `docs/decisions.md`.
 
-**Done:** Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card.
+**Done:** Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card, Flock, Color Mix, Ballpark.
 
 ## How to add one
 
@@ -14,14 +14,9 @@ Games with no `SpectatorView` yet. On the watch page (`/watch/:code`) they show 
 
 ## Groups
 
-### 1. Secret-answer party rounds: Flock, Color Mix, Ballpark
+### 1. Secret-answer party rounds (done)
 
-These share one round shape: a prompt, then secret answers, then a reveal, then scores.
-
-- **Answering:** show the prompt big (question, or paint swatches for Color Mix), the timer, and who has answered. Show no answers.
-- **Reveal:** this is the TV's best moment. Show Flock's answer groups, Color Mix's real mix against every guess with closest first, and Ballpark's board.
-- **Ballpark** has an extra betting phase. Show the board of guesses and where tokens sit only if that's already public at that point; check `secrets`.
-- Build one first (Flock is the simplest) and pull the shared "prompt + who's answered + timer" header into `@wsfg/core/ui` if the other two match it.
+Flock, Color Mix and Ballpark: each game's own prompt card with its timer, core `WhoAnswered` for who has answered (never what), and a live reveal that drops results in one by one. Score wins use core `winTitle` + `scoreStandings`.
 
 ### 2. Hidden-role and hidden-info games: Word Imposter, In Order, Liar's Dice
 
@@ -48,10 +43,10 @@ Per game, in order:
 2. **Card games (done):** `CardTable` flights (each game's `client/flights.ts`) for Cheat, Gone Fishin' and Last Card: the deal, cards arcing between seats, the pile and your hand, flips when turned up, a Cheat call's reveal and pickup, Last Card's 7-0 swaps, Gone Fishin's books popping in, and new cards dropping into your hand. Their TV views get it by using the game's table.
 3. **Dots and Boxes (done):** the line draws in, and a claimed box grows in, in its owner's colour.
 4. **Tic-Tac-Toe (done):** a mark pops into its square, and a winning line pulses.
-5. **Win celebration:** core `WinCelebration` (confetti burst and a "{name} wins!" card, plus a podium when given `standings`) is in every game with a TV view: Tic-Tac-Toe, Drop Line, Dots and Boxes, Cheat, Gone Fishin' and Last Card. Add it to each new TV view's game with a winner (Liar's Dice next), on the play view and the TV; mount it outside any results-only branch so it sees the win arrive.
+5. **Win celebration:** core `WinCelebration` (confetti burst and a "{name} wins!" card, plus a podium when given `standings`) is in every game with a TV view: Tic-Tac-Toe, Drop Line, Dots and Boxes, Cheat, Gone Fishin', Last Card, Flock, Color Mix and Ballpark. Add it to each new TV view's game with a winner (Liar's Dice next), on the play view and the TV; mount it outside any results-only branch so it sees the win arrive.
 6. **TV turn pulse (done for existing views):** the large seat chips and `CardTable`'s turn seat (when `me` is `SPECTATOR_ID`) keep pulsing. New TV views that show the turn some other way should pulse it too.
 
 ## Suggested order
 
-1. Party rounds (new shared header, likely worth extracting)
+1. Party rounds (done)
 2. Hidden-role games (most secrecy review)

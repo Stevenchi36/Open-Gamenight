@@ -1,11 +1,13 @@
 <template>
   <div class="mb-4">
     <v-card
-      v-for="group in groups"
+      v-for="(group, g) in groups"
       :key="group.id"
       :color="cardColor(group.id)"
       :variant="group.id === selected ? 'flat' : 'tonal'"
       class="mb-2"
+      :class="{ 'group--in': stagger }"
+      :style="stagger ? { animationDelay: `${g * 180}ms` } : undefined"
       v-bind="selectable ? { onClick: () => emit('pick', group.id) } : {}"
     >
       <v-card-text class="d-flex align-center ga-3 py-3">
@@ -42,6 +44,8 @@ const props = defineProps<{
   selectable?: boolean
   selected?: string | null
   splittable?: boolean
+  /** Cards drop in one after another (the TV's reveal). */
+  stagger?: boolean
 }>()
 const emit = defineEmits<{ pick: [id: string]; split: [id: string] }>()
 
@@ -50,3 +54,20 @@ function cardColor(id: string) {
   return id === props.flockId ? 'success' : undefined
 }
 </script>
+
+<style scoped>
+.group--in {
+  animation: group-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+@keyframes group-in {
+  from {
+    transform: translateY(-16px) scale(0.92);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .group--in {
+    animation: none;
+  }
+}
+</style>
