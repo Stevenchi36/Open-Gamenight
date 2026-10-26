@@ -59,7 +59,7 @@ Reloading the page reconnects every frame to its seat. URL options: `n` (players
 
 ## The watch page (TV view)
 
-To see what a TV shows, open **http://localhost:5173/watch/CODE** in a normal tab next to the dev-players window (or the room's **TV** button, then **Copy link**). It spectates: no seat, the view built for `SPECTATOR_ID`, and the players' room header shows "1 watching".
+To see what a TV shows, open **http://localhost:5173/watch/CODE** in a normal tab next to the dev-players window (or the room's **TV** button, or **Show on TV** in the ☰ menu during a game, then **Copy link**). It spectates: no seat, the view built for `SPECTATOR_ID`, and the players' room header (in a game, the ☰ menu) shows "1 watching".
 
 - **It doesn't disturb your seat.** Watching never touches the saved room token. If that tab was a player, its seat is detached as if the socket dropped (you'll show as away in the grid). Leaving the watch page doesn't take the seat back (the same account may be playing it on a phone); opening that room's page in the tab does. P1 in the grid is unaffected either way, because frames keep their own tokens.
 - **Watch at TV size.** Resize the tab or use device emulation (1920×1080), and try the **Full screen** button. Games without a `SpectatorView` show the player list during play.

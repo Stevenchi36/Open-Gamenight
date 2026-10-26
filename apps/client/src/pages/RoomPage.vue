@@ -1,7 +1,7 @@
 <template>
-  <v-container class="py-4" style="max-width: 760px">
+  <v-container :class="playing ? 'pt-2 pb-4' : 'py-4'" style="max-width: 760px">
     <template v-if="room">
-      <div class="d-flex align-center flex-wrap ga-2 mb-4">
+      <div v-if="!playing" class="d-flex align-center flex-wrap ga-2 mb-4">
         <div>
           <div class="text-caption text-medium-emphasis">Room code</div>
           <div class="text-h5 room-code font-weight-bold">{{ room.code }}</div>
@@ -13,11 +13,19 @@
         <RulesDialog v-if="gameModule" :game="gameModule" />
         <v-btn variant="tonal" prepend-icon="mdi-link-variant" @click="copyLink">Invite</v-btn>
         <v-btn variant="tonal" prepend-icon="mdi-television" @click="showTv = true">TV</v-btn>
-        <v-btn v-if="isHost && room.phase === 'playing'" variant="tonal" prepend-icon="mdi-arrow-left" @click="confirmLobby = true">
-          Lobby
-        </v-btn>
         <v-btn variant="text" prepend-icon="mdi-exit-run" @click="leave">Leave</v-btn>
       </div>
+      <!-- Floated, so the play view's top row (round, score) wraps beside it instead of under it. -->
+      <v-btn
+        v-else
+        class="menu-button"
+        icon="mdi-menu"
+        size="small"
+        density="comfortable"
+        variant="tonal"
+        aria-label="Room menu"
+        @click="menu = true"
+      />
 
       <LobbyView v-if="room.phase === 'lobby'" :room="room" />
       <component
@@ -31,6 +39,40 @@
         :server-now="serverNow"
       />
       <AttentionGlow v-if="actionNeeded" />
+
+      <!-- During a game the room's controls live here, out of the way; the app bar is hidden too. -->
+      <v-navigation-drawer v-if="playing" v-model="menu" temporary location="right" width="280">
+        <div class="pa-4">
+          <div class="text-caption text-medium-emphasis">Room code</div>
+          <div class="text-h4 room-code font-weight-bold">{{ room.code }}</div>
+          <div v-if="room.spectators > 0" class="text-body-2 text-medium-emphasis mt-1">
+            <v-icon icon="mdi-television" size="small" /> {{ room.spectators }} watching
+          </div>
+        </div>
+        <v-divider />
+        <v-list nav>
+          <RulesDialog v-if="gameModule" :game="gameModule">
+            <template #activator="{ props: activator }">
+              <v-list-item v-bind="activator" prepend-icon="mdi-help-circle-outline" title="How to play" @click="menu = false" />
+            </template>
+          </RulesDialog>
+          <v-list-item prepend-icon="mdi-link-variant" title="Invite" @click="copyLink" />
+          <v-list-item prepend-icon="mdi-television" title="Show on TV" @click="openTv" />
+          <v-list-item
+            :prepend-icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+            :title="isDark ? 'Light theme' : 'Dark theme'"
+            @click="toggleTheme"
+          />
+        </v-list>
+        <!-- At the bottom, apart from the rest, so they aren't tapped by accident. -->
+        <template #append>
+          <v-divider />
+          <v-list nav>
+            <v-list-item v-if="isHost" prepend-icon="mdi-arrow-left" title="Back to lobby" @click="askLobby" />
+            <v-list-item prepend-icon="mdi-exit-run" title="Leave room" @click="leave" />
+          </v-list>
+        </template>
+      </v-navigation-drawer>
 
       <v-dialog v-model="showTv" max-width="420">
         <v-card title="Show the game on a TV">
@@ -89,12 +131,14 @@
 <script setup lang="ts">
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
 import { clientGames } from '@wsfg/games/client'
-import { computed, defineAsyncComponent, onMounted, ref, shallowRef, watch, type Component } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect, type Component } from 'vue'
 import { useRouter } from 'vue-router'
 import AttentionGlow from '../components/AttentionGlow.vue'
 import LobbyView from '../components/LobbyView.vue'
 import RulesDialog from '../components/RulesDialog.vue'
+import { layout } from '../lib/layout.ts'
 import { joinRoom, lastName, leaveRoom, resumeSeat, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
+import { useThemeToggle } from '../lib/theme.ts'
 
 const props = defineProps<{ code: string }>()
 const router = useRouter()
@@ -113,7 +157,24 @@ const joinError = ref<string | null>(null)
 const confirmLobby = ref(false)
 const rejoining = ref(false)
 const showTv = ref(false)
+const menu = ref(false)
 const watchSite = `${location.host}/watch`
+const { isDark, toggleTheme } = useThemeToggle()
+
+const playing = computed(() => room.value?.phase === 'playing')
+watchEffect(() => (layout.immersive = playing.value))
+onUnmounted(() => (layout.immersive = false))
+watch(playing, () => (menu.value = false))
+
+function openTv() {
+  menu.value = false
+  showTv.value = true
+}
+
+function askLobby() {
+  menu.value = false
+  confirmLobby.value = true
+}
 
 onMounted(() => {
   // A saved token for this room: the store sends `reconnect` on (re)connect, and resumeSeat
@@ -198,3 +259,12 @@ async function shareLink(url: string, title: string, copied: string) {
   }
 }
 </script>
+
+<style scoped>
+/* Pulled up level with the play view's first line of text; the negative bottom margin keeps it
+   from also narrowing the card under that line. */
+.menu-button {
+  float: right;
+  margin: -6px 0 -12px 8px;
+}
+</style>

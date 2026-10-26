@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar density="comfortable" flat border="b">
+    <v-app-bar :model-value="!layout.immersive" density="comfortable" flat border="b">
       <v-app-bar-title>
         <router-link to="/" class="text-decoration-none" style="color: inherit">{{ config.appName }}</router-link>
       </v-app-bar-title>
@@ -49,30 +49,22 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTheme } from 'vuetify'
 import { authClient } from './lib/auth-client.ts'
 import { config } from './lib/config.ts'
+import { layout } from './lib/layout.ts'
 import { refreshSession, roomState, toasts } from './lib/room.ts'
-import { save } from '@wsfg/core/ui/storage'
-import { THEME_KEY } from './plugins/vuetify.ts'
+import { useThemeToggle } from './lib/theme.ts'
 
 const route = useRoute()
 const router = useRouter()
-const theme = useTheme()
+const { theme, isDark, toggleTheme } = useThemeToggle()
 const session = authClient.useSession()
 
 const user = computed(() => session.value.data?.user ?? null)
 const isAdmin = computed(() => (user.value as { role?: string } | null)?.role === 'admin')
-const isDark = computed(() => theme.global.current.value.dark)
 // Dev only, and the build drops the import. Hidden inside the dev-players frames themselves.
 const DevPlayersButton = import.meta.env.DEV ? defineAsyncComponent(() => import('./components/DevPlayersButton.vue')) : null
 const isDev = !!DevPlayersButton && window.self === window.top
-
-function toggleTheme() {
-  const next = isDark.value ? 'light' : 'dark'
-  void theme.change(next)
-  save(THEME_KEY, next)
-}
 
 watch(
   () => config.primaryColor,
