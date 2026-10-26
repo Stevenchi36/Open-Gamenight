@@ -7,6 +7,7 @@
     :tappable="tappable"
     :selected="selected"
     :dimmed="view.seats.filter((s) => s.left).map((s) => s.id)"
+    :flights="flights"
     class="mb-4"
     @select="(id) => emit('select', id)"
   >
@@ -17,9 +18,15 @@
         <PlayingCard v-for="i in Math.min(byId[id]!.cards, 4)" :key="i" size="sm" :class="{ 'seat-card--stacked': i > 1 }" />
         <span class="text-caption font-weight-bold ml-1">{{ byId[id]!.cards }}</span>
       </div>
-      <div v-if="byId[id]!.books.length > 0" class="d-flex flex-wrap justify-center ga-1" :aria-label="`Books: ${byId[id]!.books.map((r) => rankName(r)).join(', ')}`">
+      <!-- Always there (even empty), so a seat's first book pops in like the rest. -->
+      <TransitionGroup
+        tag="div"
+        name="book-pop"
+        class="d-flex flex-wrap justify-center ga-1"
+        :aria-label="byId[id]!.books.length > 0 ? `Books: ${byId[id]!.books.map((r) => rankName(r)).join(', ')}` : undefined"
+      >
         <span v-for="rank in byId[id]!.books" :key="rank" class="book-tag">{{ rank }}</span>
-      </div>
+      </TransitionGroup>
     </template>
     <template #center>
       <div v-if="view.pond > 0" class="d-flex align-center ga-2">
@@ -42,6 +49,7 @@ import type { RoomView } from '@wsfg/core/protocol'
 import { CardTable, PlayingCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { GoneFishinView, Seat } from '../shared/index.ts'
+import { tableFlights } from './flights.ts'
 
 const props = withDefaults(
   defineProps<{ view: GoneFishinView; room: RoomView; me: PlayerId; tappable?: PlayerId[]; selected?: PlayerId | null }>(),
@@ -50,6 +58,7 @@ const props = withDefaults(
 const emit = defineEmits<{ select: [id: PlayerId] }>()
 
 const byId = computed(() => Object.fromEntries(props.view.seats.map((s) => [s.id, s])) as Record<PlayerId, Seat>)
+const flights = computed(() => tableFlights(props.view))
 </script>
 
 <style scoped>
@@ -68,5 +77,20 @@ const byId = computed(() => Object.fromEntries(props.view.seats.map((s) => [s.id
   font-size: 0.7rem;
   font-weight: 700;
   line-height: 1.4;
+}
+/* A new book pops onto the seat once the cards that made it have landed. */
+.book-pop-enter-active {
+  animation: book-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s backwards;
+}
+@keyframes book-pop {
+  from {
+    opacity: 0;
+    transform: scale(0) rotate(-25deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .book-pop-enter-active {
+    animation: none;
+  }
 }
 </style>

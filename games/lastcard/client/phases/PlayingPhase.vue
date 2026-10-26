@@ -27,7 +27,16 @@
       </v-btn>
 
       <div v-if="hint" class="text-body-2 text-center text-medium-emphasis mb-2">{{ hint }}</div>
-      <HandCards :hand="view.you.hand" :playable="playable" :selected="selected" :dim-unplayable="myTurn" class="mb-4" @select="(i) => (selected = i)" />
+      <HandCards
+        :hand="view.you.hand"
+        :playable="playable"
+        :selected="selected"
+        :dim-unplayable="myTurn"
+        :dealing="view.log.length === 0"
+        :arrive-delay="arriveDelay(view)"
+        class="mb-4"
+        @select="(i) => (selected = i)"
+      />
 
       <div v-if="selectedCard && isWild(selectedCard)" class="d-flex ga-2 mb-3">
         <v-btn
@@ -84,6 +93,7 @@ import type { PlayerId } from '@wsfg/core/contract'
 import { nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import { canJumpIn, canPlay, COLORS, isWild, sameCard, type Color } from '../../shared/index.ts'
+import { arriveDelay } from '../flights.ts'
 import HandCards from '../HandCards.vue'
 import LastTable from '../LastTable.vue'
 import type { PhaseProps } from '../props.ts'

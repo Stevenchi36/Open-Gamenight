@@ -6,6 +6,7 @@
     :turn="view.turn"
     :dimmed="view.seats.filter((s) => s.left).map((s) => s.id)"
     :layout="layout"
+    :flights="flights"
     class="mb-4"
   >
     <template #seat="{ id }">
@@ -38,10 +39,12 @@ import type { RoomView } from '@wsfg/core/protocol'
 import { CardTable, PlayingCard } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { CheatView, Seat } from '../shared/index.ts'
+import { tableFlights } from './flights.ts'
 
 const props = defineProps<{ view: CheatView; room: RoomView; me: PlayerId; layout?: 'table' | 'list' }>()
 
 const byId = computed(() => Object.fromEntries(props.view.seats.map((s) => [s.id, s])) as Record<PlayerId, Seat>)
+const flights = computed(() => tableFlights(props.view))
 </script>
 
 <style scoped>

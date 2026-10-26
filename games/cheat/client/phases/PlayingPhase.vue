@@ -26,7 +26,14 @@
         <template v-if="myTurn">Your turn: play 1-{{ MAX_PLAY }} cards as <strong>{{ claimsText(view.claims) }}</strong>. They don't have to be.</template>
         <template v-else>Next claim: {{ claimsText(view.claims) }}. You can pick your cards while you wait.</template>
       </div>
-      <HandCards :hand="view.you.hand" :selected="selected" class="mb-4" @toggle="toggle" />
+      <HandCards
+        :hand="view.you.hand"
+        :selected="selected"
+        :dealing="view.log.length === 0"
+        :arrive-delay="arriveDelay(view)"
+        class="mb-4"
+        @toggle="toggle"
+      />
 
       <template v-if="myTurn">
         <!-- Chips wrap: the first play with Nearby may claim any of the 13 ranks. -->
@@ -61,6 +68,7 @@ import { nameOf, PlayingCard, StatusCard, useCountdown } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import { MAX_PLAY } from '../../shared/index.ts'
 import CheatTable from '../CheatTable.vue'
+import { arriveDelay } from '../flights.ts'
 import HandCards from '../HandCards.vue'
 import type { PhaseProps } from '../props.ts'
 import { claimsText, claimText, moveText } from '../text.ts'

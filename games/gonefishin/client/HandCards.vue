@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-wrap justify-center ga-3">
+  <div class="d-flex flex-wrap justify-center ga-3" data-card-anchor="hand">
     <component
       :is="selectable ? 'button' : 'div'"
       v-for="group in groups"
@@ -11,7 +11,14 @@
       :aria-pressed="selectable ? group.rank === selected : undefined"
       @click="selectable && emit('select', group.rank)"
     >
-      <PlayingCard v-for="(card, i) in group.cards" :key="card.suit" :card="card" class="hand-card" :class="{ 'hand-card--stacked': i > 0 }" />
+      <PlayingCard
+        v-for="(card, i) in group.cards"
+        :key="card.suit"
+        v-bind="arrival(card.rank + card.suit)"
+        :card="card"
+        class="hand-card"
+        :class="{ 'hand-card--stacked': i > 0 }"
+      />
     </component>
   </div>
 </template>
@@ -19,11 +26,19 @@
 <script setup lang="ts">
 // Your hand, grouped by rank. While it's your turn a group can be tapped to pick the rank to ask for.
 import { rankName, type Card, type Rank } from '@wsfg/core/kit'
-import { PlayingCard } from '@wsfg/core/ui'
+import { PlayingCard, useArrivals } from '@wsfg/core/ui'
 import { computed } from 'vue'
 
-const props = defineProps<{ hand: Card[]; selectable: boolean; selected: Rank | null }>()
+const props = defineProps<{
+  hand: Card[]
+  selectable: boolean
+  selected: Rank | null
+  /** Just dealt: the whole hand drops in on first render. */
+  dealing?: boolean
+}>()
 const emit = defineEmits<{ select: [rank: Rank] }>()
+
+const arrival = useArrivals(() => props.hand.map((c) => c.rank + c.suit), props.dealing)
 
 // The hand arrives sorted by rank, so groups come out in order.
 const groups = computed(() => {

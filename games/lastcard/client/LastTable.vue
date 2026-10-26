@@ -7,6 +7,7 @@
     :tappable="tappable"
     :selected="selected"
     :dimmed="view.seats.filter((s) => s.left).map((s) => s.id)"
+    :flights="flights"
     class="mb-4"
     @select="(id) => emit('select', id)"
   >
@@ -25,10 +26,13 @@
     <template #center>
       <div class="d-flex align-center justify-center ga-3">
         <div class="d-flex flex-column align-center">
-          <PlayingCard />
+          <PlayingCard data-card-anchor="draw" />
           <span class="text-caption mt-1">{{ view.drawPile }} left</span>
         </div>
-        <LcCard :card="view.top" size="lg" />
+        <div data-card-anchor="discard">
+          <LcCard v-if="shownTop" :card="shownTop" size="lg" />
+          <div v-else class="discard-empty" />
+        </div>
         <div class="d-flex flex-column align-center ga-1 text-caption">
           <span class="color-dot" :style="{ background: CARD_COLORS[view.color] }" :aria-label="`Colour in play: ${view.color}`" />
           <span>{{ view.color }}</span>
@@ -39,6 +43,9 @@
         </div>
       </div>
     </template>
+    <template #flight="{ face }">
+      <LcCard :card="face as Card" />
+    </template>
   </CardTable>
 </template>
 
@@ -47,9 +54,10 @@
 // middle the draw pile, the top card, the colour in play, the direction and any pending stack.
 import type { PlayerId } from '@wsfg/core/contract'
 import type { RoomView } from '@wsfg/core/protocol'
-import { CardTable, PlayingCard } from '@wsfg/core/ui'
-import { computed } from 'vue'
-import type { LastCardView, Seat } from '../shared/index.ts'
+import { CardTable, PlayingCard, reducedMotion } from '@wsfg/core/ui'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { sameCard, type LastCardView, type LcCard as Card, type Seat } from '../shared/index.ts'
+import { tableFlights, topDelay } from './flights.ts'
 import LcCard from './LcCard.vue'
 import { CARD_COLORS } from './text.ts'
 
@@ -61,6 +69,36 @@ const emit = defineEmits<{ select: [id: PlayerId] }>()
 
 const byId = computed(() => Object.fromEntries(props.view.seats.map((s) => [s.id, s])) as Record<PlayerId, Seat>)
 const points = computed(() => props.view.settings.scoring === 'points')
+const flights = computed(() => tableFlights(props.view, props.me))
+
+// The top card changes as the played card lands on it, not as it leaves the hand; at the
+// start of a round the pile stays empty until the first card is turned up after the deal.
+const dealing = props.view.log.length === 0 && !reducedMotion()
+const shownTop = ref<Card | null>(dealing ? null : props.view.top)
+let pending: Card | null = dealing ? props.view.top : null
+let timer: ReturnType<typeof setTimeout> | undefined
+const showLater = (ms: number) => {
+  clearTimeout(timer)
+  timer = setTimeout(() => {
+    shownTop.value = props.view.top
+    pending = null
+  }, ms)
+}
+onMounted(() => dealing && showLater(topDelay(props.view)))
+watch(
+  () => props.view.top,
+  (top) => {
+    const target = pending ?? shownTop.value
+    if (target && sameCard(top, target)) return
+    if (reducedMotion()) {
+      shownTop.value = top
+      return
+    }
+    pending = top
+    showLater(topDelay(props.view))
+  },
+)
+onBeforeUnmount(() => clearTimeout(timer))
 </script>
 
 <style scoped>
@@ -81,6 +119,13 @@ const points = computed(() => props.view.settings.scoring === 'points')
 .seat-tag--error {
   background: rgba(var(--v-theme-error), 0.2);
   border: 1px solid rgba(var(--v-theme-error), 0.7);
+}
+/* Where the first card will land, while the deal goes round. */
+.discard-empty {
+  width: 64px;
+  height: 92px;
+  border-radius: 6px;
+  border: 2px dashed rgba(var(--v-theme-on-surface), 0.25);
 }
 .color-dot {
   width: 18px;

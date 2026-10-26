@@ -1,10 +1,11 @@
 <template>
-  <div class="d-flex flex-wrap justify-center ga-2">
+  <div class="d-flex flex-wrap justify-center ga-2" data-card-anchor="hand">
     <div v-for="group in groups" :key="group.rank" class="d-flex">
       <button
         v-for="(card, i) in group.cards"
         :key="card.suit"
         type="button"
+        v-bind="arrival(card.rank + card.suit)"
         class="hand-card"
         :class="{ 'hand-card--stacked': i > 0, 'hand-card--selected': isSelected(card) }"
         :aria-label="`${card.rank} of ${SUIT_NAMES[card.suit]}`"
@@ -20,13 +21,26 @@
 <script setup lang="ts">
 // Your hand, grouped by rank. Tap cards to pick the ones to play; picked cards rise.
 import type { Card, Rank, Suit } from '@wsfg/core/kit'
-import { PlayingCard } from '@wsfg/core/ui'
+import { PlayingCard, useArrivals } from '@wsfg/core/ui'
 import { computed } from 'vue'
 
-const props = defineProps<{ hand: Card[]; selected: Card[] }>()
+const props = defineProps<{
+  hand: Card[]
+  selected: Card[]
+  /** Just dealt: the whole hand drops in on first render. */
+  dealing?: boolean
+  /** ms before new cards drop in (after the cards bringing them land). */
+  arriveDelay?: number
+}>()
 const emit = defineEmits<{ toggle: [card: Card] }>()
 
 const SUIT_NAMES: Record<Suit, string> = { S: 'spades', H: 'hearts', D: 'diamonds', C: 'clubs' }
+
+const arrival = useArrivals(
+  () => props.hand.map((c) => c.rank + c.suit),
+  props.dealing,
+  () => props.arriveDelay ?? 430,
+)
 
 const isSelected = (card: Card) => props.selected.some((c) => c.rank === card.rank && c.suit === card.suit)
 

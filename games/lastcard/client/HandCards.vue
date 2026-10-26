@@ -1,9 +1,10 @@
 <template>
-  <div class="d-flex flex-wrap justify-center ga-1">
+  <div class="d-flex flex-wrap justify-center ga-1" data-card-anchor="hand">
     <component
       :is="playable[i] ? 'button' : 'div'"
       v-for="(card, i) in hand"
-      :key="i"
+      :key="keys[i]"
+      v-bind="arrival(keys[i]!)"
       :type="playable[i] ? 'button' : undefined"
       class="hand-card"
       :class="{ 'hand-card--playable': playable[i], 'hand-card--selected': i === selected, 'hand-card--dim': dimUnplayable && !playable[i] }"
@@ -18,19 +19,33 @@
 
 <script setup lang="ts">
 // Your hand, sorted by colour. Cards you can play now are raised and can be tapped to pick one.
+import { occurrenceKeys, useArrivals } from '@wsfg/core/ui'
+import { computed } from 'vue'
 import type { LcCard as Card } from '../shared/index.ts'
 import LcCard from './LcCard.vue'
 import { cardName } from './text.ts'
 
-defineProps<{
+const props = defineProps<{
   hand: Card[]
   /** Per card: may it be picked now. */
   playable: boolean[]
   selected: number | null
   /** Fade the rest (on your turn); out of turn the hand stays plain. */
   dimUnplayable: boolean
+  /** Just dealt: the whole hand drops in on first render. */
+  dealing?: boolean
+  /** ms before new cards drop in (after the cards bringing them land). */
+  arriveDelay?: number
 }>()
 const emit = defineEmits<{ select: [index: number] }>()
+
+// Keyed by card, not position, so a new card is told apart from the ones it pushed along.
+const keys = computed(() => occurrenceKeys(props.hand, (c) => `${c.color ?? 'wild'}-${c.value}`))
+const arrival = useArrivals(
+  () => keys.value,
+  props.dealing,
+  () => props.arriveDelay ?? 430,
+)
 </script>
 
 <style scoped>

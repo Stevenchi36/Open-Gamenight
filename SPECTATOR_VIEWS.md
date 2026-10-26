@@ -54,7 +54,7 @@ Make play more lively, on the TV and on players' phones alike.
 Per game, in order:
 
 1. **Drop Line (done):** the disc falls into its column with a small bounce, and a winning line pulses when it's made live, followed by the win celebration.
-2. **Card games** (core `CardTable`/`PlayingCard`, so Cheat, Gone Fishin' and Last Card all get it): cards slide from a seat to the pile, flip when turned up (Cheat's call, Last Card's discard), deal at the start of a game, and slide into place in your hand. Do this before group 1's TV views.
+2. **Card games (done):** `CardTable` flights (each game's `client/flights.ts`) for Cheat, Gone Fishin' and Last Card: the deal, cards arcing between seats, the pile and your hand, flips when turned up, a Cheat call's reveal and pickup, Last Card's 7-0 swaps, Gone Fishin's books popping in, and new cards dropping into your hand. Group 1's TV views get it by using the game's table.
 3. **Dots and Boxes:** the line draws in, and a claimed box fills in its owner's colour.
 4. **Tic-Tac-Toe:** a small pop when a mark lands.
 5. **Win celebration everywhere:** core `WinCelebration` (confetti burst and a "{name} wins!" card, plus a podium when given `standings`) is in Drop Line, Dots and Boxes and Gone Fishin'. Add it to every game with a winner, on the play view and the TV; mount it outside any results-only branch so it sees the win arrive.

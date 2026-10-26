@@ -15,7 +15,14 @@
       <div v-if="myTurn" class="text-body-2 text-center text-medium-emphasis mb-2">
         {{ rank ? (target ? '' : 'Now tap a player to ask.') : 'Tap a rank in your hand, then a player to ask.' }}
       </div>
-      <HandCards :hand="view.you.hand" :selectable="myTurn" :selected="rank" class="mb-4" @select="(r) => (rank = r)" />
+      <HandCards
+        :hand="view.you.hand"
+        :selectable="myTurn"
+        :selected="rank"
+        :dealing="view.log.length === 0"
+        class="mb-4"
+        @select="(r) => (rank = r)"
+      />
       <div v-if="view.you.hand.length === 0" class="text-center text-body-2 text-medium-emphasis mb-4">Your hand is empty.</div>
       <v-btn v-if="myTurn" block size="large" color="primary" class="mb-4" :disabled="!rank || !target" @click="ask">
         {{ rank && target ? `Ask ${nameOf(room, target)} for ${rankName(rank)}` : 'Ask' }}
