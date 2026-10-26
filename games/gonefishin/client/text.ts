@@ -42,3 +42,9 @@ export function standings(view: GoneFishinView, me: PlayerId, name: (id: PlayerI
     detail: `${item.books.length} ${item.books.length === 1 ? 'book' : 'books'}`,
   }))
 }
+
+/** For the move list: an ask that got cards (or a lucky catch, or a book) paid off; gone fishin' didn't. */
+export function moveTone(move: Move): 'success' | 'error' | null {
+  if (move.given > 0 || move.lucky || move.books.length > 0) return 'success'
+  return move.targetId === null ? null : 'error'
+}

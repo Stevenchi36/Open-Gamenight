@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12" md="8">
       <template v-if="view.phase === 'PLAYING'">
-        <StatusCard v-if="last" prominent :overline="turnLine">
+        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.log.length} · ${turnLine}`">
           {{ moveText(last, SPECTATOR_ID, name) }}
           <div v-if="last.kind === 'call'" class="d-flex flex-wrap ga-2 mt-3" :aria-label="`Turned up: ${last.cards.map((c) => c.rank).join(', ')}`">
             <PlayingCard v-for="card in last.cards" :key="card.rank + card.suit" :card="card" :class="{ 'card--false': card.rank !== last.claim }" />
@@ -34,7 +34,7 @@
 
       <v-card v-if="earlier.length > 0" class="mb-4" title="Earlier moves">
         <v-card-text>
-          <div v-for="(m, i) in earlier" :key="view.log.length - i" class="text-body-1 mb-2">{{ moveText(m, SPECTATOR_ID, name) }}</div>
+          <MoveLog :entries="earlier" large />
         </v-card-text>
       </v-card>
 
@@ -50,18 +50,20 @@
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
-import { nameOf, PlayingCard, ScoreBoard, StatusCard, useCountdown } from '@wsfg/core/ui'
+import { MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, StatusCard, useCountdown } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import type { CheatSettings, CheatView } from '../shared/index.ts'
 import CheatTable from './CheatTable.vue'
-import { claimsText, claimText, moveText } from './text.ts'
+import { claimsText, claimText, moveText, moveTone } from './text.ts'
 
 const props = defineProps<SpectatorViewProps<CheatView, CheatSettings>>()
 
 const name = (id: PlayerId | null) => nameOf(props.room, id)
 const last = computed(() => props.view.log.at(-1) ?? null)
 // The latest is in the status card; the rest newest first, a screenful at most.
-const earlier = computed(() => props.view.log.slice(0, -1).reverse().slice(0, 8))
+const earlier = computed(() =>
+  moveLogEntries(props.view.log, (m) => moveText(m, SPECTATOR_ID, name), moveTone, { skipLatest: true, max: 8 }),
+)
 const secondsLeft = useCountdown(() => props.view.callUntil, props.serverNow)
 const turnLine = computed(() => (props.view.stage === 'calling' ? `${name(props.view.turn)} is next` : `${name(props.view.turn)}'s turn`))
 const gained = computed(() => (props.view.phase === 'RESULTS' && props.view.winnerId ? { [props.view.winnerId]: 1 } : {}))

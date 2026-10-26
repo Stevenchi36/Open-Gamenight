@@ -34,3 +34,28 @@ export function useCountdown(deadline: () => number | null, serverNow: () => num
   onUnmounted(() => clearInterval(timer))
   return left
 }
+
+/** One row of `MoveLog`. */
+export interface MoveLogEntry {
+  /** The move's number in the game, from 1. */
+  n: number
+  text: string
+  /** How it went for the player who made it: paid off, didn't, or neither. */
+  tone?: 'success' | 'error' | null
+}
+
+/**
+ * A move log (oldest first) as `MoveLog` rows, newest first and numbered from the first move.
+ * `skipLatest` leaves out the newest when it's already shown big; `max` caps the rows.
+ */
+export function moveLogEntries<M>(
+  log: readonly M[],
+  text: (move: M) => string,
+  tone: (move: M) => MoveLogEntry['tone'],
+  { skipLatest = false, max = Infinity }: { skipLatest?: boolean; max?: number } = {},
+): MoveLogEntry[] {
+  const upTo = skipLatest ? log.length - 1 : log.length
+  const out: MoveLogEntry[] = []
+  for (let i = upTo - 1; i >= 0 && out.length < max; i--) out.push({ n: i + 1, text: text(log[i]!), tone: tone(log[i]!) })
+  return out
+}

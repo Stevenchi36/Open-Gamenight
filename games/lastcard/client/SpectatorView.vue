@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12" md="8">
       <template v-if="view.phase === 'PLAYING'">
-        <StatusCard v-if="last" prominent :overline="turnLine">{{ moveText(last, SPECTATOR_ID, name, view.settings.sevenZero) }}</StatusCard>
+        <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.log.length} · ${turnLine}`">{{ moveText(last, SPECTATOR_ID, name, view.settings.sevenZero) }}</StatusCard>
         <StatusCard v-else prominent overline="New round" :title="`${name(view.turn)} goes first`">
           <template v-if="view.pendingDraw > 0">They face a +{{ view.pendingDraw }}.</template>
         </StatusCard>
@@ -51,7 +51,7 @@
 
       <v-card v-if="earlier.length > 0" class="mb-4" title="Earlier moves">
         <v-card-text>
-          <div v-for="(m, i) in earlier" :key="view.log.length - i" class="text-body-1 mb-2">{{ moveText(m, SPECTATOR_ID, name, view.settings.sevenZero) }}</div>
+          <MoveLog :entries="earlier" large />
         </v-card-text>
       </v-card>
 
@@ -73,12 +73,12 @@
 import type { SpectatorViewProps } from '@wsfg/core/client'
 import type { PlayerId } from '@wsfg/core/contract'
 import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import { MoveLog, moveLogEntries, nameOf, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
 import { computed } from 'vue'
 import { handPoints, type LastCardSettings, type LastCardView } from '../shared/index.ts'
 import LastTable from './LastTable.vue'
 import LcCard from './LcCard.vue'
-import { CARD_COLORS, gameWon, moveText, resultTitle } from './text.ts'
+import { CARD_COLORS, gameWon, moveText, moveTone, resultTitle } from './text.ts'
 
 const props = defineProps<SpectatorViewProps<LastCardView, LastCardSettings>>()
 
@@ -86,7 +86,9 @@ const name = (id: PlayerId | null) => nameOf(props.room, id)
 const points = computed(() => props.view.settings.scoring === 'points')
 const last = computed(() => props.view.log.at(-1) ?? null)
 // The latest is in the status card; the rest newest first, a screenful at most.
-const earlier = computed(() => props.view.log.slice(0, -1).reverse().slice(0, 8))
+const earlier = computed(() =>
+  moveLogEntries(props.view.log, (m) => moveText(m, SPECTATOR_ID, name, props.view.settings.sevenZero), moveTone, { skipLatest: true, max: 8 }),
+)
 const turnLine = computed(() => `${name(props.view.turn)}'s turn${props.view.pendingDraw > 0 ? ` (facing +${props.view.pendingDraw})` : ''}`)
 
 /** RESULTS: everyone else's hand, turned up. */

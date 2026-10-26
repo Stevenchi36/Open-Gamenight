@@ -79,9 +79,7 @@
     <v-expansion-panels v-if="view.log.length > 1" variant="accordion">
       <v-expansion-panel title="Moves this round">
         <v-expansion-panel-text>
-          <div v-for="(m, i) in [...view.log].reverse()" :key="view.log.length - i" class="text-body-2 mb-1">
-            {{ moveText(m, me, (id) => nameOf(room, id), view.settings.sevenZero) }}
-          </div>
+          <MoveLog :entries="moves" />
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
@@ -90,19 +88,20 @@
 
 <script setup lang="ts">
 import type { PlayerId } from '@wsfg/core/contract'
-import { nameOf, StatusCard } from '@wsfg/core/ui'
+import { MoveLog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import { canJumpIn, canPlay, COLORS, isWild, sameCard, type Color } from '../../shared/index.ts'
 import { arriveDelay } from '../flights.ts'
 import HandCards from '../HandCards.vue'
 import LastTable from '../LastTable.vue'
 import type { PhaseProps } from '../props.ts'
-import { CARD_COLORS, cardName, moveText } from '../text.ts'
+import { CARD_COLORS, cardName, moveText, moveTone } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
 
 const myTurn = computed(() => props.view.turn === props.me)
 const last = computed(() => props.view.log.at(-1) ?? null)
+const moves = computed(() => moveLogEntries(props.view.log, (m) => moveText(m, props.me, (id) => nameOf(props.room, id), props.view.settings.sevenZero), moveTone))
 const table = computed(() => ({ top: props.view.top, color: props.view.color, pendingDraw: props.view.pendingDraw }))
 
 const turnLine = computed(() => {

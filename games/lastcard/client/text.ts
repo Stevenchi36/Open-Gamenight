@@ -69,3 +69,10 @@ export function resultTitle(view: LastCardView, me: PlayerId, name: (id: PlayerI
 export function gameWon(view: LastCardView): boolean {
   return view.settings.scoring === 'points' ? view.champion !== null : view.outcome === 'win'
 }
+
+/** For the move list: a catch or a call in time paid off; a penalty draw hurt. Plain plays and draws are neither. */
+export function moveTone(move: Move): 'success' | 'error' | null {
+  if (move.kind === 'catch' || move.kind === 'call') return 'success'
+  if (move.kind === 'draw' && move.penalty) return 'error'
+  return null
+}

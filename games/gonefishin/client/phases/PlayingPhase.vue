@@ -33,9 +33,7 @@
     <v-expansion-panels v-if="view.log.length > 1" variant="accordion">
       <v-expansion-panel title="Moves this game">
         <v-expansion-panel-text>
-          <div v-for="(m, i) in [...view.log].reverse()" :key="view.log.length - i" class="text-body-2 mb-1">
-            {{ moveText(m, me, (id) => nameOf(room, id)) }}
-          </div>
+          <MoveLog :entries="moves" />
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
@@ -45,17 +43,18 @@
 <script setup lang="ts">
 import type { PlayerId } from '@wsfg/core/contract'
 import { rankName, type Rank } from '@wsfg/core/kit'
-import { nameOf, StatusCard } from '@wsfg/core/ui'
+import { MoveLog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
 import { computed, ref, watch } from 'vue'
 import FishTable from '../FishTable.vue'
 import HandCards from '../HandCards.vue'
 import type { PhaseProps } from '../props.ts'
-import { moveText } from '../text.ts'
+import { moveText, moveTone } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
 
 const myTurn = computed(() => props.view.turn === props.me)
 const last = computed(() => props.view.log.at(-1) ?? null)
+const moves = computed(() => moveLogEntries(props.view.log, (m) => moveText(m, props.me, (id) => nameOf(props.room, id)), moveTone))
 // Green when the latest move went your way, red when it took your cards.
 const lastColor = computed(() => {
   const m = last.value

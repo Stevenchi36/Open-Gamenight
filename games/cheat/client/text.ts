@@ -36,3 +36,8 @@ export function moveText(move: Move, me: PlayerId, name: (id: PlayerId) => strin
     }
   }
 }
+
+/** For the move list: a call that caught a lie paid off for the caller, one on an honest play didn't. */
+export function moveTone(move: Move): 'success' | 'error' | null {
+  return move.kind === 'call' ? (move.lied ? 'success' : 'error') : null
+}
