@@ -261,9 +261,11 @@ async function copyWatchLink() {
   await shareLink(`${location.origin}/watch/${props.code}`, 'Watch our game', 'Watch link copied')
 }
 
+// Touch devices get the share sheet; desktops copy, since Windows Chrome and Edge also have
+// navigator.share and its flyout is easy to miss.
 async function shareLink(url: string, title: string, copied: string) {
   try {
-    if (navigator.share) await navigator.share({ title, url })
+    if (navigator.share && matchMedia('(pointer: coarse)').matches) await navigator.share({ title, url })
     else {
       await navigator.clipboard.writeText(url)
       toast(copied, 'success')
