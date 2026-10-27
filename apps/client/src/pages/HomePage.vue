@@ -50,7 +50,7 @@
             <v-select
               v-model="gameId"
               :items="config.games"
-              item-title="name"
+              :item-title="gameTitle"
               item-value="id"
               label="Game"
               :hint="selectedGame?.description"
@@ -97,6 +97,7 @@ import GameLibrary from '../components/GameLibrary.vue'
 import { authClient } from '../lib/auth-client.ts'
 import { config } from '../lib/config.ts'
 import { devLaunchDefaults, openDevWindows } from '../lib/dev-windows.ts'
+import { gameTitle } from '../lib/games.ts'
 import { createRoom, joinRoom, lastName, leaveRoom, roomState, toast } from '../lib/room.ts'
 
 const router = useRouter()

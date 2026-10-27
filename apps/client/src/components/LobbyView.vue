@@ -40,7 +40,7 @@
           v-if="isHost && room.availableGames.length > 1"
           :model-value="room.game.id"
           :items="room.availableGames"
-          item-title="name"
+          :item-title="gameTitle"
           item-value="id"
           label="Game"
           hint="Switching games resets settings and scores"
@@ -95,6 +95,7 @@
 import type { RoomView } from '@wsfg/core/protocol'
 import { clientGames } from '@wsfg/games/client'
 import { computed, defineAsyncComponent, ref, type Component } from 'vue'
+import { gameTitle } from '../lib/games.ts'
 import { send } from '../lib/room.ts'
 
 const props = defineProps<{ room: RoomView }>()

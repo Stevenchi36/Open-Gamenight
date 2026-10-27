@@ -68,6 +68,7 @@ import type { AvailableGame } from '@wsfg/core/protocol'
 import { clientGames } from '@wsfg/games/client'
 import { computed, ref } from 'vue'
 import { config } from '../lib/config.ts'
+import { playerRange } from '../lib/games.ts'
 import RulesDialog from './RulesDialog.vue'
 
 defineProps<{ signedIn: boolean }>()
@@ -115,7 +116,7 @@ const filtered = computed(() => {
 })
 
 const clientOf = (id: string) => clientGames.find((g) => g.id === id)
-const playersText = (g: AvailableGame) => (g.minPlayers === g.maxPlayers ? `${g.minPlayers} players` : `${g.minPlayers}-${g.maxPlayers} players`)
+const playersText = (g: AvailableGame) => `${playerRange(g)} players`
 
 function clearChoices() {
   style.value = null
