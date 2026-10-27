@@ -86,7 +86,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 |---|---|---|
 | `NODE_ENV` | `development` | `production` turns on secure cookies |
 | `PORT` | `3000` | Express port |
-| `APP_NAME` | `Open Gamenight` | App bar title and page title |
+| `APP_NAME` | `Open Gamenight` | App bar title, and the end of every page title |
 | `APP_PRIMARY_COLOR` | `#6750A4` | **Quote it** in `.env` (`"#6750A4"`): an unquoted `#` starts a comment |
 | `BETTER_AUTH_SECRET` | none, required | At least 32 characters |
 | `BETTER_AUTH_URL` | none, required | Public URL of the site (in dev, the Vite URL) |

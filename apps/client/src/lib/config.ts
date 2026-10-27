@@ -23,6 +23,5 @@ export async function loadConfig(): Promise<AppConfig> {
   } catch {
     // offline or server down: keep defaults; the room store will show the connection state
   }
-  document.title = config.appName
   return config
 }

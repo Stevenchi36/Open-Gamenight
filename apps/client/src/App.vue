@@ -62,11 +62,13 @@ import { config } from './lib/config.ts'
 import { immersive } from './lib/layout.ts'
 import { refreshSession, roomState, toasts, type Toast } from './lib/room.ts'
 import { useThemeToggle } from './lib/theme.ts'
+import { useDocumentTitle } from './lib/title.ts'
 
 const route = useRoute()
 const router = useRouter()
 const { theme, isDark, toggleTheme } = useThemeToggle()
 const session = authClient.useSession()
+useDocumentTitle(route)
 
 const user = computed(() => session.value.data?.user ?? null)
 const isAdmin = computed(() => (user.value as { role?: string } | null)?.role === 'admin')
