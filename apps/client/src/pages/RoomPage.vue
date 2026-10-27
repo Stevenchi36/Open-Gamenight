@@ -30,7 +30,7 @@
             />
           </template>
         </v-tooltip>
-        <v-btn icon="mdi-exit-run" variant="text" title="Leave" aria-label="Leave" @click="askLeave" />
+        <v-btn icon="mdi-exit-run" variant="text" color="error" title="Leave" aria-label="Leave" @click="askLeave" />
       </div>
       <!-- Floated, so the play view's top row (round, score) wraps beside them instead of under them. -->
       <template v-else>
@@ -86,7 +86,7 @@
           <v-divider />
           <v-list nav>
             <v-list-item v-if="isHost" prepend-icon="mdi-arrow-left" title="Back to lobby" @click="askLobby" />
-            <v-list-item prepend-icon="mdi-exit-run" title="Leave room" @click="askLeave" />
+            <v-list-item prepend-icon="mdi-exit-run" title="Leave room" base-color="error" @click="askLeave" />
           </v-list>
         </template>
       </v-navigation-drawer>
