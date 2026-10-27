@@ -1,0 +1,40 @@
+<template>
+  <div>
+    <div class="d-flex align-center mb-3 text-body-medium text-medium-emphasis">
+      <span>{{ view.settings.format === 'royale' ? `Royale ${view.game} · Round ${view.round}` : `Round ${view.game}` }}</span>
+      <v-spacer />
+      <span v-if="myScore !== null">{{ view.settings.format === 'royale' ? 'Royales won' : 'Points' }}: <strong>{{ myScore }}</strong></span>
+    </div>
+    <PlayingPhase v-if="view.phase === 'PLAYING'" v-bind="phaseProps" />
+    <ResultsPhase v-else-if="view.phase === 'RESULTS'" v-bind="phaseProps" />
+
+    <!-- Here, not in ResultsPhase: it has to be on screen before RESULTS arrives to see the catch happen live. -->
+    <LoseReveal :active="view.outcome === 'maid'" :title="maidTitle(view, me, name)" :subtitle="maidSubtitle(view, me, name)" :delay="FLIGHT_MS * 2">
+      <PlayingCard v-if="view.maidCard" :card="view.maidCard" size="lg" />
+    </LoseReveal>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { PlayerId } from '@wsfg/core/contract'
+import { FLIGHT_MS, LoseReveal, nameOf, PlayingCard } from '@wsfg/core/ui'
+import { computed } from 'vue'
+import PlayingPhase from './phases/PlayingPhase.vue'
+import ResultsPhase from './phases/ResultsPhase.vue'
+import type { PhaseProps } from './props.ts'
+import { maidSubtitle, maidTitle } from './text.ts'
+
+const props = defineProps<PhaseProps>()
+
+const name = (id: PlayerId) => nameOf(props.room, id)
+
+const myScore = computed(() => props.view.scores[props.me] ?? null)
+const phaseProps = computed(() => ({
+  view: props.view,
+  room: props.room,
+  me: props.me,
+  send: props.send,
+  serverNow: props.serverNow,
+  settings: props.settings,
+}))
+</script>

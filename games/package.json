@@ -20,6 +20,7 @@
     "@wsfg/game-inorder": "workspace:*",
     "@wsfg/game-lastcard": "workspace:*",
     "@wsfg/game-liarsdice": "workspace:*",
+    "@wsfg/game-oldmaid": "workspace:*",
     "@wsfg/game-tictactoe": "workspace:*"
   }
 }

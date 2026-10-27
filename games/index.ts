@@ -14,6 +14,7 @@ import { imposter } from '@wsfg/game-imposter/server'
 import { inOrder } from '@wsfg/game-inorder/server'
 import { lastCard } from '@wsfg/game-lastcard/server'
 import { liarsDice } from '@wsfg/game-liarsdice/server'
+import { oldMaid } from '@wsfg/game-oldmaid/server'
 import { ticTacToe } from '@wsfg/game-tictactoe/server'
 
-export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe, dropLine, ballpark, goneFishin, lastCard, inOrder, cheat, dotsAndBoxes]
+export const games: readonly AnyGameModule[] = [imposter, liarsDice, flock, colorMix, ticTacToe, dropLine, ballpark, goneFishin, lastCard, inOrder, cheat, dotsAndBoxes, oldMaid]

@@ -5,6 +5,7 @@
 export { default as CardTable } from './CardTable.vue'
 export { default as CountdownTimer } from './CountdownTimer.vue'
 export { default as HoldToReveal } from './HoldToReveal.vue'
+export { default as LoseReveal } from './LoseReveal.vue'
 export { default as NextRoundButton } from './NextRoundButton.vue'
 export { default as MoveLog } from './MoveLog.vue'
 export { default as MoveLogDialog } from './MoveLogDialog.vue'

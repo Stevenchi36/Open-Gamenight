@@ -14,6 +14,7 @@ import { imposterClient } from '@wsfg/game-imposter/client'
 import { inOrderClient } from '@wsfg/game-inorder/client'
 import { lastCardClient } from '@wsfg/game-lastcard/client'
 import { liarsDiceClient } from '@wsfg/game-liarsdice/client'
+import { oldMaidClient } from '@wsfg/game-oldmaid/client'
 import { ticTacToeClient } from '@wsfg/game-tictactoe/client'
 
-export const clientGames: readonly GameClientModule[] = [imposterClient, liarsDiceClient, flockClient, colorMixClient, ticTacToeClient, dropLineClient, ballparkClient, goneFishinClient, lastCardClient, inOrderClient, cheatClient, dotsAndBoxesClient]
+export const clientGames: readonly GameClientModule[] = [imposterClient, liarsDiceClient, flockClient, colorMixClient, ticTacToeClient, dropLineClient, ballparkClient, goneFishinClient, lastCardClient, inOrderClient, cheatClient, dotsAndBoxesClient, oldMaidClient]

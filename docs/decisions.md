@@ -315,6 +315,7 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Arrange hand (off) lets players rearrange or shuffle their hand to bluff.** It's the table trick of offering the queen sticking up, but it adds actions and a drag, so it's opt-in.
 - **A card taken that makes no pair is visible only to the drawer and the giver.** Both know it at a real table; everyone else sees a card change hands.
 - **No `WinCelebration`: the round ends with core `LoseReveal` (greyed screen, the old maid card flipping up, a rain cloud over the caught player), Royale's final round included.** The user asked for the opposite of confetti: the moment is who got caught. It's core, as `WinCelebration`'s counterpart, so a later game about a loser has it ready.
+- **Arrange hand moves a card with two taps (the card, then its new place), not a drag.** It works the same on a phone and a mouse, needs no pointer tracking over overlapping cards, and a mis-tap on the same card just puts it back.
 - **The face-down fan you pick from (`PickFan`) is game-local.** No other game draws blind from a hand yet; it moves to `ui` when one does (as `rankName` moved to `kit`).
 - **No Move history setting.** Nothing in the log is worth remembering: who holds the queen is hidden even from a perfect memory, apart from the giver, who knows it anyway.
 

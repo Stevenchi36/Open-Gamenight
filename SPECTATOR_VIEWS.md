@@ -1,6 +1,6 @@
 # Spectator views
 
-Every game has a `SpectatorView` for the watch page (`/watch/:code`): Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card, Flock, Color Mix, Ballpark, Liar's Dice, Word Imposter and In Order. A future game should ship with one. See `PLAN.md` § Spectators, each game's "Watch page" bullet, and `docs/decisions.md`.
+Every game has a `SpectatorView` for the watch page (`/watch/:code`): Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card, Flock, Color Mix, Ballpark, Liar's Dice, Word Imposter, In Order and Old Maid. A future game should ship with one. See `PLAN.md` § Spectators, each game's "Watch page" bullet, and `docs/decisions.md`.
 
 ## How to add one
 

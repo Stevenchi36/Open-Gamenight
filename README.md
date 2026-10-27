@@ -134,6 +134,7 @@ games/
   inorder/    In Order: co-op, with a theme library like flock/
   cheat/      Cheat (card game: bluff about the cards you play; no library)
   dotsandboxes/ Dots and Boxes (2-4 players, nothing hidden; grid size setting)
+  oldmaid/    Old Maid (card game: draw blind from your neighbour; Classic or Royale; no library)
 docs/
   decisions.md   every design decision and why
   dev-testing.md checks, dev-players page (several players in one window)
