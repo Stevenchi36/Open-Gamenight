@@ -301,6 +301,23 @@ One line each: what we decided and why. See `PLAN.md` for details. Revisit a dec
 - **Line tap targets are diamonds (the line's two dots and the centres of the boxes either side).** They tile the board without gaps or overlaps, so every point picks exactly one line and targets stay as large as the grid allows.
 - **Boxes show the owner's initial as well as their colour.** Colour alone fails colour-blind players.
 
+## Old Maid rules
+- **Old Maid is the thirteenth game (id `oldmaid`) under its traditional name.** The name is generic and owned by nobody, like Cheat and Dots and Boxes; the user chose it over a custom name.
+- **One deck with the queen of clubs taken out, all dealt, 2-10 players.** The usual way to make an odd queen without a joker (kit's `Card` has none); dealing everything matches Cheat, and ten players still get five cards each.
+- **You draw from the previous player still holding cards, then the turn passes clockwise.** The traditional rule (you offer your hand to the player on your left); skipping players who are out keeps the chain unbroken.
+- **Pairs are any two of a rank; Match colour (off) is a setting.** Any rank is the common family rule; same-colour pairs are the stricter traditional variant.
+- **Pairs go down automatically, the deal's included.** As with Gone Fishin' books: there's no choice in it, only taps.
+- **Format is a setting: Classic (default; every player but the Old Maid scores 1) or Royale (the Old Maid is eliminated each round; the last player in wins 1 point).** The user chose Classic scoring and asked for Royale. Points to everyone but the loser fits a game about not getting caught; Royale gives an evening a knockout.
+- **In Royale, a late joiner waits for the next Royale; in Classic, for the next round.** Royale rounds build on each other (who's eliminated); Classic rounds stand alone (the late-joiner rule in Core).
+- **A leaver's hand is dealt out round the players still holding cards and new pairs go down; under 2 players left in the round, or in the Royale, ends it with no points.** The user approved it. Shuffling it into a pile, as in Gone Fishin', would take the odd queen out of the game; the leaver shape is otherwise Cheat's.
+- **A disconnected player's turn is taken after the 15s grace with a random draw.** Drawing is blind, so it's the very move they'd make; skipping would leave their hand stuck in the chain.
+- **The order of a hand is a secret: with Arrange hand off the server shuffles a hand before each draw from it and shows its owner the hand sorted; with it on, the owner's order stands and cards received land in a random place.** A sorted hand would tell the drawer which place holds the queen; a card received at the end would tell the next drawer where the latest card sits.
+- **Arrange hand (off) lets players rearrange or shuffle their hand to bluff.** It's the table trick of offering the queen sticking up, but it adds actions and a drag, so it's opt-in.
+- **A card taken that makes no pair is visible only to the drawer and the giver.** Both know it at a real table; everyone else sees a card change hands.
+- **No `WinCelebration`: the round ends with core `LoseReveal` (greyed screen, the old maid card flipping up, a rain cloud over the caught player), Royale's final round included.** The user asked for the opposite of confetti: the moment is who got caught. It's core, as `WinCelebration`'s counterpart, so a later game about a loser has it ready.
+- **The face-down fan you pick from (`PickFan`) is game-local.** No other game draws blind from a hand yet; it moves to `ui` when one does (as `rankName` moved to `kit`).
+- **No Move history setting.** Nothing in the log is worth remembering: who holds the queen is hidden even from a perfect memory, apart from the giver, who knows it anyway.
+
 ## Deployment
 - **Existing VPS alongside Laravel apps, behind nginx, Cloudflare proxied, run under Supervisor.** Already set up; one long-lived process with persistent disk fits in-memory rooms and SQLite. (nginx/Supervisor/Full-strict are assumptions to verify at deploy time.)
 - **Each production client build carries an id (Vite stamps it into the bundle and `index.html`); the server sends it in `session`, and a tab running a different build reloads once (guarded per tab in sessionStorage).** After a deploy, open tabs reconnect with the old bundle, which may not understand new view shapes. Rooms don't survive the restart anyway, so the reload costs nothing; the guard stops a loop if a cache keeps serving the old bundle. Dev has no id and never reloads.

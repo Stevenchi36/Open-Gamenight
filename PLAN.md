@@ -1240,6 +1240,84 @@ type Line = { dir: 'h' | 'v', row, col }
 - **Win**: on the play view and the watch page, a `WinCelebration` with confetti in the winners' colours and a podium of places by boxes (ties share a place; leavers aren't placed).
 - `needsAction`: your turn, or the host on `RESULTS`.
 
+## 7l. Old Maid (`games/oldmaid`)
+
+The thirteenth game and the fourth card game: the classic pairs game under its traditional name. Players take a face-down card from the player before them, pairs are thrown away, and whoever is left holding the odd queen is the Old Maid. It's the first game about a loser rather than a winner, so it ends with core `LoseReveal` instead of `WinCelebration`. It uses the standard deck and card helpers from `kit` and `PlayingCard`/`CardTable` from `ui`.
+
+### Rules
+1. **2-10 players**, one standard deck with the **queen of clubs taken out** (51 cards), **all dealt** as evenly as it goes (the first seats get one more when it doesn't divide). One queen is left without a partner: the old maid.
+2. **Pairs.** Two cards of the same rank make a pair (with **Match colour**, the same rank and colour: ♠♣ or ♥♦). Pairs are thrown face up onto the discard pile automatically, the moment you hold them, including pairs dealt in your starting hand. Three of a rank throws one pair and keeps the third.
+3. **A turn.** Players take turns in seat order, clockwise. On your turn you take **one card, face down**, from the **previous player still holding cards** (the next one anticlockwise): you pick it by its place in their hand without seeing it. If it makes a pair, the pair goes down. The turn then passes to the next player clockwise still holding cards.
+4. **Going out.** When your hand empties (your last pair goes down, or your last card is taken), you're out of the round and safe. The order players go out in is recorded.
+5. **The Old Maid.** When only one player still holds cards, they hold the odd queen: they're the **Old Maid**, and the card is turned up for everyone.
+6. **Format** (setting).
+   - **Classic** (default): each round is a game. Every player dealt in, except the Old Maid, scores **1 point**.
+   - **Royale**: the Old Maid is **eliminated**, and the next round is dealt to the players still in. Rounds go on until one player is left, who wins the Royale and scores **1 point** (with N players, N−1 rounds). Eliminated players aren't dealt in; they watch the rest from their seat.
+   - Scores (points or Royales won) carry across games.
+7. **Next round.** The host starts it. Seats stay where they are and the first turn moves on one seat among the players dealt in.
+
+### Settings (host, lobby only)
+| Setting | Default | Notes |
+|---|---|---|
+| Format | `classic` | `classic` (every round is a game; all but the Old Maid score 1) or `royale` (the Old Maid is eliminated each round; the last player in wins) |
+| Match colour | off | pairs need the same rank **and** colour |
+| Arrange hand | off | off: the server shuffles a hand before each draw from it, and your hand is shown sorted. On: your hand shows in the order the next player draws from, and you can rearrange it or shuffle it, to bluff where the queen sits |
+
+### State machine
+```
+PLAYING -> RESULTS -> next_round -> PLAYING
+```
+- `PLAYING`: `turn` is the player to draw, and `from` the player they draw from (derived: the previous seat still holding cards). The deal's pairs are thrown in `init`/`next_round`, and anyone left with no cards is out straight away; if that leaves one player holding cards, the round ends at once.
+- A disconnected player's turn is taken for them after the 15s grace (`DISCONNECT_GRACE_MS`): the server draws a random card (`ctx.rng`) from `from`'s hand, and the move is marked `away`. Drawing is blind, so it's the same move they'd make.
+- With **Arrange hand** off, the hand drawn from is shuffled (`ctx.rng`) just before each draw. With it on, the hand's order is the owner's, and a card received lands in a random place in it.
+- `RESULTS`: the Old Maid and their card, the order out, and the points (Classic) or who's still in (Royale). Host: **Next round** (Royale, while 2+ players are still in) or **New game** (`next_round` for both, needs 2 players), or **Back to lobby**.
+- A player leaving mid-round: their hand is shuffled and dealt out one card at a time, clockwise from the seat after theirs, to the players still holding cards; new pairs go down automatically, and a notice says so. Their seat stays (dimmed) and is skipped. In Royale they're out of the Royale. If one player is left holding cards, the round ends as usual. If fewer than 2 players remain in the round, it ends as `abandoned` with no points; in Royale, fewer than 2 players left in the Royale (leaving between rounds included) ends it as `abandoned` with no points.
+- Late joiners wait: in Classic for the next round, in Royale for the next Royale.
+
+### Actions
+| action | payload | Who |
+|---|---|---|
+| `draw` | `{ index }` (a place in `from`'s hand, 0 to its size − 1) | the player to draw, `PLAYING` |
+| `arrange` | `{ order }` (a permutation of the places in your hand) | any player holding cards, Arrange hand on, `PLAYING` |
+| `shuffle` | `{}` | any player holding cards, Arrange hand on, `PLAYING`; the server shuffles your hand (`ctx.rng`) |
+| `next_round` | `{}` | host, `RESULTS`, 2+ players to deal in |
+
+A `draw` and an `arrange` of the same hand can race; the room's action queue takes them in order and `index` picks from the hand as it is then. Neither player sees faces either way, so nothing is lost.
+
+### View (per player)
+```ts
+type Move = {                                // public, except `card`
+  drawerId, fromId,
+  index: number,                             // the place picked in fromId's hand
+  card: Card | null,                         // the card taken: the drawer and the giver only, unless it made a pair
+  pair: [Card, Card] | null,                 // the pair it made, thrown face up
+  away: boolean,                             // drawn for a disconnected player
+}
+{
+  phase, round, game, settings,
+  you: { status: 'playing' | 'out' | 'eliminated' | 'waiting', hand: Card[] },  // sorted by rank; with Arrange hand, in your order
+  seats: [{ id, cards, pairs, outPlace: number | null, inRound: boolean, eliminated: boolean, left: boolean }],  // seat order, clockwise
+  discard: [Card, Card][],                   // pairs thrown this round, oldest first (face up, public)
+  turn, from,                                // PLAYING only
+  log: Move[],                               // this round's draws, oldest first
+  outcome: 'maid' | 'abandoned' | null,      // RESULTS only
+  maidId, maidCard: Card | null,             // RESULTS only: turned up for everyone
+  royaleWinnerId: PlayerId | null,           // Royale: set when the last player is left
+  scores,
+}
+```
+`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other hands); **the order of a hand** is visible to nobody (Arrange hand off: the owner sees it sorted) or only to its owner (Arrange hand on) (variant: reorder another player's hand, the one you're about to draw from included); and a `Move.card` that made no pair is visible only to its drawer and giver (variant: change it). The leak test covers both formats, both Arrange hand settings, Match colour, an away draw, a leaver, a late joiner, a Royale round with an eliminated player, and RESULTS.
+
+### Client
+- **Table**: `CardTable` with each seat's face-down fan and count, pairs thrown, and tags for **Out** (with their place) and, in Royale, **Eliminated** (dimmed). The centre holds the discard pile, its latest pair face up. The turn seat and the seat it draws from are both highlighted, with an arrow between them.
+- **Drawing**: on your turn the hand you draw from is shown large above your own as a fan of face-down cards (game-local `PickFan`). Tap a card to lift it, then **Take it** (a second tap on the lifted card does the same).
+- **Your hand**: below the table, shown openly (not behind `HoldToReveal`, as in Gone Fishin'). The card you just took is marked for a moment. With Arrange hand, drag a card to move it (pointer events, like `OrderList`) or tap **Shuffle**.
+- **Moving cards** (`CardTable` flights, see Gone Fishin'): the deal, then the dealt pairs flying to the discard; each draw flying face down from the giver to the drawer (face up as it lands in your hand when you took it); a pair flying face up to the discard; at the end the old maid card flipping face up over its seat.
+- **The Old Maid**: no confetti. On `RESULTS`, on your phone and the TV, core **`LoseReveal`**: the screen greys over, the old maid card drops in and flips face up, and the caught player's name sits under a small rain cloud ("Bea is the Old Maid!"). Like `WinCelebration`, it fires when the result arrives (never on first render), goes by itself or on a tap, doesn't block the page, and plays still under `prefers-reduced-motion`. In Royale the subtitle says they're eliminated, or on the last round who won the Royale ("Cal wins the Royale").
+- **Results**: the order out, the Old Maid last, and the points (Classic) or the players still in (Royale).
+- **Watch page**: a `SpectatorView` with the table fixed to the oval (flights included, every card taken face down), the latest draw large, the discard pile, the round and players still in (Royale), and the scoreboard; on `RESULTS` the `LoseReveal`.
+- `needsAction`: your turn, or the host on `RESULTS`.
+
 ## 8. Vue client (`apps/client`)
 
 ### Setup

@@ -22,4 +22,4 @@ Make play lively, on the TV and on players' phones alike.
 - **Only from view data.** A TV can't show cards leaving a hand it can't see; they come from the seat, face down.
 - Plain Vue transitions and CSS (and the Web Animations API for card flights), no animation library.
 - **The TV's turn marker keeps pulsing**; on phones it doesn't.
-- **Every game with a winner celebrates** with `WinCelebration` on the play view and the TV, mounted outside any results-only branch so it sees the win arrive, delayed until the winning move's animation has landed.
+- **Every game with a winner celebrates** with `WinCelebration` on the play view and the TV, mounted outside any results-only branch so it sees the win arrive, delayed until the winning move's animation has landed. A game about a loser (Old Maid) uses `LoseReveal` the same way instead.
