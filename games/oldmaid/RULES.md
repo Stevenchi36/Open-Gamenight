@@ -35,7 +35,9 @@ The host deals the next round. Everyone keeps their seat, and the first turn mov
 
 - **Format** (default **Classic**): Classic or Royale, as above.
 - **Match colour** (default off): pairs need the same rank and colour.
-- **Arrange hand** (default off): you choose the order of your hand, which is the order the next player picks from. Tap a card, then where it should go, or tap **Shuffle**. Off, every hand is shuffled before each draw.
+- **Arrange hand** (default off): you can change the order of your hand. Tap a card, then where it should go, or tap **Shuffle**.
+
+Your hand is never sorted. It stays in the random order it was dealt, and a card you take lands in a random place. What you see is the order the next player picks from.
 
 ## Tips
 

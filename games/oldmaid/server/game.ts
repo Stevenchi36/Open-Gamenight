@@ -22,7 +22,6 @@ import {
   DISCONNECT_GRACE_MS,
   isConnected,
   nextTurnOrder,
-  sortCards,
   standardDeck,
   withoutPlayer,
   type Card,
@@ -157,8 +156,8 @@ function throwPairs(hand: readonly Card[], matchColour: boolean): { kept: Card[]
 }
 
 /**
- * `card` joins `id`'s hand: at a random place with Arrange hand (so its place says nothing),
- * otherwise at the end (the hand is shuffled before every draw anyway). If it pairs, the pair goes down.
+ * `card` joins `id`'s hand at a random place, so where it sits tells the next drawer nothing.
+ * If it pairs, the pair goes down instead.
  */
 function receive(state: OldMaidState, id: PlayerId, card: Card, ctx: Ctx): { state: OldMaidState; pair: [Card, Card] | null } {
   const hand = handOf(state, id)
@@ -175,7 +174,7 @@ function receive(state: OldMaidState, id: PlayerId, card: Card, ctx: Ctx): { sta
       pair,
     }
   }
-  const at = state.settings.arrange ? ctx.rng.int(hand.length + 1) : hand.length
+  const at = ctx.rng.int(hand.length + 1)
   return { state: { ...state, hands: { ...state.hands, [id]: [...hand.slice(0, at), card, ...hand.slice(at)] } }, pair: null }
 }
 
@@ -319,8 +318,8 @@ function abandonRound(state: OldMaidState, effects: Fx): Step {
 /** `drawerId` takes the card at `index` of the previous holder's hand. */
 function draw(state: OldMaidState, drawerId: PlayerId, index: number, away: boolean, ctx: Ctx): Step {
   const fromId = fromOf(state, drawerId)!
-  // Without Arrange hand the order is the server's, fresh for every draw, so a place means nothing.
-  const offered = state.settings.arrange ? handOf(state, fromId) : ctx.rng.shuffle(handOf(state, fromId))
+  // The order the giver sees is the order the drawer picks from, as at a table.
+  const offered = handOf(state, fromId)
   const card = offered[index]!
   const taken: OldMaidState = { ...state, hands: { ...state.hands, [fromId]: offered.filter((_, i) => i !== index) } }
   const { state: s, pair } = receive(taken, drawerId, card, ctx)
@@ -407,7 +406,7 @@ function view(state: OldMaidState, viewerId: PlayerId): OldMaidView {
     game: state.game,
     round: state.round,
     settings: state.settings,
-    you: { status, hand: state.settings.arrange ? hand : sortCards(hand) },
+    you: { status, hand },
     seats: state.table.map((id) => ({
       id,
       cards: handOf(state, id).length,
@@ -514,13 +513,12 @@ export const oldMaid = defineGame<OldMaidState, ClientAction, OldMaidTimer, OldM
       },
     },
     {
-      // What the next player draws from. Without Arrange hand nobody knows it, the owner included
-      // (they see their hand sorted); with it, only the owner.
+      // What the next player draws from: only the owner knows it.
       name: 'hand order',
       visibleTo: () => false,
       variants: (s, viewerId) =>
         s.dealt
-          .filter((id) => handOf(s, id).length > 1 && (!s.settings.arrange || id !== viewerId))
+          .filter((id) => handOf(s, id).length > 1 && id !== viewerId)
           .map((id) => ({ ...s, hands: { ...s.hands, [id]: [...handOf(s, id)].reverse() } })),
     },
     {

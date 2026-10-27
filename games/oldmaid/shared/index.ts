@@ -42,7 +42,7 @@ export const settingsSchema = z.object({
   format: formatSchema,
   /** Pairs need the same colour as well as the same rank. */
   matchColour: z.boolean(),
-  /** Players order their own hand (the next player draws from that order); off, it's shuffled before each draw. */
+  /** Players can reorder or shuffle their own hand. Either way the next player draws from the hand in its order, which only its owner sees. */
   arrange: z.boolean(),
 })
 
@@ -114,7 +114,7 @@ export interface OldMaidView {
   you: {
     /** 'out': no cards left this round. 'waiting': not dealt in; plays from the next game. */
     status: YouStatus
-    /** Your own cards: sorted by rank, or with Arrange hand in the order the next player draws from. */
+    /** Your own cards, in the order the next player draws from (dealt and received cards land at random). */
     hand: Card[]
   }
   /** Everyone at the table in seat order (turns go this way, clockwise). */

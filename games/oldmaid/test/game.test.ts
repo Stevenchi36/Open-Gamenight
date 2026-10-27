@@ -1,5 +1,5 @@
 import { assertValidGame } from '@wsfg/core/contract'
-import { DISCONNECT_GRACE_MS } from '@wsfg/core/kit'
+import { DISCONNECT_GRACE_MS, RANKS } from '@wsfg/core/kit'
 import { describe, expect, it } from 'vitest'
 import { oldMaid } from '../server/game.ts'
 import { pairKey } from '../shared/index.ts'
@@ -213,12 +213,31 @@ describe('Arrange hand', () => {
     }
   })
 
-  it('is refused when the setting is off; the hand is then shown sorted', () => {
+  it('is refused when the setting is off; the hand still shows, and is drawn from, in its real order', () => {
     const sim = newGame()
     const [, , c] = setTable(sim, { hands: [['2S'], ['3S'], ['9S', '4S']] })
     expect(sim.act(c!, { type: 'arrange', order: [1, 0] })).toEqual({ ok: false, error: 'Arrange hand is off' })
     expect(sim.act(c!, { type: 'shuffle' })).toEqual({ ok: false, error: 'Arrange hand is off' })
-    expect(codes(sim.view(c!).you.hand)).toEqual(['4S', '9S'])
+    expect(codes(sim.view(c!).you.hand)).toEqual(['9S', '4S'])
+    drawCard(sim, 1)
+    expect(sim.state.log[0]!.card).toEqual(cards('4S')[0])
+  })
+
+  it('never sorts a dealt hand', () => {
+    const sorted = (hand: readonly { rank: string }[]) => hand.every((c, i) => i === 0 || RANKS.indexOf(hand[i - 1]!.rank as never) <= RANKS.indexOf(c.rank as never))
+    const sim = newGame({ players: ['p1', 'p2'] })
+    expect(PLAYERS.slice(0, 2).every((id) => sorted(sim.view(id).you.hand))).toBe(false)
+  })
+
+  it('puts a card received at a random place', () => {
+    const places = new Set<number>()
+    for (let seed = 1; seed <= 30; seed++) {
+      const sim = newGame({ seed })
+      const [a] = setTable(sim, { hands: [['2S', '3S', '4S'], ['5S'], ['9H']] })
+      drawCard(sim, 0)
+      places.add(codes(sim.view(a!).you.hand).indexOf('9H'))
+    }
+    expect(places.size).toBeGreaterThan(1)
   })
 })
 

@@ -1261,7 +1261,7 @@ The thirteenth game and the fourth card game: the classic pairs game under its t
 |---|---|---|
 | Format | `classic` | `classic` (every round is a game; all but the Old Maid score 1) or `royale` (the Old Maid is eliminated each round; the last player in wins) |
 | Match colour | off | pairs need the same rank **and** colour |
-| Arrange hand | off | off: the server shuffles a hand before each draw from it, and your hand is shown sorted. On: your hand shows in the order the next player draws from, and you can rearrange it or shuffle it, to bluff where the queen sits |
+| Arrange hand | off | on: you can rearrange or shuffle your hand, to bluff where the queen sits. Either way your hand shows in the order the next player draws from: the random order it was dealt in, never sorted |
 
 ### State machine
 ```
@@ -1269,7 +1269,7 @@ PLAYING -> RESULTS -> next_round -> PLAYING
 ```
 - `PLAYING`: `turn` is the player to draw, and `from` the player they draw from (derived: the previous seat still holding cards). The deal's pairs are thrown in `init`/`next_round`, and anyone left with no cards is out straight away; if that leaves one player holding cards, the round ends at once.
 - A disconnected player's turn is taken for them after the 15s grace (`DISCONNECT_GRACE_MS`): the server draws a random card (`ctx.rng`) from `from`'s hand, and the move is marked `away`. Drawing is blind, so it's the same move they'd make.
-- With **Arrange hand** off, the hand drawn from is shuffled (`ctx.rng`) just before each draw. With it on, the hand's order is the owner's, and a card received lands in a random place in it.
+- A hand's order is the deal's (random) and is what the next player draws from; a card received lands in a random place in it (`ctx.rng`). With **Arrange hand** the owner can change it.
 - `RESULTS`: the Old Maid and their card, the order out, and the points (Classic) or who's still in (Royale). Host: **Next round** (Royale, while 2+ players are still in) or **New game** (`next_round` for both, needs 2 players), or **Back to lobby**.
 - A player leaving mid-round: their hand is shuffled and dealt out one card at a time, clockwise from the seat after theirs, to the players still holding cards; new pairs go down automatically, and a notice says so. Their seat stays (dimmed) and is skipped. In Royale they're out of the Royale. If one player is left holding cards, the round ends as usual. If fewer than 2 players remain in the round, it ends as `abandoned` with no points; in Royale, fewer than 2 players left in the Royale (leaving between rounds included) ends it as `abandoned` with no points.
 - Late joiners wait: in Classic for the next round, in Royale for the next Royale.
@@ -1295,7 +1295,7 @@ type Move = {                                // public, except `card`
 }
 {
   phase, round, game, settings,
-  you: { status: 'playing' | 'out' | 'eliminated' | 'waiting', hand: Card[] },  // sorted by rank; with Arrange hand, in your order
+  you: { status: 'playing' | 'out' | 'eliminated' | 'waiting', hand: Card[] },  // in the order the next player draws from, never sorted
   seats: [{ id, cards, pairs, outPlace: number | null, inRound: boolean, eliminated: boolean, left: boolean }],  // seat order, clockwise
   discard: [Card, Card][],                   // pairs thrown this round, oldest first (face up, public)
   turn, from,                                // PLAYING only
@@ -1306,7 +1306,7 @@ type Move = {                                // public, except `card`
   scores,
 }
 ```
-`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other hands); **the order of a hand** is visible to nobody (Arrange hand off: the owner sees it sorted) or only to its owner (Arrange hand on) (variant: reorder another player's hand, the one you're about to draw from included); and a `Move.card` that made no pair is visible only to its drawer and giver (variant: change it). The leak test covers both formats, both Arrange hand settings, Match colour, an away draw, a leaver, a late joiner, a Royale round with an eliminated player, and RESULTS.
+`secrets` declares: each hand is visible only to its owner (variant: swap a card between two other hands); **the order of a hand** is visible only to its owner (variant: reorder another player's hand, the one you're about to draw from included); and a `Move.card` that made no pair is visible only to its drawer and giver (variant: change it). The leak test covers both formats, both Arrange hand settings, Match colour, an away draw, a leaver, a late joiner, a Royale round with an eliminated player, and RESULTS.
 
 ### Client
 - **Table**: `CardTable` with each seat's face-down fan and count, pairs thrown, and tags for **Out** (with their place) and, in Royale, **Eliminated** (dimmed). The centre holds the discard pile, its latest pair face up. The turn seat and the seat it draws from are both highlighted, with an arrow between them.
