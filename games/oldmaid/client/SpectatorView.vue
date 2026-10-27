@@ -7,7 +7,7 @@
     <template v-else>
       <StatusCard v-if="view.outcome === 'abandoned'" prominent title="Round over">Not enough players were left to finish it.</StatusCard>
       <StatusCard v-else prominent :overline="roundLabel" :title="maidTitle(view, SPECTATOR_ID, name)">
-        <div class="d-flex align-center ga-3 mt-2">
+        <div class="d-flex flex-column align-center ga-2 mt-2 text-center">
           <PlayingCard v-if="view.maidCard" :card="view.maidCard" size="lg" />
           <span>{{ maidSubtitle(view, SPECTATOR_ID, name) }}</span>
         </div>

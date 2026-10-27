@@ -2,8 +2,8 @@
   <div>
     <StatusCard v-if="view.outcome === 'abandoned'" compact title="Round over">Not enough players were left to finish it.</StatusCard>
     <StatusCard v-else prominent :color="view.maidId === me ? 'error' : undefined" :overline="overline" :title="maidTitle(view, me, name)">
-      <div class="d-flex align-center ga-3 mt-2">
-        <PlayingCard v-if="view.maidCard" :card="view.maidCard" />
+      <div class="d-flex flex-column align-center ga-2 mt-2 text-center">
+        <PlayingCard v-if="view.maidCard" :card="view.maidCard" size="lg" />
         <span>{{ maidSubtitle(view, me, name) }}</span>
       </div>
     </StatusCard>
@@ -15,9 +15,10 @@
             <span class="text-medium-emphasis mr-3">{{ ordinal(i + 1) }}</span>
           </template>
         </v-list-item>
-        <v-list-item v-if="view.maidId" :title="view.maidId === me ? 'You' : name(view.maidId)" subtitle="the Old Maid">
+        <v-list-item v-if="view.maidId" :title="`${view.maidId === me ? 'You' : name(view.maidId)}, the Old Maid`">
           <template #prepend>
-            <v-icon icon="mdi-weather-pouring" class="mr-3" size="small" />
+            <!-- In a span: a bare v-icon in prepend gets Vuetify's wide icon spacer, out of line with "1st". -->
+            <span class="text-medium-emphasis mr-3"><v-icon icon="mdi-weather-pouring" size="small" /></span>
           </template>
         </v-list-item>
       </v-list>
