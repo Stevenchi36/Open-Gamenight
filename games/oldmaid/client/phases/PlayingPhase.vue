@@ -23,17 +23,23 @@
     </template>
 
     <template v-if="view.you.status === 'playing'">
-      <div class="d-flex align-center mb-2">
+      <div class="d-flex align-center flex-wrap ga-2 mb-2">
         <span class="text-label-large">Your hand</span>
         <v-spacer />
-        <v-btn v-if="view.settings.arrange" size="small" variant="tonal" prepend-icon="mdi-shuffle-variant" @click="send({ type: 'shuffle' })">Shuffle</v-btn>
+        <v-btn v-if="view.settings.arrange && !sorted" size="small" variant="tonal" prepend-icon="mdi-shuffle-variant" @click="send({ type: 'shuffle' })">Shuffle</v-btn>
+        <v-btn-toggle :model-value="sorted" density="compact" variant="outlined" divided mandatory aria-label="Show your hand" @update:model-value="setSorted">
+          <v-btn :value="false" size="small">As held</v-btn>
+          <v-btn :value="true" size="small">By rank</v-btn>
+        </v-btn-toggle>
       </div>
-      <div v-if="view.settings.arrange" class="text-body-small text-medium-emphasis text-center mb-2">
-        {{ nameOf(room, drawnBy) }} draws from your hand in this order. Tap a card, then where it should go.
+      <div class="text-body-small text-medium-emphasis text-center mb-2">
+        <template v-if="sorted">Sorted for you to read. {{ nameOf(room, drawnBy) }} still draws from your hand as held.</template>
+        <template v-else-if="view.settings.arrange">{{ nameOf(room, drawnBy) }} draws from your hand in this order. Tap a card, then where it should go.</template>
+        <template v-else>{{ nameOf(room, drawnBy) }} draws from your hand in this order.</template>
       </div>
       <HandCards
-        :hand="view.you.hand"
-        :arranging="view.settings.arrange"
+        :hand="sorted ? sortCards(view.you.hand) : view.you.hand"
+        :arranging="view.settings.arrange && !sorted"
         :dealing="view.log.length === 0"
         class="mb-4"
         @move="(order) => send({ type: 'arrange', order })"
@@ -49,7 +55,9 @@
 </template>
 
 <script setup lang="ts">
+import { sortCards } from '@wsfg/core/kit'
 import { MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
+import { load, save } from '@wsfg/core/ui/storage'
 import { computed, ref, watch } from 'vue'
 import HandCards from '../HandCards.vue'
 import MaidTable from '../MaidTable.vue'
@@ -84,6 +92,14 @@ const drawnBy = computed(() => {
   }
   return null
 })
+
+// Each player's choice, saved per browser: the hand as held (what the next player draws from), or by rank to spot what pairs.
+const SORT_KEY = 'oldmaidHandSorted'
+const sorted = ref(load<boolean>(SORT_KEY) ?? false)
+function setSorted(value: boolean) {
+  sorted.value = value
+  save(SORT_KEY, value)
+}
 
 const picked = ref<number | null>(null)
 // A fresh pick after every draw.

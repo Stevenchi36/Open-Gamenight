@@ -39,6 +39,8 @@ The host deals the next round. Everyone keeps their seat, and the first turn mov
 
 Your hand is never sorted. It stays in the random order it was dealt, and a card you take lands in a random place. The next player picks from it as if facing you across the table: your leftmost card is their rightmost.
 
+To see which ranks you still need pairs for, switch your hand from **As held** to **By rank**. Only your screen changes: the next player still picks from your hand as held.
+
 ## Tips
 
 - If you're holding the queen, the next player can take it from you, so keep a straight face.
