@@ -86,7 +86,7 @@
           <v-divider />
           <v-list nav>
             <v-list-item v-if="isHost" prepend-icon="mdi-arrow-left" title="Back to lobby" @click="askLobby" />
-            <v-list-item prepend-icon="mdi-exit-run" title="Leave room" @click="leave" />
+            <v-list-item prepend-icon="mdi-exit-run" title="Leave room" @click="askLeave" />
           </v-list>
         </template>
       </v-navigation-drawer>
@@ -121,15 +121,15 @@
       </v-dialog>
 
       <v-dialog v-model="confirmLeave" max-width="400">
-        <v-card
-          title="Leave the room?"
-          :text="`Close the room to send everyone home, or leave on your own and ${nextHost} becomes host.`"
-        >
+        <v-card title="Leave the room?" :text="leaveText">
           <v-card-actions>
             <v-btn @click="confirmLeave = false">Cancel</v-btn>
             <v-spacer />
-            <v-btn @click="leave">Leave</v-btn>
-            <v-btn color="error" prepend-icon="mdi-door-closed" @click="close">Close room</v-btn>
+            <template v-if="canClose">
+              <v-btn @click="leave">Leave</v-btn>
+              <v-btn color="error" prepend-icon="mdi-door-closed" @click="close">Close room</v-btn>
+            </template>
+            <v-btn v-else color="error" @click="leave">Leave</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -271,14 +271,21 @@ function leave() {
   void router.push('/')
 }
 
-// The lobby host gets the choice; alone in the room, leaving closes it anyway.
-const nextHost = computed(() => {
-  const others = room.value?.players.filter((p) => p.id !== room.value!.you.id) ?? []
-  return (others.find((p) => p.connected) ?? others[0])?.name ?? 'someone else'
+// Leaving gives up the seat (rejoining starts afresh), so it always asks. The lobby host with
+// company also gets Close room; alone, leaving closes it anyway.
+const others = computed(() => room.value?.players.filter((p) => p.id !== room.value!.you.id) ?? [])
+const nextHost = computed(() => (others.value.find((p) => p.connected) ?? others.value[0])?.name ?? 'someone else')
+const canClose = computed(() => isHost.value && !playing.value && others.value.length > 0)
+const leaveText = computed(() => {
+  if (others.value.length === 0) return 'Nobody else is here, so the room closes.'
+  if (canClose.value) return `Close the room to send everyone home, or leave on your own and ${nextHost.value} becomes host.`
+  const rejoin = 'To come back, join again with the room code.'
+  if (!playing.value) return rejoin
+  return `The game goes on without you.${isHost.value ? ` ${nextHost.value} becomes host.` : ''} ${rejoin}`
 })
 function askLeave() {
-  if (isHost.value && room.value!.players.length > 1) confirmLeave.value = true
-  else leave()
+  menu.value = false
+  confirmLeave.value = true
 }
 
 function close() {
