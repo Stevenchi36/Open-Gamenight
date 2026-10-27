@@ -6,14 +6,7 @@
           <div class="text-body-small text-medium-emphasis">Room code</div>
           <div class="text-headline-small room-code font-weight-bold">{{ room.code }}</div>
         </div>
-        <div
-          v-if="room.spectators > 0"
-          class="d-flex align-center ga-1 text-body-medium text-medium-emphasis"
-          :title="`${room.spectators} watching`"
-          :aria-label="`${room.spectators} watching`"
-        >
-          <v-icon icon="mdi-eye" size="small" /> {{ room.spectators }}
-        </div>
+        <WatcherCount v-if="room.spectators > 0" :count="room.spectators" />
         <v-spacer />
         <RulesDialog v-if="gameModule" :game="gameModule">
           <template #activator="{ props: activator }">
@@ -39,17 +32,19 @@
         </v-tooltip>
         <v-btn icon="mdi-exit-run" variant="text" title="Leave" aria-label="Leave" @click="leave" />
       </div>
-      <!-- Floated, so the play view's top row (round, score) wraps beside it instead of under it. -->
-      <v-btn
-        v-else
-        class="menu-button"
-        icon="mdi-menu"
-        size="small"
-        density="comfortable"
-        variant="tonal"
-        aria-label="Room menu"
-        @click="menu = true"
-      />
+      <!-- Floated, so the play view's top row (round, score) wraps beside them instead of under them. -->
+      <template v-else>
+        <v-btn
+          class="menu-button"
+          icon="mdi-menu"
+          size="small"
+          density="comfortable"
+          variant="tonal"
+          aria-label="Room menu"
+          @click="menu = true"
+        />
+        <WatcherCount v-if="room.spectators > 0" class="watchers" :count="room.spectators" />
+      </template>
 
       <LobbyView v-if="room.phase === 'lobby'" :room="room" />
       <component
@@ -69,9 +64,7 @@
         <div class="pa-4">
           <div class="text-body-small text-medium-emphasis">Room code</div>
           <div class="text-headline-large room-code font-weight-bold">{{ room.code }}</div>
-          <div v-if="room.spectators > 0" class="text-body-medium text-medium-emphasis mt-1">
-            <v-icon icon="mdi-television" size="small" /> {{ room.spectators }} watching
-          </div>
+          <WatcherCount v-if="room.spectators > 0" class="mt-1" :count="room.spectators" />
         </div>
         <v-divider />
         <v-list nav>
@@ -160,6 +153,7 @@ import { useRouter } from 'vue-router'
 import AttentionGlow from '../components/AttentionGlow.vue'
 import LobbyView from '../components/LobbyView.vue'
 import RulesDialog from '../components/RulesDialog.vue'
+import WatcherCount from '../components/WatcherCount.vue'
 import { immersive } from '../lib/layout.ts'
 import { joinRoom, lastName, leaveRoom, resumeSeat, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
 import { useThemeToggle } from '../lib/theme.ts'
@@ -309,5 +303,10 @@ async function shareLink(url: string, title: string): Promise<'shared' | 'copied
 .menu-button {
   float: right;
   margin: -4px 0 -12px 8px;
+}
+/* Floated after the button, so it sits to its left on the same 20px line. */
+.watchers {
+  float: right;
+  margin-left: 8px;
 }
 </style>

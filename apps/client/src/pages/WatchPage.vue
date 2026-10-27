@@ -14,6 +14,8 @@
         </div>
         <div class="text-headline-small text-md-center">{{ room.game.name }}</div>
         <div class="d-flex align-center flex-wrap justify-md-end ga-2">
+          <!-- Includes this screen: the count is the room's, the same one players see. -->
+          <WatcherCount v-if="room.spectators > 0" large class="mr-2" :count="room.spectators" />
           <v-btn
             v-if="canFullscreen"
             variant="tonal"
@@ -91,6 +93,7 @@ import { clientGames } from '@wsfg/games/client'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect, type Component } from 'vue'
 import { useRouter } from 'vue-router'
 import PlayerChips from '../components/PlayerChips.vue'
+import WatcherCount from '../components/WatcherCount.vue'
 import { immersive } from '../lib/layout.ts'
 import { roomState, serverNow, stopWatching, watchRoom } from '../lib/room.ts'
 
