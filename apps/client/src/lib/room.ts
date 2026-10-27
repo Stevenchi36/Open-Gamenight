@@ -45,7 +45,7 @@ const state = reactive({
 
 /** Treat as read-only outside this file; change it through the functions below. */
 export const roomState = state
-/** VSnackbarQueue needs a writable array. */
+/** The VSnackbarQueue in App.vue updates this array in place as toasts show. */
 export const toasts = state.toasts
 
 let socket: WebSocket | null = null

@@ -42,7 +42,15 @@
     </v-main>
 
     <!-- overflow: a new toast replaces the current one instead of queueing behind it, so repeats can't pile up -->
-    <v-snackbar-queue v-model="toasts" location="bottom" display-strategy="overflow" closable />
+    <!-- Updated in place: in dev, v-model's assignment to the imported array throws and aborts the render
+         pass it lands in (a removed player's page kept showing the lobby). -->
+    <v-snackbar-queue
+      :model-value="toasts"
+      location="bottom"
+      display-strategy="overflow"
+      closable
+      @update:model-value="setToasts"
+    />
   </v-app>
 </template>
 
@@ -52,7 +60,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { authClient } from './lib/auth-client.ts'
 import { config } from './lib/config.ts'
 import { immersive } from './lib/layout.ts'
-import { refreshSession, roomState, toasts } from './lib/room.ts'
+import { refreshSession, roomState, toasts, type Toast } from './lib/room.ts'
 import { useThemeToggle } from './lib/theme.ts'
 
 const route = useRoute()
@@ -74,6 +82,10 @@ watch(
   },
   { immediate: true },
 )
+
+function setToasts(next: Toast[]) {
+  toasts.splice(0, toasts.length, ...next)
+}
 
 async function signOut() {
   await authClient.signOut()
