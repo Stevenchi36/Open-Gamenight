@@ -1,4 +1,4 @@
-import type { PlayerId } from '@wsfg/core/contract'
+import type { PlayerId } from '@ogn/core/contract'
 import type { Color, LastCardView, LcCard, Move } from '../shared/index.ts'
 
 /** Card colours: fixed, since they're what's printed on the cards, and they read on light and dark. */

@@ -1,4 +1,4 @@
-import type { RoomView } from '@wsfg/core/protocol'
+import type { RoomView } from '@ogn/core/protocol'
 import { describe, expect, it } from 'vitest'
 import { needsAction } from '../client/attention.ts'
 import { act, answerAll, newGame, PLAYERS, type Sim } from './helpers.ts'

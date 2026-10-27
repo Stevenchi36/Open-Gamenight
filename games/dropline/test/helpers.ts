@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { dropLine, type DropLineState } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type DropLineSettings, type DropLineView } from '../shared/index.ts'
 

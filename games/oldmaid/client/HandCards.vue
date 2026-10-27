@@ -19,8 +19,8 @@
 <script setup lang="ts">
 // Your hand. With Arrange hand it's in the order the next player draws from: tap a card, then
 // the place it should go (tap it again to put it back).
-import type { Card } from '@wsfg/core/kit'
-import { PlayingCard, useArrivals } from '@wsfg/core/ui'
+import type { Card } from '@ogn/core/kit'
+import { PlayingCard, useArrivals } from '@ogn/core/ui'
 import { ref, watch } from 'vue'
 import { cardText } from './text.ts'
 

@@ -62,10 +62,10 @@
 
 <script setup lang="ts">
 // Every game: browse, filter by name, style and player count, read the rules; signed-in players can start a room.
-import type { GameStyle } from '@wsfg/core/contract'
-import { GAME_STYLE_LABELS } from '@wsfg/core/contract'
-import type { AvailableGame } from '@wsfg/core/protocol'
-import { clientGames } from '@wsfg/games/client'
+import type { GameStyle } from '@ogn/core/contract'
+import { GAME_STYLE_LABELS } from '@ogn/core/contract'
+import type { AvailableGame } from '@ogn/core/protocol'
+import { clientGames } from '@ogn/games/client'
 import { computed, ref } from 'vue'
 import { config } from '../lib/config.ts'
 import { playerRange } from '../lib/games.ts'

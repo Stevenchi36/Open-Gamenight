@@ -1,5 +1,5 @@
-import { assertValidGame } from '@wsfg/core/contract'
-import { DISCONNECT_GRACE_MS } from '@wsfg/core/kit'
+import { assertValidGame } from '@ogn/core/contract'
+import { DISCONNECT_GRACE_MS } from '@ogn/core/kit'
 import { describe, expect, it } from 'vitest'
 import { lastCard } from '../server/game.ts'
 import { canPlay, cardPoints, isWild, lastCardDeck, sortHand } from '../shared/index.ts'

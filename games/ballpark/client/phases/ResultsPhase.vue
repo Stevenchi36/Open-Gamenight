@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import { TOO_HIGH } from '../../shared/index.ts'
 import { formatValue } from '../format.ts'

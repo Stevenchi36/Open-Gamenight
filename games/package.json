@@ -1,5 +1,5 @@
 {
-  "name": "@wsfg/games",
+  "name": "@ogn/games",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -8,19 +8,19 @@
     "./client": "./client.ts"
   },
   "dependencies": {
-    "@wsfg/core": "workspace:*",
-    "@wsfg/game-ballpark": "workspace:*",
-    "@wsfg/game-cheat": "workspace:*",
-    "@wsfg/game-colormix": "workspace:*",
-    "@wsfg/game-dotsandboxes": "workspace:*",
-    "@wsfg/game-dropline": "workspace:*",
-    "@wsfg/game-flock": "workspace:*",
-    "@wsfg/game-gonefishin": "workspace:*",
-    "@wsfg/game-imposter": "workspace:*",
-    "@wsfg/game-inorder": "workspace:*",
-    "@wsfg/game-lastcard": "workspace:*",
-    "@wsfg/game-liarsdice": "workspace:*",
-    "@wsfg/game-oldmaid": "workspace:*",
-    "@wsfg/game-tictactoe": "workspace:*"
+    "@ogn/core": "workspace:*",
+    "@ogn/game-ballpark": "workspace:*",
+    "@ogn/game-cheat": "workspace:*",
+    "@ogn/game-colormix": "workspace:*",
+    "@ogn/game-dotsandboxes": "workspace:*",
+    "@ogn/game-dropline": "workspace:*",
+    "@ogn/game-flock": "workspace:*",
+    "@ogn/game-gonefishin": "workspace:*",
+    "@ogn/game-imposter": "workspace:*",
+    "@ogn/game-inorder": "workspace:*",
+    "@ogn/game-lastcard": "workspace:*",
+    "@ogn/game-liarsdice": "workspace:*",
+    "@ogn/game-oldmaid": "workspace:*",
+    "@ogn/game-tictactoe": "workspace:*"
   }
 }

@@ -1,5 +1,5 @@
 /** Clue and theme validation. Pure; used by the reducer and the library. */
-import { matchKey } from '@wsfg/core/categories'
+import { matchKey } from '@ogn/core/categories'
 import { CLUE_MAX_LENGTH, END_MAX_LENGTH, THEME_MAX_LENGTH, THEME_MIN_LENGTH } from '../shared/index.ts'
 
 export type Validation<T> = { ok: true; value: T } | { ok: false; error: string }

@@ -23,9 +23,9 @@
 <script setup lang="ts">
 // The TV's seats: a card per player in turn order with their dice as hidden cups, never faces.
 // The turn's card keeps pulsing, as it's watched from across the room.
-import type { PlayerId } from '@wsfg/core/contract'
-import type { RoomView } from '@wsfg/core/protocol'
-import { isConnected, nameOf } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import type { RoomView } from '@ogn/core/protocol'
+import { isConnected, nameOf } from '@ogn/core/ui'
 import type { Seat } from '../shared/index.ts'
 
 defineProps<{ seats: Seat[]; turn: PlayerId | null; room: RoomView }>()

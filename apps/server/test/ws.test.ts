@@ -1,4 +1,4 @@
-import { MAX_PAYLOAD_BYTES } from '@wsfg/core/protocol'
+import { MAX_PAYLOAD_BYTES } from '@ogn/core/protocol'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { connect } from './helpers/client.ts'
 import { startTestServer, type TestServer } from './helpers/server.ts'

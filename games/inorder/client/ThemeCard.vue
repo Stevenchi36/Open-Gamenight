@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { StatusCard } from '@wsfg/core/ui'
+import { StatusCard } from '@ogn/core/ui'
 import type { Theme } from '../shared/index.ts'
 
 defineProps<{ theme: Theme; compact?: boolean }>()

@@ -15,7 +15,7 @@ import {
   type ReduceCtx,
   type TimerCtx,
   type Transition,
-} from '@wsfg/core/contract'
+} from '@ogn/core/contract'
 import {
   addPoints,
   carryScores,
@@ -28,7 +28,7 @@ import {
   secretBallots,
   tallyVotes,
   withoutPlayer,
-} from '@wsfg/core/kit'
+} from '@ogn/core/kit'
 import {
   clientActionSchema,
   defaultSettings,

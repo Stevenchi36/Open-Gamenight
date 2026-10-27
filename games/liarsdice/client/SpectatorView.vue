@@ -54,10 +54,10 @@
 // The watch page's Liar's Dice: every seat's dice as hidden cups (counts, never faces), the bid
 // big and the bids before it; on a call, everyone's dice turning up one player after another.
 // It's the view built for SPECTATOR_ID, which has no dice: faces only ever come from the call.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import type { LiarsDiceSettings, LiarsDiceView } from '../shared/index.ts'
 import BidLog from './BidLog.vue'

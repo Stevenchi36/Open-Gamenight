@@ -1,4 +1,4 @@
-import type { RoomView } from '@wsfg/core/protocol'
+import type { RoomView } from '@ogn/core/protocol'
 import type { ImposterSettings, ImposterView } from '../shared/index.ts'
 
 /**

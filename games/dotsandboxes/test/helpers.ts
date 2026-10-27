@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { dotsAndBoxes, type DotsState, type DotsTimer } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type Dir, type DotsSettings, type DotsView, type Line } from '../shared/index.ts'
 

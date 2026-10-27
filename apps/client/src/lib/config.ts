@@ -1,5 +1,5 @@
 /** Public server config (/api/config): branding, games, whether AI features exist. */
-import type { AvailableGame } from '@wsfg/core/protocol'
+import type { AvailableGame } from '@ogn/core/protocol'
 import { reactive } from 'vue'
 
 export interface AppConfig {
@@ -10,7 +10,7 @@ export interface AppConfig {
 }
 
 export const config = reactive<AppConfig>({
-  appName: 'Family Games',
+  appName: 'Open Gamenight',
   primaryColor: '#6750A4',
   aiEnabled: false,
   games: [],

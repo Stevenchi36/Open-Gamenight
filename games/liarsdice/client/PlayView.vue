@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, WinCelebration } from '@wsfg/core/ui'
+import { nameOf, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import BiddingPhase from './phases/BiddingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'

@@ -1,4 +1,4 @@
-import type { RoomView } from '@wsfg/core/protocol'
+import type { RoomView } from '@ogn/core/protocol'
 import type { FlockView } from '../shared/index.ts'
 
 /** Whether the game is waiting on this viewer: their answer, or the host's check, score or next round. */

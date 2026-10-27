@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, StatusCard } from '@wsfg/core/ui'
+import { nameOf, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import BidLog from '../BidLog.vue'
 import RoundResultCard from '../RoundResultCard.vue'

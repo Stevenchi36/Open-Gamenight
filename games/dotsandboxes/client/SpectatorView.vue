@@ -39,10 +39,10 @@
 
 <script setup lang="ts">
 // The watch page's Dots and Boxes: the board large, with the seats, whose move it is and the games won.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { DotsSettings, DotsView } from '../shared/index.ts'
 import DotsBoard from './DotsBoard.vue'

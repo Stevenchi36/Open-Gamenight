@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { lastCard, type LastCardState, type LastCardTimer } from '../server/game.ts'
 import { cardSchema, defaultSettings, type ClientAction, type Color, type LastCardSettings, type LastCardView, type LcCard, type Value } from '../shared/index.ts'
 

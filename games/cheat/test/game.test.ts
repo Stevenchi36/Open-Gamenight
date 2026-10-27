@@ -1,5 +1,5 @@
-import { assertValidGame } from '@wsfg/core/contract'
-import { DISCONNECT_GRACE_MS } from '@wsfg/core/kit'
+import { assertValidGame } from '@ogn/core/contract'
+import { DISCONNECT_GRACE_MS } from '@ogn/core/kit'
 import { describe, expect, it } from 'vitest'
 import { cheat } from '../server/game.ts'
 import { allowedClaims } from '../shared/index.ts'

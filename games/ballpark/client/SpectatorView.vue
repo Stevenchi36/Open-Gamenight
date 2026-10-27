@@ -57,10 +57,10 @@
 // The watch page's Ballpark: the question big with who has guessed (never what), then the board
 // of guesses dropping in for betting, with tokens shown only when bets are public, then the answer
 // with the winning slot lit and everyone's tokens. It's the view built for SPECTATOR_ID.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, scoreStandings, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration, winTitle } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { nameOf, ScoreBoard, scoreStandings, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration, winTitle } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import { TOO_HIGH, type BallparkSettings, type BallparkView } from '../shared/index.ts'
 import { formatValue } from './format.ts'

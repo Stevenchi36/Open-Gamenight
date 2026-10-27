@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, isHost, nameOf, ProgressCount, SubmitField } from '@wsfg/core/ui'
+import { HoldToReveal, isHost, nameOf, ProgressCount, SubmitField } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import { ANSWER_MAX_LENGTH } from '../../shared/index.ts'
 import QuestionCard from '../QuestionCard.vue'

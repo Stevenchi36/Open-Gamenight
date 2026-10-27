@@ -87,9 +87,9 @@
 <script setup lang="ts">
 // The watch page: a display-only screen for a room (a TV everyone can see, or someone watching
 // from elsewhere). It gets the view built for SPECTATOR_ID and shows the game's SpectatorView.
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, StatusCard } from '@wsfg/core/ui'
-import { clientGames } from '@wsfg/games/client'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { nameOf, StatusCard } from '@ogn/core/ui'
+import { clientGames } from '@ogn/games/client'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect, type Component } from 'vue'
 import { useRouter } from 'vue-router'
 import PlayerChips from '../components/PlayerChips.vue'

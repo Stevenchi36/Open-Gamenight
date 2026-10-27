@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, scoreStandings, winTitle, WinCelebration } from '@wsfg/core/ui'
+import { nameOf, scoreStandings, winTitle, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import BettingPhase from './phases/BettingPhase.vue'
 import GuessingPhase from './phases/GuessingPhase.vue'

@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, StatusCard, VoteBreakdown } from '@wsfg/core/ui'
+import { nameOf, StatusCard, VoteBreakdown } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { PhaseProps } from '../props.ts'
 

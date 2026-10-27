@@ -1,6 +1,6 @@
-import type { PlayerId } from '@wsfg/core/contract'
-import { placings } from '@wsfg/core/kit'
-import type { Standing } from '@wsfg/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { placings } from '@ogn/core/kit'
+import type { Standing } from '@ogn/core/client'
 import { COLORS, type Color, type DotsView } from '../shared/index.ts'
 
 /** Distinct in light and dark themes; red and blue match Drop Line's discs. */

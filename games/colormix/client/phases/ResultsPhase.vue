@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import ColorDot from '../ColorDot.vue'
 import MixCard from '../MixCard.vue'

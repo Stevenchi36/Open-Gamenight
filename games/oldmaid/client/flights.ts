@@ -1,6 +1,6 @@
 // How cards move on Old Maid's table, worked out from the move log (see core flights.ts).
-import { type CardFlight, dealFlights, FLIGHT_MS } from '@wsfg/core/ui'
-import type { Card } from '@wsfg/core/kit'
+import { type CardFlight, dealFlights, FLIGHT_MS } from '@ogn/core/ui'
+import type { Card } from '@ogn/core/kit'
 import type { Move, OldMaidView } from '../shared/index.ts'
 
 /** The deal before the first draw; then the latest draws (two, in case they arrive together). */

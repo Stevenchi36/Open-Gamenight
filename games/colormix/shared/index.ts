@@ -2,7 +2,7 @@
  * Color Mix types shared by the server module and the Vue client:
  * settings, client actions, and the per-player view.
  */
-import type { GameMeta } from '@wsfg/core/contract'
+import type { GameMeta } from '@ogn/core/contract'
 import { z } from 'zod'
 
 type PlayerId = string

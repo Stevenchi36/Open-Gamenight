@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, NextRoundButton, ScoreBoard, StatusCard, VoteBreakdown } from '@wsfg/core/ui'
+import { nameOf, NextRoundButton, ScoreBoard, StatusCard, VoteBreakdown } from '@ogn/core/ui'
 import { computed, ref } from 'vue'
 import type { PhaseProps } from '../props.ts'
 

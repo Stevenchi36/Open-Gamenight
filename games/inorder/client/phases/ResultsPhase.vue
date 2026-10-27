@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { NextRoundButton, StatusCard } from '@wsfg/core/ui'
+import { NextRoundButton, StatusCard } from '@ogn/core/ui'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import LineCard from '../LineCard.vue'
 import LineEnd from '../LineEnd.vue'

@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { inOrder, type InOrderState, type PreparedTheme } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type InOrderSettings, type InOrderView } from '../shared/index.ts'
 

@@ -14,8 +14,8 @@
 
 <script setup lang="ts">
 // One card in the line: its clue (or who it's waiting on) and whose it is.
-import type { RoomView } from '@wsfg/core/protocol'
-import { nameOf } from '@wsfg/core/ui'
+import type { RoomView } from '@ogn/core/protocol'
+import { nameOf } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { LineItem } from '../shared/index.ts'
 

@@ -1,5 +1,5 @@
-import type { Card, Rank, Suit } from '@wsfg/core/kit'
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import type { Card, Rank, Suit } from '@ogn/core/kit'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { cheat, type CheatState, type CheatTimer, type PilePlay } from '../server/game.ts'
 import { defaultSettings, type CheatSettings, type CheatView, type ClientAction } from '../shared/index.ts'
 

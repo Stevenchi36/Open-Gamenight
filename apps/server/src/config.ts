@@ -15,7 +15,7 @@ const optional = z
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: int(3000),
-  APP_NAME: z.string().trim().min(1).default('Family Games'),
+  APP_NAME: z.string().trim().min(1).default('Open Gamenight'),
   APP_PRIMARY_COLOR: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, 'APP_PRIMARY_COLOR must look like #6750A4 (quote it in .env)')

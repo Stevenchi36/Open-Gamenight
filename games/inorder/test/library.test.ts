@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
-import { CATEGORIES_MIGRATION, createCategoryService } from '@wsfg/core/categories'
-import { AiError, type ServerServices } from '@wsfg/core/contract'
+import { CATEGORIES_MIGRATION, createCategoryService } from '@ogn/core/categories'
+import { AiError, type ServerServices } from '@ogn/core/contract'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { DEFAULT_THEME_LIST, DEFAULT_THEMES } from '../server/default-themes.ts'
 import { inOrder } from '../server/index.ts'

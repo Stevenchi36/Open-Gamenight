@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { isHost, nameOf, SubmitField } from '@wsfg/core/ui'
+import { isHost, nameOf, SubmitField } from '@ogn/core/ui'
 import { computed, ref } from 'vue'
 import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'

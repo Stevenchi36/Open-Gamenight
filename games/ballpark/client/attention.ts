@@ -1,4 +1,4 @@
-import type { RoomView } from '@wsfg/core/protocol'
+import type { RoomView } from '@ogn/core/protocol'
 import type { BallparkView } from '../shared/index.ts'
 
 /** Whether the game is waiting on this viewer: their guess, their bets, or the host's next round. */

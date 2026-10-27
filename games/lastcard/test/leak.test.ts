@@ -1,4 +1,4 @@
-import { runLeakTest, type Move } from '@wsfg/core/testing'
+import { runLeakTest, type Move } from '@ogn/core/testing'
 import { describe, expect, it } from 'vitest'
 import { lastCard } from '../server/game.ts'
 import { canJumpIn, canPlay, COLORS, defaultSettings, type ClientAction, type LastCardSettings, type LcCard } from '../shared/index.ts'

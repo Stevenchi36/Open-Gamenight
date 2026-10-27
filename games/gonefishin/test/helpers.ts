@@ -1,5 +1,5 @@
-import { RANKS, type Card, type Rank, type Suit } from '@wsfg/core/kit'
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { RANKS, type Card, type Rank, type Suit } from '@ogn/core/kit'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { goneFishin, type GoneFishinState, type GoneFishinTimer } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type GoneFishinSettings, type GoneFishinView } from '../shared/index.ts'
 

@@ -2,7 +2,7 @@
  * Colour helpers for Color Mix: drawing a round's random colours, and scoring
  * how close a guess is. Pure; randomness comes from the caller's Rng.
  */
-import type { Rng } from '@wsfg/core/rng'
+import type { Rng } from '@ogn/core/rng'
 import { deltaE, hexToOklab } from './spectral.ts'
 
 /** Closeness falls by a factor of e every this much distance: 0.25 away is 37%. */

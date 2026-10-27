@@ -9,7 +9,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk'
 import type { DatabaseSync } from 'node:sqlite'
-import { AiError, type AiService, type AiToolSpec, type Logger } from '@wsfg/core/contract'
+import { AiError, type AiService, type AiToolSpec, type Logger } from '@ogn/core/contract'
 import { z } from 'zod'
 import type { Config } from './config.ts'
 

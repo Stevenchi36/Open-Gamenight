@@ -14,8 +14,8 @@ import {
   type ReduceCtx,
   type TimerCtx,
   type Transition,
-} from '@wsfg/core/contract'
-import { addPoints, carryScores, deal, DISCONNECT_GRACE_MS, isConnected, nextTurnOrder, withoutPlayer } from '@wsfg/core/kit'
+} from '@ogn/core/contract'
+import { addPoints, carryScores, deal, DISCONNECT_GRACE_MS, isConnected, nextTurnOrder, withoutPlayer } from '@ogn/core/kit'
 import {
   canJumpIn,
   canPlay,

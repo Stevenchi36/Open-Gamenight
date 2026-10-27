@@ -1,4 +1,4 @@
-import type { Migration } from '@wsfg/core/contract'
+import type { Migration } from '@ogn/core/contract'
 import { DEFAULT_QUESTIONS } from './default-questions.ts'
 
 /**

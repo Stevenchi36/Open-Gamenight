@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
+import { HoldToReveal, MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import { FACES, isLegalBid, minQuantity } from '../../shared/index.ts'
 import DiceRow from '../DiceRow.vue'

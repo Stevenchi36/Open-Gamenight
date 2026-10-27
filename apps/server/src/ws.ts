@@ -8,7 +8,7 @@
 import { randomBytes } from 'node:crypto'
 import type { IncomingMessage, Server } from 'node:http'
 import type { Duplex } from 'node:stream'
-import { MAX_PAYLOAD_BYTES, parseClientMessage, type ServerMessage } from '@wsfg/core/protocol'
+import { MAX_PAYLOAD_BYTES, parseClientMessage, type ServerMessage } from '@ogn/core/protocol'
 import { WebSocket, WebSocketServer, type RawData } from 'ws'
 import type { Auth, SessionUser } from './auth.ts'
 import type { Config } from './config.ts'

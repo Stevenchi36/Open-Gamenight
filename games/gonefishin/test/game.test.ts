@@ -1,5 +1,5 @@
-import { assertValidGame } from '@wsfg/core/contract'
-import { DISCONNECT_GRACE_MS, RANKS } from '@wsfg/core/kit'
+import { assertValidGame } from '@ogn/core/contract'
+import { DISCONNECT_GRACE_MS, RANKS } from '@ogn/core/kit'
 import { describe, expect, it } from 'vitest'
 import { goneFishin } from '../server/game.ts'
 import { act, booksExcept, cards, newGame, PLAYERS, setTable } from './helpers.ts'

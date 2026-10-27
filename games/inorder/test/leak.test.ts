@@ -1,4 +1,4 @@
-import { runLeakTest, type Move } from '@wsfg/core/testing'
+import { runLeakTest, type Move } from '@ogn/core/testing'
 import { describe, expect, it } from 'vitest'
 import { inOrder } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type InOrderSettings } from '../shared/index.ts'

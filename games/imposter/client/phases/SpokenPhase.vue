@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { isConnected, isHost, nameOf, StatusCard } from '@wsfg/core/ui'
+import { isConnected, isHost, nameOf, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import RoleCard from '../RoleCard.vue'
 import type { PhaseProps } from '../props.ts'

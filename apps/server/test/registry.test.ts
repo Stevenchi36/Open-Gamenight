@@ -1,6 +1,6 @@
-import { assertValidRegistry } from '@wsfg/core/contract'
-import { clientGames } from '@wsfg/games/client'
-import { games } from '@wsfg/games/server'
+import { assertValidRegistry } from '@ogn/core/contract'
+import { clientGames } from '@ogn/games/client'
+import { games } from '@ogn/games/server'
 import { describe, expect, it } from 'vitest'
 
 const metaOf = (g: { id: string; name: string; description: string; styles: readonly string[]; minPlayers: number; maxPlayers: number }) => ({

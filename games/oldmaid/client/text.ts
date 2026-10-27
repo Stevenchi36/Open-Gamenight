@@ -1,5 +1,5 @@
-import type { PlayerId } from '@wsfg/core/contract'
-import { rankName, type Card } from '@wsfg/core/kit'
+import type { PlayerId } from '@ogn/core/contract'
+import { rankName, type Card } from '@ogn/core/kit'
 import type { Move, OldMaidView } from '../shared/index.ts'
 
 const SUIT_SYMBOLS = { S: '♠', H: '♥', D: '♦', C: '♣' } as const

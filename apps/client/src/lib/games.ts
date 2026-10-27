@@ -1,4 +1,4 @@
-import type { AvailableGame } from '@wsfg/core/protocol'
+import type { AvailableGame } from '@ogn/core/protocol'
 
 /** "2-6", or "4" when a game takes exactly one count. */
 export function playerRange(game: Pick<AvailableGame, 'minPlayers' | 'maxPlayers'>): string {

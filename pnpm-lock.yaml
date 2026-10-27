@@ -208,10 +208,10 @@ importers:
       '@mdi/font':
         specifier: ^7.4.47
         version: 7.4.47
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@wsfg/games':
+      '@ogn/games':
         specifier: workspace:*
         version: link:../../games
       better-auth:
@@ -260,13 +260,13 @@ importers:
       '@modelcontextprotocol/server':
         specifier: ^2.3.1
         version: 2.3.1
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@wsfg/games':
+      '@ogn/games':
         specifier: workspace:*
         version: link:../../games
-      '@wsfg/server':
+      '@ogn/server':
         specifier: workspace:*
         version: link:../server
       zod:
@@ -282,10 +282,10 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.135.0
         version: 0.135.0(zod@4.6.7)
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@wsfg/games':
+      '@ogn/games':
         specifier: workspace:*
         version: link:../../games
       better-auth:
@@ -310,52 +310,52 @@ importers:
 
   games:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@wsfg/game-ballpark':
+      '@ogn/game-ballpark':
         specifier: workspace:*
         version: link:ballpark
-      '@wsfg/game-cheat':
+      '@ogn/game-cheat':
         specifier: workspace:*
         version: link:cheat
-      '@wsfg/game-colormix':
+      '@ogn/game-colormix':
         specifier: workspace:*
         version: link:colormix
-      '@wsfg/game-dotsandboxes':
+      '@ogn/game-dotsandboxes':
         specifier: workspace:*
         version: link:dotsandboxes
-      '@wsfg/game-dropline':
+      '@ogn/game-dropline':
         specifier: workspace:*
         version: link:dropline
-      '@wsfg/game-flock':
+      '@ogn/game-flock':
         specifier: workspace:*
         version: link:flock
-      '@wsfg/game-gonefishin':
+      '@ogn/game-gonefishin':
         specifier: workspace:*
         version: link:gonefishin
-      '@wsfg/game-imposter':
+      '@ogn/game-imposter':
         specifier: workspace:*
         version: link:imposter
-      '@wsfg/game-inorder':
+      '@ogn/game-inorder':
         specifier: workspace:*
         version: link:inorder
-      '@wsfg/game-lastcard':
+      '@ogn/game-lastcard':
         specifier: workspace:*
         version: link:lastcard
-      '@wsfg/game-liarsdice':
+      '@ogn/game-liarsdice':
         specifier: workspace:*
         version: link:liarsdice
-      '@wsfg/game-oldmaid':
+      '@ogn/game-oldmaid':
         specifier: workspace:*
         version: link:oldmaid
-      '@wsfg/game-tictactoe':
+      '@ogn/game-tictactoe':
         specifier: workspace:*
         version: link:tictactoe
 
   games/ballpark:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       express:
@@ -374,7 +374,7 @@ importers:
 
   games/cheat:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:
@@ -386,7 +386,7 @@ importers:
 
   games/colormix:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:
@@ -398,7 +398,7 @@ importers:
 
   games/dotsandboxes:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:
@@ -410,7 +410,7 @@ importers:
 
   games/dropline:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:
@@ -422,7 +422,7 @@ importers:
 
   games/flock:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       express:
@@ -441,7 +441,7 @@ importers:
 
   games/gonefishin:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:
@@ -453,7 +453,7 @@ importers:
 
   games/imposter:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       express:
@@ -472,7 +472,7 @@ importers:
 
   games/inorder:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       express:
@@ -491,7 +491,7 @@ importers:
 
   games/lastcard:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:
@@ -503,7 +503,7 @@ importers:
 
   games/liarsdice:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:
@@ -515,7 +515,7 @@ importers:
 
   games/oldmaid:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:
@@ -527,7 +527,7 @@ importers:
 
   games/tictactoe:
     dependencies:
-      '@wsfg/core':
+      '@ogn/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:

@@ -1,5 +1,5 @@
-import { RANKS } from '@wsfg/core/kit'
-import { runLeakTest, type Move } from '@wsfg/core/testing'
+import { RANKS } from '@ogn/core/kit'
+import { runLeakTest, type Move } from '@ogn/core/testing'
 import { describe, expect, it } from 'vitest'
 import { goneFishin } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type GoneFishinSettings } from '../shared/index.ts'

@@ -1,4 +1,4 @@
-import { assertValidGame } from '@wsfg/core/contract'
+import { assertValidGame } from '@ogn/core/contract'
 import { describe, expect, it } from 'vitest'
 import { dropLine, lineThrough } from '../server/game.ts'
 import { BOARD_DIMENSIONS, BOARD_SIZES, LINE_LENGTHS, MAX_COLS, settingsSchema, type Disc } from '../shared/index.ts'

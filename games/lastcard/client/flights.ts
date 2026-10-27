@@ -1,7 +1,7 @@
 // How cards move on Last Card's table, worked out from the move log (see core flights.ts).
 // Anchors in the middle of the table: 'draw' (the draw pile) and 'discard' (the top card).
-import type { PlayerId } from '@wsfg/core/contract'
-import { type CardFlight, dealFlights, dealTime, FLIGHT_MS } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import { type CardFlight, dealFlights, dealTime, FLIGHT_MS } from '@ogn/core/ui'
 import type { LastCardView, LcCard, Move } from '../shared/index.ts'
 
 /** Hands swapping (a 7 or a 0 with 7-0 swaps) fly as a few cards each way. */

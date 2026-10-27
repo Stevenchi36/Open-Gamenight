@@ -25,8 +25,8 @@
 
 <script setup lang="ts">
 // Your hand, grouped by rank. While it's your turn a group can be tapped to pick the rank to ask for.
-import { rankName, type Card, type Rank } from '@wsfg/core/kit'
-import { PlayingCard, useArrivals } from '@wsfg/core/ui'
+import { rankName, type Card, type Rank } from '@ogn/core/kit'
+import { PlayingCard, useArrivals } from '@ogn/core/ui'
 import { computed } from 'vue'
 
 const props = defineProps<{

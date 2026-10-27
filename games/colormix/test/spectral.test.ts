@@ -1,4 +1,4 @@
-import { createRng } from '@wsfg/core/rng'
+import { createRng } from '@ogn/core/rng'
 import { describe, expect, it } from 'vitest'
 import { closeness, distanceBetween, hslToHex, randomColors } from '../server/colors.ts'
 import { mixPaint } from '../server/spectral.ts'

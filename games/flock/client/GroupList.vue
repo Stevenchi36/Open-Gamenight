@@ -33,8 +33,8 @@
 <script setup lang="ts">
 // Answers grouped after the reveal, biggest first; the flock is highlighted. In REVIEW the host
 // taps groups to merge them (`pick`) and splits merged ones.
-import type { RoomView } from '@wsfg/core/protocol'
-import { nameOf } from '@wsfg/core/ui'
+import type { RoomView } from '@ogn/core/protocol'
+import { nameOf } from '@ogn/core/ui'
 import type { AnswerGroup } from '../shared/index.ts'
 
 const props = defineProps<{

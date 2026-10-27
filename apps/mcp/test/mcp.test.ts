@@ -8,8 +8,8 @@ import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { Client } from '@modelcontextprotocol/client'
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
-import { games } from '@wsfg/games/server'
-import { migrateGamesDb, openDatabase } from '@wsfg/server/db'
+import { games } from '@ogn/games/server'
+import { migrateGamesDb, openDatabase } from '@ogn/server/db'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 let dir: string
@@ -22,7 +22,7 @@ const text = (result: { content: unknown }) => {
 }
 
 beforeAll(async () => {
-  dir = mkdtempSync(join(tmpdir(), 'wsfg-mcp-'))
+  dir = mkdtempSync(join(tmpdir(), 'ogn-mcp-'))
   dbPath = join(dir, 'games.db')
   // Migrate up front and drop the seeded default words, so the tests start from an empty library.
   const db = openDatabase(dbPath)

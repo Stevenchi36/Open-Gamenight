@@ -4,9 +4,9 @@
  * them needs no API key. inorder_generate_themes exists only when the AI
  * service does (ANTHROPIC_API_KEY set) and saves directly, within the daily cap.
  */
-import { AI_INSTRUCTIONS_MAX_LENGTH, type McpToolDef, type ServerServices } from '@wsfg/core/contract'
-import { CATEGORY_REUSE_RULE } from '@wsfg/core/categories'
-import { BATCH_RULE, batchField } from '@wsfg/core/library'
+import { AI_INSTRUCTIONS_MAX_LENGTH, type McpToolDef, type ServerServices } from '@ogn/core/contract'
+import { CATEGORY_REUSE_RULE } from '@ogn/core/categories'
+import { BATCH_RULE, batchField } from '@ogn/core/library'
 import { z } from 'zod'
 import { addThemes, generateThemes, listCategories, listThemes, LOW_STOCK_THRESHOLD, MAX_GENERATE, removeThemes, updateTheme } from './library.ts'
 

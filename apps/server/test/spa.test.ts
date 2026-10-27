@@ -10,7 +10,7 @@ let root: string
 
 beforeAll(async () => {
   // A fake built client, as `pnpm build` leaves it in production.
-  root = mkdtempSync(join(tmpdir(), 'wsfg-spa-'))
+  root = mkdtempSync(join(tmpdir(), 'ogn-spa-'))
   const dist = join(root, 'apps', 'client', 'dist')
   mkdirSync(join(dist, 'assets'), { recursive: true })
   writeFileSync(join(dist, 'index.html'), '<!doctype html><title>spa</title>')
@@ -59,12 +59,12 @@ describe('built client', () => {
 
 describe('readBuildId', () => {
   it('reads the id Vite stamped into index.html, or null without one', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'wsfg-build-'))
+    const dir = mkdtempSync(join(tmpdir(), 'ogn-build-'))
     try {
       expect(readBuildId(dir)).toBeNull()
       writeFileSync(join(dir, 'index.html'), '<!doctype html><title>spa</title>')
       expect(readBuildId(dir)).toBeNull()
-      writeFileSync(join(dir, 'index.html'), '<head><meta name="wsfg-build" content="lq3x9a"></head>')
+      writeFileSync(join(dir, 'index.html'), '<head><meta name="ogn-build" content="lq3x9a"></head>')
       expect(readBuildId(dir)).toBe('lq3x9a')
     } finally {
       rmSync(dir, { recursive: true, force: true })

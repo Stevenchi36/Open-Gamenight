@@ -6,8 +6,8 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { CATEGORIES_MIGRATION } from '@wsfg/core/categories'
-import type { AnyGameModule, Logger, Migration } from '@wsfg/core/contract'
+import { CATEGORIES_MIGRATION } from '@ogn/core/categories'
+import type { AnyGameModule, Logger, Migration } from '@ogn/core/contract'
 
 export function openDatabase(path: string): DatabaseSync {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })

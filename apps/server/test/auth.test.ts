@@ -1,5 +1,5 @@
-import { defineGame } from '@wsfg/core/contract'
-import { games } from '@wsfg/games/server'
+import { defineGame } from '@ogn/core/contract'
+import { games } from '@ogn/games/server'
 import express from 'express'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { z } from 'zod'
@@ -175,7 +175,7 @@ describe('core and game admin routes', () => {
 
   it('serves /api/config publicly without secrets', async () => {
     const body = (await (await t.fetch('/api/config')).json()) as { games: { id: string }[] }
-    expect(body).toMatchObject({ appName: 'Family Games', primaryColor: '#6750A4', aiEnabled: false })
+    expect(body).toMatchObject({ appName: 'Open Gamenight', primaryColor: '#6750A4', aiEnabled: false })
     // Sorted by name, not registry order (imposter is registered first, as "Word Imposter").
     expect(body.games.map((g) => g.id)).toEqual(['probe', 'imposter'])
     expect(JSON.stringify(body)).not.toContain(t.booted.config.BETTER_AUTH_SECRET)
@@ -195,7 +195,7 @@ describe('auth rate limit', () => {
       const attempt = (xff: string) =>
         limited.fetch('/api/auth/sign-in/email', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', 'x-forwarded-for': xff, 'x-wsfg-client-ip': xff },
+          headers: { 'content-type': 'application/json', 'x-forwarded-for': xff, 'x-ogn-client-ip': xff },
           body: JSON.stringify({ email: 'nobody@example.com', password: 'wrong-password' }),
         })
       const statuses: number[] = []

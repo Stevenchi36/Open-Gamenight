@@ -1,4 +1,4 @@
-import type { Migration } from '@wsfg/core/contract'
+import type { Migration } from '@ogn/core/contract'
 import { VAGUE_DEFAULT_HINTS } from './default-hints.ts'
 import { DEFAULT_WORDS } from './default-words.ts'
 

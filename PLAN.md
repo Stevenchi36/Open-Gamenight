@@ -1,4 +1,4 @@
-# ws-family-games: Build Plan
+# open-gamenight: Build Plan
 
 A self-hostable multiplayer party-game platform for groups playing together on their phones. The first game is **Word Imposter** (3-12 players). The platform core owns rooms, connections, auth, reconnect, timers and admin; each game is a plug-in module that implements a small, pure contract.
 
@@ -24,7 +24,7 @@ Browser (Vue SPA) ──HTTPS──> Express ──┬── /api/auth/*        
 
 ### Layout
 ```
-ws-family-games/
+open-gamenight/
   package.json                 # pnpm workspace root, scripts: dev, build, test, lint
   pnpm-workspace.yaml
   tsconfig.base.json
@@ -140,7 +140,7 @@ interface GameModule<S, A, T, V, Settings> {
 - `InitCtx` / `ReduceCtx` / `TimerCtx` carry `players`, `settings`, `now`, `rng` (seeded), and data prepared by `prepareRound`; `ReduceCtx` adds `actorId` (always a player). Games never call `Math.random`, `Date.now`, `setTimeout`, or the DB from `reduce`/`onTimer`/`view`.
 - **Effects** are plain data the runner executes: `{ type: 'schedule', at, action, key }`, `{ type: 'cancel', key }`, `{ type: 'notice', to, message }`, `{ type: 'gameOver' }` (back to the lobby). Timers (clue timer, disconnect grace) are scheduled timer actions, delivered to `onTimer`, so they are testable. A cancelled or rescheduled key never fires, even if its time had already come.
 - Permission checks for game actions (current player only, judge only, host only for game moves) live in the reducer, because only the game knows who the judge is. `ReduceCtx` tells the reducer who the host is.
-- `@wsfg/core/kit` holds pure reducer helpers every game can use: `isPresent`/`isConnected`, `pickConnected` (host first), `nextTurnOrder` + `playerOrderSchema`, `carryScores`/`addPoints`/`withoutPlayer`, `tallyVotes`/`dropBallots`, the `secretBallots` leak spec, and `DISCONNECT_GRACE_MS`.
+- `@ogn/core/kit` holds pure reducer helpers every game can use: `isPresent`/`isConnected`, `pickConnected` (host first), `nextTurnOrder` + `playerOrderSchema`, `carryScores`/`addPoints`/`withoutPlayer`, `tallyVotes`/`dropBallots`, the `secretBallots` leak spec, and `DISCONNECT_GRACE_MS`.
 
 ### Client side
 ```ts
@@ -156,7 +156,7 @@ interface GameClientModule {
   SpectatorView?: () => Promise<Component> // props: { view, room, settings, serverNow }; the watch page's display (section 3)
 }
 ```
-The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Play views build on `@wsfg/core/ui`: helpers (`nameOf`, `isConnected`, `isHost`, `useCountdown`) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `ProgressCount`, `TurnOrder`, `CountdownTimer`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, `OrderList`, `WinCelebration`). The "your move" glow is the shell's, driven by the module's `needsAction`. Each game's player-facing rules live in `games/<id>/RULES.md`: plain Markdown that the shell's **How to play** button (room header, in the lobby and during play) renders, and that people and Claude can read directly. A game's section of this plan is its spec; `RULES.md` is the short version for players. Auto-generating settings forms from zod is deferred until there are 3+ games.
+The client shell provides small shared Vuetify field components (`SettingSlider`, `SettingSelect`, `SettingToggle`) so per-game settings components stay short. Play views build on `@ogn/core/ui`: helpers (`nameOf`, `isConnected`, `isHost`, `useCountdown`) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `ProgressCount`, `TurnOrder`, `CountdownTimer`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, `OrderList`, `WinCelebration`). The "your move" glow is the shell's, driven by the module's `needsAction`. Each game's player-facing rules live in `games/<id>/RULES.md`: plain Markdown that the shell's **How to play** button (room header, in the lobby and during play) renders, and that people and Claude can read directly. A game's section of this plan is its spec; `RULES.md` is the short version for players. Auto-generating settings forms from zod is deferred until there are 3+ games.
 
 ## 3. Core room behaviour
 
@@ -294,14 +294,14 @@ ai.generate({ gameId, userId, system, prompt, tool }) -> Promise<ToolInput>
 ### MCP server (`apps/mcp`, stdio)
 One process that registers every game's `mcpTools`, namespaced `<gameId>_<tool>`, over the same service code the admin routes use. Setup, tools, prompts and the SSH route to production: [`docs/mcp.md`](docs/mcp.md).
 ```bash
-claude mcp add ws-family-games \
+claude mcp add open-gamenight \
   --env GAMES_DB_PATH=/absolute/path/to/data/games.db \
   -- node /absolute/path/to/apps/mcp/src/server.ts
 ```
 **Gotchas:**
 - With stdio, stdout *is* the protocol. Never `console.log` in the MCP process or anything it imports; use `console.error` (games use the injected logger, which writes to stderr).
 - Resolve the DB path from `GAMES_DB_PATH` (absolute); the client spawns the process from an unknown working directory.
-- It edits a local file, so it reaches the production library only where the file is: run it over SSH for prod (`claude mcp add ws-family-games -- ssh your-host node /path/apps/mcp/src/server.ts`, env set remotely), or use the admin panel in prod.
+- It edits a local file, so it reaches the production library only where the file is: run it over SSH for prod (`claude mcp add open-gamenight -- ssh your-host node /path/apps/mcp/src/server.ts`, env set remotely), or use the admin panel in prod.
 - Use the v2 server package `@modelcontextprotocol/server` (2.3.1 at time of writing), not the v1 `@modelcontextprotocol/sdk`. Check its docs for the v2 stdio transport and tool registration API before writing `server.ts`; v2's API differs from the v1 examples you'll find online.
 - **Stretch (not v1):** remote HTTP MCP via Better Auth's `mcp()` plugin (needs `jwt()` and `cimd()` plugins, an HTTPS `resource` URL, targets the MCP 2026-07-28 spec).
 
@@ -332,7 +332,7 @@ claude mcp add ws-family-games \
 | Rotations | 2 | 1-5 |
 | Round player order | `rotate` | `rotate` (random first round; each later round the next player in line goes first, same order; leavers drop out, newcomers join the end; the host can tick **Randomize player order** on Play again for a one-off reshuffle) / `random` (reshuffled every round) |
 | Imposter hint | `category` | `none` / `category` / `category+hint` |
-| Word source | `all` | `all` (whole library) / `custom` ("Added only": skips the seeded starter words, falls back to them when it runs out) / `recent` ("Recently added": the newest batch first, then older words; see `@wsfg/core/library`). All fall back to `builtin-words.ts` if nothing matches |
+| Word source | `all` | `all` (whole library) / `custom` ("Added only": skips the seeded starter words, falls back to them when it runs out) / `recent` ("Recently added": the newest batch first, then older words; see `@ogn/core/library`). All fall back to `builtin-words.ts` if nothing matches |
 | Category | Any | categories from the library that have words in the chosen source, plus "Any" |
 | Clue mode | `typed` | `typed` / `spoken` (players speak; the app tracks turns, voting, score) |
 | Imposter guess | `bonus` | `bonus` / `steal` / `off` |
@@ -534,7 +534,7 @@ The third game: everyone answers the same question and tries to give the answer 
 | Score limit | unlimited | `null` / 5 / 8 / 10 / 12 / 15 / 20 |
 | Black sheep | on | |
 | Check matches | on | host merges near-misses before scoring |
-| Question source | `all` | `all` (least-played first) / `recent` ("Recently added": the newest batch first, then older questions, with a host notice; see `@wsfg/core/library`) |
+| Question source | `all` | `all` (least-played first) / `recent` ("Recently added": the newest batch first, then older questions, with a host notice; see `@ogn/core/library`) |
 | Category | Any | categories from the library that have questions, plus "Any" |
 | Answer timer | off | 30 / 45 / 60 / 90 / 120 seconds; on expiry, reveal with the answers in |
 
@@ -789,7 +789,7 @@ With `n` distinct guesses sorted lowest first, the middle slot pays **2**, and e
 | Win rule | `over` | `over` (without going over, with All too high) / `closest` |
 | Scoring | `odds` | `odds` / `chips` / `flat` |
 | Bets | `hidden` | `hidden` (who has bet is public, not on what) / `public` (tokens show as they land) |
-| Question source | `all` | `all` (least-played first) / `recent` ("Recently added": the newest batch first, then older questions, with a host notice; see `@wsfg/core/library`) |
+| Question source | `all` | `all` (least-played first) / `recent` ("Recently added": the newest batch first, then older questions, with a host notice; see `@ogn/core/library`) |
 | Category | Any | categories from the library that have questions, plus "Any" |
 | Timer | off | 30 / 45 / 60 / 90 / 120 seconds, separately for guessing and for betting; on expiry, move on with what's in |
 
@@ -940,7 +940,7 @@ type Move = {                               // public: what the table saw and he
 ### Your hand
 Shown openly, not behind `HoldToReveal`: you need it on every turn, and a hand of cards is held, not left on the table. Cards are grouped by rank; tapping a rank selects it for the next ask.
 
-### The table (`@wsfg/core/ui`)
+### The table (`@ogn/core/ui`)
 - **`PlayingCard`**: one card, face up (rank and suit pip) or face down, in a few sizes. Red suits use a theme colour that holds up in dark mode.
 - **`CardTable`**: an oval with the seats in order around it, clockwise, rotated so the viewer's own seat is at the bottom. It draws each seat's name, connection icon and turn highlight; the game fills a `seat` slot (here a face-down fan with a count, and the books as rank tags) and a `center` slot (the pond). Seats in `tappable` emit `select`, so a game can make them targets; `dimmed` fades leavers. Below 520px wide (a container query) the table goes nearly square and the seats shrink; with 2 players the other seat sits at the top. A Table / List toggle above it lets each player switch to a list (one row per seat, starting with you, in turn order), saved per browser; phones default to List. The latest move shows in a status card above the table, and your hand below it.
 - **Moving cards**: the game passes `CardTable` a list of `flights` (from, to, a count, optional faces, flip) worked out from its move log in `client/flights.ts`, and the table animates each new one once: cards arc between seats, the middle, card-sized `data-card-anchor` spots in the centre slot, and your hand (your own seat means your hand when it's on screen), shrinking to a seat's small cards and growing to an anchor's size. Each landing gives its seat a small bounce, and the new turn's seat bounces once the cards are down. A deal plays even though the table has just mounted (it mounts with each game); nothing else replays on first render. Hands use `useArrivals`, so new cards drop into place as their flight lands. `prefers-reduced-motion` turns all of it off. Here: the deal from the pond, cards handed over from the player asked, a draw from the pond, and new books popping onto the seat.
@@ -1032,7 +1032,7 @@ type Move =                                              // public: what the tab
 
 ## 7i. In Order (`games/inorder`)
 
-The tenth game and the first co-op one: everyone gets a secret number, describes it in the round's theme, and the table puts the descriptions in order together. Mechanics like Ito (a commercial game, so the name is generic). The fourth library game (themes), and the first with a shared drag-to-order list (`OrderList` in `@wsfg/core/ui`).
+The tenth game and the first co-op one: everyone gets a secret number, describes it in the round's theme, and the table puts the descriptions in order together. Mechanics like Ito (a commercial game, so the name is generic). The fourth library game (themes), and the first with a shared drag-to-order list (`OrderList` in `@ogn/core/ui`).
 
 ### Rules
 1. **2-12 players** play as one team with shared **lives** (setting, default 3).
@@ -1050,7 +1050,7 @@ The tenth game and the first co-op one: everyone gets a secret number, describes
 | Rounds | 5 | `null` (until out of lives) / 3 / 5 / 7 / 10 |
 | Lives | 3 | 1-5 |
 | Numbers each | 1 | 1-3 |
-| Theme source | `all` | `all` (least-played first) / `recent` ("Recently added", see `@wsfg/core/library`) |
+| Theme source | `all` | `all` (least-played first) / `recent` ("Recently added", see `@ogn/core/library`) |
 | Category | Any | categories from the library that have themes, plus "Any" |
 
 ### State machine
@@ -1109,7 +1109,7 @@ CREATE TABLE inorder_themes (
 - **MCP tools:** `inorder_add_themes`, `inorder_list_categories`, `inorder_search_themes`, `inorder_update_theme`, `inorder_remove_themes`, `inorder_generate_themes` (only with `ANTHROPIC_API_KEY`), plus the core `inorder_*_category` tools. Themes aren't secret, so Claude may list them.
 
 ### Client
-- **`OrderList`** (`@wsfg/core/ui`): a vertical list a player reorders by dragging a row's handle (pointer events, so it works with touch; the page still scrolls from the rest of the row, and dragging near the screen edge scrolls) or with its up/down buttons. It emits `move(id, to)` and shows the new order straight away until the next view arrives. The game fills each row through a slot.
+- **`OrderList`** (`@ogn/core/ui`): a vertical list a player reorders by dragging a row's handle (pointer events, so it works with touch; the page still scrolls from the rest of the row, and dragging near the screen edge scrolls) or with its up/down buttons. It emits `move(id, to)` and shows the new order straight away until the next view arrives. The game fills each row through a slot.
 - The line: the low end's label above the list ("1 · Not scary at all"), the high end's below ("100 · Terrifying"). Each card shows its clue (or "Waiting for Sam…"), whose it is, and a **You** tag on your own.
 - Results turn the numbers over one by one, top to bottom, each marked right or wrong, then show lives lost and the team's progress.
 - **Win**: when the team clears the last round, a `WinCelebration` ("You made it!") once the cards have turned over, on your phone and the TV.
@@ -1349,7 +1349,7 @@ Router guards redirect non-admins from `/admin/*` (UX only).
 ### State and components
 - `useRoom()` composable: owns the websocket (auto-reconnect with the stored token, "reconnecting..." banner, `server_restarting` message), exposes the latest `room` and `game` views, and `send` helpers. A reactive object is enough; Pinia optional.
 - Imposter `PlayView` switches on `phase`: `CluesView` (typed: role card, turn order, clue feed, input on your turn), `SpokenTurnView` (role card, big current-speaker card, **Done**, host **Skip** / **Start voting**, rotation progress, visual timer), `VotingView`, `RevealView`, `GuessCheckView` (imposter: "say your guess out loud", or a guess input in typed mode; judge: the typed guess + hold-to-reveal word + **Got it** / **Missed it**; others: waiting), `ResultsView`.
-- `HoldToReveal` (from `@wsfg/core/ui`, shared by all games) for the role card and the judge screen.
+- `HoldToReveal` (from `@ogn/core/ui`, shared by all games) for the role card and the judge screen.
 - Mobile-first; Vuetify components instead of custom CSS where possible:
   - Layout: `v-app`, `v-app-bar`, `v-main`, `v-container`, `v-row`/`v-col`
   - Inputs: `v-form`, `v-text-field`, `v-otp-input` (room code), `v-btn`
@@ -1363,7 +1363,7 @@ Router guards redirect non-admins from `/admin/*` (UX only).
 ## 9. Environment variables
 ```
 PORT=3000
-APP_NAME=Family Games
+APP_NAME=Open Gamenight
 APP_PRIMARY_COLOR=#6750A4
 BETTER_AUTH_SECRET=                          # long random string
 BETTER_AUTH_URL=https://your-domain.com

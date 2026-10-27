@@ -19,7 +19,7 @@
 <script setup lang="ts">
 // The hand you draw from, face down and large: tap a card to lift it. Game-local until a second
 // game draws blind from a hand.
-import { PlayingCard } from '@wsfg/core/ui'
+import { PlayingCard } from '@ogn/core/ui'
 
 defineProps<{ count: number; picked: number | null; disabled?: boolean }>()
 const emit = defineEmits<{ pick: [index: number] }>()

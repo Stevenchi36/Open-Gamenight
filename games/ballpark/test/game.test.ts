@@ -1,4 +1,4 @@
-import { assertValidGame } from '@wsfg/core/contract'
+import { assertValidGame } from '@ogn/core/contract'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_QUESTION_LIST } from '../server/default-questions.ts'
 import { ballpark, oddsAt } from '../server/game.ts'

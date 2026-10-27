@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { CountdownTimer, StatusCard } from '@wsfg/core/ui'
+import { CountdownTimer, StatusCard } from '@ogn/core/ui'
 
 defineProps<{
   question: { text: string; category: string; unit: string | null }

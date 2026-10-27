@@ -54,10 +54,10 @@
 // The watch page's Flock: the question big with who has answered (never what), then the
 // answers dropping in as their groups with the flock highlighted, the black sheep and the scores.
 // It's the view built for SPECTATOR_ID, so it never has an answer of its own.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, scoreStandings, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration, winTitle } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { nameOf, ScoreBoard, scoreStandings, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration, winTitle } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import type { FlockSettings, FlockView } from '../shared/index.ts'
 import BlackSheep from './BlackSheep.vue'

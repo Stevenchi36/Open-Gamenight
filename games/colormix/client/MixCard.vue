@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { CountdownTimer, StatusCard } from '@wsfg/core/ui'
+import { CountdownTimer, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 
 const props = defineProps<{

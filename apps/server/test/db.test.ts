@@ -1,13 +1,13 @@
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import type { AnyGameModule } from '@wsfg/core/contract'
+import type { AnyGameModule } from '@ogn/core/contract'
 import { afterEach, describe, expect, it } from 'vitest'
 import { migrateGamesDb, openDatabase, transaction } from '../src/db.ts'
 
 const dirs: string[] = []
 function tempDb() {
-  const dir = mkdtempSync(join(tmpdir(), 'wsfg-db-'))
+  const dir = mkdtempSync(join(tmpdir(), 'ogn-db-'))
   dirs.push(dir)
   return openDatabase(join(dir, 'nested', 'games.db'))
 }

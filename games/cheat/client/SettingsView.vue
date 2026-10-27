@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MoveHistory } from '@wsfg/core/kit'
+import type { MoveHistory } from '@ogn/core/kit'
 import type { CheatSettings, Claims } from '../shared/index.ts'
 
 const props = defineProps<{ settings: CheatSettings; update: (s: CheatSettings) => void; isHost: boolean }>()

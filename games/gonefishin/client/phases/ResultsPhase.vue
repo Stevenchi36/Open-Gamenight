@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import FishTable from '../FishTable.vue'
 import type { PhaseProps } from '../props.ts'

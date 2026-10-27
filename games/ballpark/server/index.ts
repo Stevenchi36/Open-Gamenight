@@ -3,8 +3,8 @@
  * which the core wires up: migrations, prepareRound (question from the library),
  * a public categories route for the lobby, admin routes, and MCP tools.
  */
-import { defineGame } from '@wsfg/core/contract'
-import { newestBatch, newestBatchStats } from '@wsfg/core/library'
+import { defineGame } from '@ogn/core/contract'
+import { newestBatch, newestBatchStats } from '@ogn/core/library'
 import express from 'express'
 import { adminRouter } from './admin.ts'
 import { DEFAULT_CATEGORIES } from './default-questions.ts'

@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 // Your hand, sorted by colour. Cards you can play now are raised and can be tapped to pick one.
-import { occurrenceKeys, useArrivals } from '@wsfg/core/ui'
+import { occurrenceKeys, useArrivals } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { LcCard as Card } from '../shared/index.ts'
 import LcCard from './LcCard.vue'

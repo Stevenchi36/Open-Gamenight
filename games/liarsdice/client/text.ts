@@ -1,4 +1,4 @@
-import type { PlayerId } from '@wsfg/core/contract'
+import type { PlayerId } from '@ogn/core/contract'
 import type { LiarsDiceView } from '../shared/index.ts'
 import { bidText } from './props.ts'
 

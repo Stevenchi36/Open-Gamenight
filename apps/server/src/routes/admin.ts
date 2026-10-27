@@ -5,8 +5,8 @@
  * User management itself goes through Better Auth's admin endpoints
  * (/api/auth/admin/*), which enforce the admin role on their own.
  */
-import { CategoryError } from '@wsfg/core/categories'
-import type { AnyGameModule, ServerServices } from '@wsfg/core/contract'
+import { CategoryError } from '@ogn/core/categories'
+import type { AnyGameModule, ServerServices } from '@ogn/core/contract'
 import express, { type Router } from 'express'
 import { z } from 'zod'
 import type { AiCore } from '../ai.ts'

@@ -44,9 +44,9 @@ export function openDevWindows(launch: DevLaunch): DevWindows | null {
   const features = (width: number, height: number, left: number) =>
     `popup,width=${width},height=${height},left=${left},top=0`
 
-  const players = launch.players ? window.open('about:blank', 'wsfg-dev-players', features(playersWidth, h, 0)) : null
+  const players = launch.players ? window.open('about:blank', 'ogn-dev-players', features(playersWidth, h, 0)) : null
   const watch = launch.watch
-    ? window.open('about:blank', 'wsfg-dev-watch', features(watchWidth, Math.round((watchWidth * 9) / 16), both ? playersWidth : 0))
+    ? window.open('about:blank', 'ogn-dev-watch', features(watchWidth, Math.round((watchWidth * 9) / 16), both ? playersWidth : 0))
     : null
 
   return {

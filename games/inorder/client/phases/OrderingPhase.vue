@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, isHost, nameOf, OrderList, ProgressCount, SubmitField } from '@wsfg/core/ui'
+import { HoldToReveal, isHost, nameOf, OrderList, ProgressCount, SubmitField } from '@ogn/core/ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { CLUE_MAX_LENGTH } from '../../shared/index.ts'
 import LineCard from '../LineCard.vue'

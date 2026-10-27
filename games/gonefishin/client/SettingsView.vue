@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MoveHistory } from '@wsfg/core/kit'
+import type { MoveHistory } from '@ogn/core/kit'
 import type { GoneFishinSettings } from '../shared/index.ts'
 
 const props = defineProps<{ settings: GoneFishinSettings; update: (s: GoneFishinSettings) => void; isHost: boolean }>()

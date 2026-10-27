@@ -17,8 +17,8 @@
 </template>
 
 <script setup lang="ts">
-import type { RoomView } from '@wsfg/core/protocol'
-import { nameOf } from '@wsfg/core/ui'
+import type { RoomView } from '@ogn/core/protocol'
+import { nameOf } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { Clue, ImposterView } from '../shared/index.ts'
 

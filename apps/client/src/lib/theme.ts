@@ -1,4 +1,4 @@
-import { save } from '@wsfg/core/ui/storage'
+import { save } from '@ogn/core/ui/storage'
 import { computed } from 'vue'
 import { useTheme } from 'vuetify'
 import { THEME_KEY } from '../plugins/vuetify.ts'

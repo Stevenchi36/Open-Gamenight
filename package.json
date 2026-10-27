@@ -1,5 +1,5 @@
 {
-  "name": "ws-family-games",
+  "name": "open-gamenight",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.14.0",
@@ -13,8 +13,8 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "typecheck": "pnpm -r --if-present typecheck",
-    "create-admin": "pnpm --filter @wsfg/server create-admin",
-    "start": "pnpm --filter @wsfg/server start",
+    "create-admin": "pnpm --filter @ogn/server create-admin",
+    "start": "pnpm --filter @ogn/server start",
     "deploy": "bash scripts/deploy.sh"
   },
   "devDependencies": {

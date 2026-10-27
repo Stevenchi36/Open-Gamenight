@@ -35,9 +35,9 @@
 </template>
 
 <script setup lang="ts">
-import type { PlayerId } from '@wsfg/core/contract'
-import { rankName, type Rank } from '@wsfg/core/kit'
-import { MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import { rankName, type Rank } from '@ogn/core/kit'
+import { MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import FishTable from '../FishTable.vue'
 import HandCards from '../HandCards.vue'

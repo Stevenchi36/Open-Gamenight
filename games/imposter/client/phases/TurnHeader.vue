@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { CountdownTimer, TurnOrder } from '@wsfg/core/ui'
+import { CountdownTimer, TurnOrder } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { PhaseProps } from '../props.ts'
 

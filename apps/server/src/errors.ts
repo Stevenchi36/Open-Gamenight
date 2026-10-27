@@ -1,4 +1,4 @@
-import type { ErrorCode } from '@wsfg/core/protocol'
+import type { ErrorCode } from '@ogn/core/protocol'
 
 /** An error sent back to the client as `error { code, message }`. */
 export class RoomError extends Error {

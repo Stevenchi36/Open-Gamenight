@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, isHost, nameOf, StatusCard, SubmitField, VoteBreakdown } from '@wsfg/core/ui'
+import { HoldToReveal, isHost, nameOf, StatusCard, SubmitField, VoteBreakdown } from '@ogn/core/ui'
 import { computed } from 'vue'
 import { GUESS_MAX_LENGTH } from '../../shared/index.ts'
 import type { PhaseProps } from '../props.ts'

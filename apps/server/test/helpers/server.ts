@@ -7,7 +7,7 @@ import type { Server } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { DatabaseSync } from 'node:sqlite'
-import type { AnyGameModule } from '@wsfg/core/contract'
+import type { AnyGameModule } from '@ogn/core/contract'
 import type { MessagesClient } from '../../src/ai.ts'
 import type { Booted } from '../../src/boot.ts'
 import { parseConfig, type Env } from '../../src/config.ts'
@@ -56,7 +56,7 @@ export async function startTestServer(
     rootDir?: string
   } = {},
 ): Promise<TestServer> {
-  const dir = mkdtempSync(join(tmpdir(), 'wsfg-test-'))
+  const dir = mkdtempSync(join(tmpdir(), 'ogn-test-'))
   const config = parseConfig({
     NODE_ENV: 'test',
     LOG_LEVEL: 'silent',

@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 // UX only: the router guard and this page are conveniences; the server enforces admin on every route.
-import { clientGames } from '@wsfg/games/client'
+import { clientGames } from '@ogn/games/client'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useDisplay } from 'vuetify'

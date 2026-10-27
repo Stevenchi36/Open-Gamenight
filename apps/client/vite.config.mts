@@ -16,13 +16,13 @@ function buildId(): Plugin {
   const id = Date.now().toString(36)
   let isBuild = false
   return {
-    name: 'wsfg-build-id',
+    name: 'ogn-build-id',
     config(_config, { command }) {
       isBuild = command === 'build'
       return { define: { __BUILD_ID__: JSON.stringify(isBuild ? id : '') } }
     },
     transformIndexHtml() {
-      return isBuild ? [{ tag: 'meta', attrs: { name: 'wsfg-build', content: id }, injectTo: 'head' }] : []
+      return isBuild ? [{ tag: 'meta', attrs: { name: 'ogn-build', content: id }, injectTo: 'head' }] : []
     },
   }
 }

@@ -1,5 +1,5 @@
 /** A real `ws` client that records every server message, for transport and integration tests. */
-import { parseServerMessage, type ServerMessage } from '@wsfg/core/protocol'
+import { parseServerMessage, type ServerMessage } from '@ogn/core/protocol'
 import { WebSocket, type ClientOptions } from 'ws'
 import { ORIGIN } from './server.ts'
 

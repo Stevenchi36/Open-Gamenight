@@ -57,10 +57,10 @@
 // The watch page's Color Mix: the colours to mix big with who has guessed (never what), then the
 // real mix against every guess, dropping in from the furthest so the closest lands last.
 // It's the view built for SPECTATOR_ID, so it never has a guess of its own.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, ScoreBoard, scoreStandings, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration, winTitle } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { nameOf, ScoreBoard, scoreStandings, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration, winTitle } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import type { ColorMixSettings, ColorMixView } from '../shared/index.ts'
 import ColorDot from './ColorDot.vue'

@@ -4,8 +4,8 @@
  *
  * PLAYING -> RESULTS -> new_game -> PLAYING
  */
-import { defineGame, gameError, type BaseCtx, type GameError, type PlayerId, type ReduceCtx, type Transition } from '@wsfg/core/contract'
-import { addPoints, carryScores, nextTurnOrder, withoutPlayer } from '@wsfg/core/kit'
+import { defineGame, gameError, type BaseCtx, type GameError, type PlayerId, type ReduceCtx, type Transition } from '@ogn/core/contract'
+import { addPoints, carryScores, nextTurnOrder, withoutPlayer } from '@ogn/core/kit'
 import {
   BOARD_DIMENSIONS,
   clientActionSchema,

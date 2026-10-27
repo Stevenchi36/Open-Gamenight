@@ -33,7 +33,7 @@ Prerequisites: the repo is checked out and `pnpm install` has run.
 ### Claude Code
 
 ```bash
-claude mcp add ws-family-games \
+claude mcp add open-gamenight \
   --env GAMES_DB_PATH=C:/Users/Steve/WebBench/ws-family-games/data/games.db \
   -- node C:/Users/Steve/WebBench/ws-family-games/apps/mcp/src/server.ts
 ```
@@ -49,7 +49,7 @@ Edit `claude_desktop_config.json` (Settings → Developer → Edit Config):
 ```json
 {
   "mcpServers": {
-    "ws-family-games": {
+    "open-gamenight": {
       "command": "node",
       "args": ["C:/Users/Steve/WebBench/ws-family-games/apps/mcp/src/server.ts"],
       "env": { "GAMES_DB_PATH": "C:/Users/Steve/WebBench/ws-family-games/data/games.db" }
@@ -65,7 +65,7 @@ Restart Claude Desktop afterwards.
 Words you add locally only land in your **local** `games.db`. To fill the **production** library with your Pro subscription, have Claude start the MCP server **on the VPS over SSH**. Claude Code (and your subscription) stays on your computer; only the small tool process runs on the server:
 
 ```
-Your PC: Claude Code (Pro) ──ssh──> VPS: node apps/mcp/src/server.ts ──> /srv/ws-family-games/data/games.db
+Your PC: Claude Code (Pro) ──ssh──> VPS: node apps/mcp/src/server.ts ──> /srv/open-gamenight/data/games.db
 ```
 
 The words go straight into the live library, the next round can use them, and no API key is involved.
@@ -85,42 +85,42 @@ The words go straight into the live library, the next round can use them, and no
    It must be the same Node major version the app runs on (26).
 3. **Check the server starts.** Run this with the paths from your deploy. It waits silently for input; press Ctrl+C to quit:
    ```bash
-   ssh -T deploy@your-vps "GAMES_DB_PATH=/srv/ws-family-games/data/games.db /home/deploy/.nvm/versions/node/v26.3.0/bin/node /srv/ws-family-games/apps/mcp/src/server.ts"
+   ssh -T deploy@your-vps "GAMES_DB_PATH=/srv/open-gamenight/data/games.db /home/deploy/.nvm/versions/node/v26.3.0/bin/node /srv/open-gamenight/apps/mcp/src/server.ts"
    ```
    The `registered tool` log lines are written to stderr, which is correct.
 
-Replace `deploy@your-vps`, `/srv/ws-family-games` and the Node path with your real values throughout.
+Replace `deploy@your-vps`, `/srv/open-gamenight` and the Node path with your real values throughout.
 
 ### 2. Register it in Claude Code
 
 Give it a different name from the local one, so you always know which library you're editing:
 
 ```bash
-claude mcp add ws-family-games-prod -- ssh -T -o BatchMode=yes deploy@your-vps "GAMES_DB_PATH=/srv/ws-family-games/data/games.db /home/deploy/.nvm/versions/node/v26.3.0/bin/node /srv/ws-family-games/apps/mcp/src/server.ts"
+claude mcp add open-gamenight-prod -- ssh -T -o BatchMode=yes deploy@your-vps "GAMES_DB_PATH=/srv/open-gamenight/data/games.db /home/deploy/.nvm/versions/node/v26.3.0/bin/node /srv/open-gamenight/apps/mcp/src/server.ts"
 ```
 
 - `-T` turns off the remote terminal, so nothing but the MCP protocol travels over the connection.
 - `-o BatchMode=yes` makes SSH fail fast instead of waiting for a password Claude can't type.
 - The quoted part is one argument: the command run on the VPS.
 
-`claude mcp list` should now show `ws-family-games-prod` as connected.
+`claude mcp list` should now show `open-gamenight-prod` as connected.
 
 ### 3. Use it
 
 In Claude Code, mention the server by name:
 
-> Using ws-family-games-prod, check which imposter categories are running low and add 20 words to each of them.
+> Using open-gamenight-prod, check which imposter categories are running low and add 20 words to each of them.
 
 ### Claude Desktop instead of Claude Code
 
 ```json
 {
   "mcpServers": {
-    "ws-family-games-prod": {
+    "open-gamenight-prod": {
       "command": "ssh",
       "args": [
         "-T", "-o", "BatchMode=yes", "deploy@your-vps",
-        "GAMES_DB_PATH=/srv/ws-family-games/data/games.db /home/deploy/.nvm/versions/node/v26.3.0/bin/node /srv/ws-family-games/apps/mcp/src/server.ts"
+        "GAMES_DB_PATH=/srv/open-gamenight/data/games.db /home/deploy/.nvm/versions/node/v26.3.0/bin/node /srv/open-gamenight/apps/mcp/src/server.ts"
       ]
     }
   }

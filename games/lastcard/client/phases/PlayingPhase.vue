@@ -81,8 +81,8 @@
 </template>
 
 <script setup lang="ts">
-import type { PlayerId } from '@wsfg/core/contract'
-import { MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import { MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import { canJumpIn, canPlay, COLORS, isWild, sameCard, type Color } from '../../shared/index.ts'
 import { arriveDelay } from '../flights.ts'

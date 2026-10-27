@@ -1,4 +1,4 @@
-import { defineGameClient } from '@wsfg/core/client'
+import { defineGameClient } from '@ogn/core/client'
 import { meta, type DotsSettings, type DotsView } from '../shared/index.ts'
 import { needsAction } from './attention.ts'
 

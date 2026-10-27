@@ -72,10 +72,10 @@
 // category (when even the imposter gets it), the clues in order, whose turn it is and who has
 // voted, never for whom. Then the imposter, the votes, the guess and the word. It's the view built
 // for SPECTATOR_ID: outside the round, so no word, no role and no ballot.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { CountdownTimer, isConnected, nameOf, ScoreBoard, SpectatorLayout, StatusCard, TurnOrder, VoteBreakdown, WhoAnswered } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { CountdownTimer, isConnected, nameOf, ScoreBoard, SpectatorLayout, StatusCard, TurnOrder, VoteBreakdown, WhoAnswered } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import type { ImposterSettings, ImposterView } from '../shared/index.ts'
 import ClueList from './ClueList.vue'

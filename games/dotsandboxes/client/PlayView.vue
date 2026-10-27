@@ -43,9 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import type { PlayViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import type { PlayViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import { COLORS, type ClientAction, type DotsSettings, type DotsView } from '../shared/index.ts'
 import DotsBoard from './DotsBoard.vue'

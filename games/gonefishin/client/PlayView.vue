@@ -20,8 +20,8 @@
 </template>
 
 <script setup lang="ts">
-import type { PlayerId } from '@wsfg/core/contract'
-import { nameOf, WinCelebration } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import { nameOf, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'

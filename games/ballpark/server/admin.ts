@@ -4,8 +4,8 @@
  * With `save: true` it saves directly and returns counts only, so an admin who
  * also plays never sees the answers.
  */
-import { AI_INSTRUCTIONS_MAX_LENGTH, AiError, type AdminUser, type ServerServices } from '@wsfg/core/contract'
-import { removeUsed } from '@wsfg/core/library'
+import { AI_INSTRUCTIONS_MAX_LENGTH, AiError, type AdminUser, type ServerServices } from '@ogn/core/contract'
+import { removeUsed } from '@ogn/core/library'
 import express, { type Response, type Router } from 'express'
 import { z } from 'zod'
 import {

@@ -4,7 +4,7 @@
  * three guests, through a full typed round and a full spoken round, then the
  * SIGTERM shutdown path.
  */
-import type { ServerMessage } from '@wsfg/core/protocol'
+import type { ServerMessage } from '@ogn/core/protocol'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { connect, type TestClient } from './helpers/client.ts'
 import { startTestServer, type TestServer } from './helpers/server.ts'
@@ -73,7 +73,7 @@ beforeAll(async () => {
 
   // A small library category so the typed round goes through prepareRound + pickWord.
   const { addWords } = await import('../../../games/imposter/server/library.ts')
-  const { createCategoryService } = await import('@wsfg/core/categories')
+  const { createCategoryService } = await import('@ogn/core/categories')
   addWords({ db: t.booted.gamesDb, categories: createCategoryService(t.booted.gamesDb, 'imposter') }, [
     { category: 'Space', word: 'Comet', hint: 'Has a long tail' },
     { category: 'Space', word: 'Saturn', hint: 'Wears rings' },

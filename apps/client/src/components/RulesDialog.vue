@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 // The current game's RULES.md as a dialog. Rules and the Markdown renderer load on first open.
-import type { GameClientModule } from '@wsfg/core/client'
+import type { GameClientModule } from '@ogn/core/client'
 import { ref, watch } from 'vue'
 
 const props = defineProps<{ game: GameClientModule }>()

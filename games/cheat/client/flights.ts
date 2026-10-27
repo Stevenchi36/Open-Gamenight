@@ -1,5 +1,5 @@
 // How cards move on Cheat's table, worked out from the move log (see core flights.ts).
-import { type CardFlight, dealFlights, FLIGHT_MS } from '@wsfg/core/ui'
+import { type CardFlight, dealFlights, FLIGHT_MS } from '@ogn/core/ui'
 import type { CheatView, Move } from '../shared/index.ts'
 
 const REVEAL_HOLD_MS = 1100

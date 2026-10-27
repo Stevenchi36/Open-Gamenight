@@ -40,8 +40,8 @@
 
 <script setup lang="ts">
 // The betting board: one card per slot with its odds, who guessed it, and the tokens on it.
-import type { RoomView } from '@wsfg/core/protocol'
-import { nameOf } from '@wsfg/core/ui'
+import type { RoomView } from '@ogn/core/protocol'
+import { nameOf } from '@ogn/core/ui'
 import type { Bet, Slot } from '../shared/index.ts'
 import { formatValue } from './format.ts'
 

@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import GroupList from '../GroupList.vue'
 import BlackSheep from '../BlackSheep.vue'

@@ -55,8 +55,8 @@
 </template>
 
 <script setup lang="ts">
-import { rankName, type Card, type Rank } from '@wsfg/core/kit'
-import { MoveLogDialog, moveLogEntries, nameOf, PlayingCard, StatusCard, useCountdown } from '@wsfg/core/ui'
+import { rankName, type Card, type Rank } from '@ogn/core/kit'
+import { MoveLogDialog, moveLogEntries, nameOf, PlayingCard, StatusCard, useCountdown } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import { MAX_PLAY } from '../../shared/index.ts'
 import CheatTable from '../CheatTable.vue'

@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal, isHost, nameOf, ProgressCount } from '@wsfg/core/ui'
+import { HoldToReveal, isHost, nameOf, ProgressCount } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import { formatValue, parseGuess } from '../format.ts'
 import QuestionCard from '../QuestionCard.vue'

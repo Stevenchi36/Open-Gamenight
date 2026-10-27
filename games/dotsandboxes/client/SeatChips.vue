@@ -19,9 +19,9 @@
 
 <script setup lang="ts">
 // A chip per seat in turn order: colour, name and boxes this game. Leavers are dimmed.
-import type { PlayerId } from '@wsfg/core/contract'
-import type { RoomView } from '@wsfg/core/protocol'
-import { isConnected, nameOf } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import type { RoomView } from '@ogn/core/protocol'
+import { isConnected, nameOf } from '@ogn/core/ui'
 import type { DotsView } from '../shared/index.ts'
 import { seatColor } from './text.ts'
 

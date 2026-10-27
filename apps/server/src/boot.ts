@@ -2,8 +2,8 @@
  * Opens databases, runs migrations, builds auth. Shared by the server entry
  * point and the create-admin script.
  */
-import { assertValidRegistry, type AnyGameModule } from '@wsfg/core/contract'
-import { games as registry } from '@wsfg/games/server'
+import { assertValidRegistry, type AnyGameModule } from '@ogn/core/contract'
+import { games as registry } from '@ogn/games/server'
 import { createAiCore, type MessagesClient } from './ai.ts'
 import { createAuth, type AuthOptions } from './auth.ts'
 import type { Config } from './config.ts'

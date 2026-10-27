@@ -16,7 +16,7 @@ A change is done when these pass:
 pnpm test                          # unit, leak tests, auth routes, websocket transport, MCP, integration sim
 pnpm typecheck
 pnpm lint
-pnpm --filter @wsfg/client build   # when client or games/*/client code changed
+pnpm --filter @ogn/client build   # when client or games/*/client code changed
 ```
 
 Game logic is pure, so most game behaviour is easiest to test with `createSim` in a game's `test/` folder rather than by hand. The page below is for what tests don't cover: how a round looks and feels from each seat.
@@ -49,7 +49,7 @@ Reloading the page reconnects every frame to its seat. URL options: `n` (players
 
 - **P1 loads from `localhost`** and gets your sign-in cookie.
 - **Guests load from `[::1]`**, the IPv6 address for this computer. It reaches the same dev server, but the browser treats it as a different site, so guests get no cookie and join as anonymous players. If every frame were signed in as you, the server would give them all your one seat.
-- **Each frame keeps its own storage.** Every iframe is named `wsfg-p<n>`, and `packages/core/src/ui/storage.ts` prefixes its localStorage keys with that name, so frames on the same origin don't overwrite each other's room token.
+- **Each frame keeps its own storage.** Every iframe is named `ogn-p<n>`, and `packages/core/src/ui/storage.ts` prefixes its localStorage keys with that name, so frames on the same origin don't overwrite each other's room token.
 - **Dev only.** The page isn't a Vite build input and the app-bar button is imported only under `import.meta.env.DEV`, so neither ships.
 
 ### Things to know

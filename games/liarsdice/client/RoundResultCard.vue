@@ -25,8 +25,8 @@
 <script setup lang="ts">
 // A settled challenge: who called what, the count, and every player's dice with the counted ones lit up.
 // `large` and `stagger` are the TV's: bigger dice, and each player's turning up in turn.
-import type { RoomView } from '@wsfg/core/protocol'
-import { nameOf } from '@wsfg/core/ui'
+import type { RoomView } from '@ogn/core/protocol'
+import { nameOf } from '@ogn/core/ui'
 import type { RoundResult } from '../shared/index.ts'
 import DiceRow from './DiceRow.vue'
 import { bidText } from './props.ts'

@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 // The watch page's player list, sized to read from across a room.
-import type { RoomView } from '@wsfg/core/protocol'
+import type { RoomView } from '@ogn/core/protocol'
 
 defineProps<{ room: RoomView }>()
 </script>

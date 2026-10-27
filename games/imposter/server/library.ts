@@ -8,9 +8,9 @@
  * generation) go through addWords, which creates missing categories.
  */
 import type { DatabaseSync } from 'node:sqlite'
-import { duplicateReason, findMatch, matchKey } from '@wsfg/core/categories'
-import { AiError, categoryScope, instructionsLine, type AiService, type ServerServices } from '@wsfg/core/contract'
-import { recentOrder, resolveBatch } from '@wsfg/core/library'
+import { duplicateReason, findMatch, matchKey } from '@ogn/core/categories'
+import { AiError, categoryScope, instructionsLine, type AiService, type ServerServices } from '@ogn/core/contract'
+import { recentOrder, resolveBatch } from '@ogn/core/library'
 import { z } from 'zod'
 import { GAME_ID } from '../shared/index.ts'
 import { validateWord, type Validation, type WordInput } from './validate.ts'

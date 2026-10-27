@@ -55,9 +55,9 @@
 </template>
 
 <script setup lang="ts">
-import { sortCards } from '@wsfg/core/kit'
-import { MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@wsfg/core/ui'
-import { load, save } from '@wsfg/core/ui/storage'
+import { sortCards } from '@ogn/core/kit'
+import { MoveLogDialog, moveLogEntries, nameOf, StatusCard } from '@ogn/core/ui'
+import { load, save } from '@ogn/core/ui/storage'
 import { computed, ref, watch } from 'vue'
 import HandCards from '../HandCards.vue'
 import MaidTable from '../MaidTable.vue'

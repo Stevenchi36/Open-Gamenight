@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { imposter, type ImposterState, type ImposterTimer, type PreparedWord } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type ImposterSettings, type ImposterView } from '../shared/index.ts'
 

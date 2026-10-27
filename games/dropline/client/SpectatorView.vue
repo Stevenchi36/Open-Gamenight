@@ -40,10 +40,10 @@
 <script setup lang="ts">
 // The watch page's Drop Line: the board large, with the players, whose move it is and the result.
 // The chips carry the scores during a game; the scoreboard joins them on the result.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { isConnected, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { isConnected, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { DropLineSettings, DropLineView } from '../shared/index.ts'
 import { LANDED_MS, winnerConfetti } from './celebration.ts'

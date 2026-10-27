@@ -9,13 +9,13 @@
  * Watching (the watch page) sends `spectate_room` instead, on every (re)connect. It never
  * touches the saved seat; opening that room's page again takes the seat back (resumeSeat).
  */
-import type { ClientMessage, RoomView, ServerMessage, SessionUser } from '@wsfg/core/protocol'
-import { parseServerMessage, SPECTATOR_ID } from '@wsfg/core/protocol'
+import type { ClientMessage, RoomView, ServerMessage, SessionUser } from '@ogn/core/protocol'
+import { parseServerMessage, SPECTATOR_ID } from '@ogn/core/protocol'
 import { reactive } from 'vue'
-import { load, remove, save } from '@wsfg/core/ui/storage'
+import { load, remove, save } from '@ogn/core/ui/storage'
 
-const SAVED_KEY = 'wsfg.room'
-const NAME_KEY = 'wsfg.name'
+const SAVED_KEY = 'ogn.room'
+const NAME_KEY = 'ogn.name'
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'restarting'
 
@@ -277,7 +277,7 @@ function handle(message: ServerMessage): void {
  * serving the old bundle, carry on rather than loop.
  */
 function reloadForBuild(build: string): void {
-  const key = 'wsfg.reloadedFor'
+  const key = 'ogn.reloadedFor'
   try {
     if (sessionStorage.getItem(key) === build) return
     sessionStorage.setItem(key, build)

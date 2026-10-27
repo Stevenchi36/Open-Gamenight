@@ -9,12 +9,12 @@ const base = {
 
 describe('parseConfig', () => {
   it('applies defaults, splits origins and resolves paths against the root', () => {
-    const config = parseConfig(base, '/srv/wsfg')
+    const config = parseConfig(base, '/srv/ogn')
     expect(config.ALLOWED_ORIGINS).toEqual(['https://games.example.com', 'https://other.example.com'])
     expect(config.PORT).toBe(3000)
     expect(config.MAX_ROOMS_PER_USER).toBe(2)
     expect(config.ANTHROPIC_API_KEY).toBeUndefined()
-    expect(config.gamesDbPath.replace(/\\/g, '/')).toMatch(/\/srv\/wsfg\/data\/games\.db$/)
+    expect(config.gamesDbPath.replace(/\\/g, '/')).toMatch(/\/srv\/ogn\/data\/games\.db$/)
   })
 
   it('lists every problem at once', () => {

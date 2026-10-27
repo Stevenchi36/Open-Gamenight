@@ -1,5 +1,5 @@
-import type { Card, Rank, Suit } from '@wsfg/core/kit'
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import type { Card, Rank, Suit } from '@ogn/core/kit'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { oldMaid, type OldMaidState, type OldMaidTimer } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type OldMaidSettings, type OldMaidView } from '../shared/index.ts'
 

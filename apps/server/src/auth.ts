@@ -15,7 +15,7 @@ import type { Config } from './config.ts'
  * client-sent value). Better Auth reads only this header, so its rate limits
  * can't be dodged by spoofing X-Forwarded-For.
  */
-export const INTERNAL_IP_HEADER = 'x-wsfg-client-ip'
+export const INTERNAL_IP_HEADER = 'x-ogn-client-ip'
 
 export interface AuthOptions {
   /** Defaults to on. Tests turn it off so repeated sign-ins don't trip it. */

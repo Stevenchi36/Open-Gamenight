@@ -1,4 +1,4 @@
-import type { RoomView } from '@wsfg/core/protocol'
+import type { RoomView } from '@ogn/core/protocol'
 import type { LiarsDiceView } from '../shared/index.ts'
 
 /** Whether the game is waiting on this viewer: their bid or call, or the host's next match. */

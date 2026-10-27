@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { clientGames } from '@wsfg/games/client'
+import { clientGames } from '@ogn/games/client'
 import { computed, defineAsyncComponent, type Component } from 'vue'
 
 const props = defineProps<{ gameId: string; page: string }>()

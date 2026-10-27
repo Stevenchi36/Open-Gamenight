@@ -5,7 +5,7 @@
  * change to a room runs on that room's queue, one at a time, then broadcasts.
  */
 import { randomBytes, randomInt } from 'node:crypto'
-import { MAX_PLAYERS_CAP, type AnyGameModule, type PlayerInfo, type ServerServices } from '@wsfg/core/contract'
+import { MAX_PLAYERS_CAP, type AnyGameModule, type PlayerInfo, type ServerServices } from '@ogn/core/contract'
 import {
   displayName,
   MAX_SPECTATORS,
@@ -16,7 +16,7 @@ import {
   type NoticeKind,
   type RoomView,
   type ServerMessage,
-} from '@wsfg/core/protocol'
+} from '@ogn/core/protocol'
 import { z } from 'zod'
 import type { SessionUser } from './auth.ts'
 import { realClock, type Clock, type TimerHandle } from './clock.ts'

@@ -22,7 +22,7 @@ After those, **Fibbage** is the strongest party game here, but it needs a curate
   - Reuses: Ballpark's question library shape and its "least-played / recent" ordering; Flock's answer grouping to reject a fake that matches the real answer; `tallyVotes`, `VoteBreakdown`.
   - Secrets: the real answer; who wrote which answer until the reveal.
 - **Wavelength / Spectrum**: the clue-giver secretly sees a target on a scale ("cold ↔ hot") and gives a clue; the others agree on a slider position and score by how close they get.
-  - Needs: a library of scale pairs; a dial/slider component (could go in `@wsfg/core/ui`).
+  - Needs: a library of scale pairs; a dial/slider component (could go in `@ogn/core/ui`).
   - Variant: everyone sets their own slider in secret and is scored with Color Mix's ranked closeness scoring; the clue-giver rotates with `nextTurnOrder`.
   - Secrets: the target position.
 - **Wordle Battle** (speed race, 2–12 players): everyone races to solve the same hidden word, Wordle-style. Your score is your solve time plus a time penalty for each guess, so fewer guesses still pays off. Each player sees every opponent's board as colours only (correct / misplaced / not in word) plus their attempt count.
@@ -43,7 +43,7 @@ After those, **Fibbage** is the strongest party game here, but it needs a curate
 - **No Thanks!**: take the face-up card or pay a chip to pass. Plays up to 7.
 - **For Sale**: bid for properties, then sell them off in a second phase.
 
-Card games can reuse the deck and deal helpers already in `@wsfg/core/kit` (`standardDeck`, `deal`, `sortCards`) and the `PlayingCard`/`CardTable` components.
+Card games can reuse the deck and deal helpers already in `@ogn/core/kit` (`standardDeck`, `deal`, `sortCards`) and the `PlayingCard`/`CardTable` components.
 
 ## Dice and push-your-luck
 

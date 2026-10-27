@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { HoldToReveal } from '@wsfg/core/ui'
+import { HoldToReveal } from '@ogn/core/ui'
 import type { ImposterView } from '../shared/index.ts'
 
 defineProps<{ you: ImposterView['you'] }>()

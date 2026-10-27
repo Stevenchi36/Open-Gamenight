@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { isHost, PlayerPicker, ProgressCount } from '@wsfg/core/ui'
+import { isHost, PlayerPicker, ProgressCount } from '@ogn/core/ui'
 import { computed } from 'vue'
 import ClueList from '../ClueList.vue'
 import RoleCard from '../RoleCard.vue'

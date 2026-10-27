@@ -17,9 +17,9 @@
 
 <script setup lang="ts">
 // A chip per mark: who plays it and their score; the turn is highlighted.
-import type { PlayerId } from '@wsfg/core/contract'
-import type { RoomView } from '@wsfg/core/protocol'
-import { isConnected, nameOf } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import type { RoomView } from '@ogn/core/protocol'
+import { isConnected, nameOf } from '@ogn/core/ui'
 import type { Mark, TicTacToeView } from '../shared/index.ts'
 
 defineProps<{ view: TicTacToeView; room: RoomView; me: PlayerId; size?: 'default' | 'large' }>()

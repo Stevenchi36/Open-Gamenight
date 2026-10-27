@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import BidLog from '../BidLog.vue'
 import RoundResultCard from '../RoundResultCard.vue'

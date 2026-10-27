@@ -1,6 +1,6 @@
-import type { PlayerId } from '@wsfg/core/contract'
-import { placings, rankName } from '@wsfg/core/kit'
-import type { Standing } from '@wsfg/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { placings, rankName } from '@ogn/core/kit'
+import type { Standing } from '@ogn/core/client'
 import type { GoneFishinView, Move } from '../shared/index.ts'
 
 const NUMBERS = ['no', 'one', 'two', 'three']

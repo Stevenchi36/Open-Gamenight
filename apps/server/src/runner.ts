@@ -13,8 +13,8 @@ import {
   type PrepareRequest,
   type ServerServices,
   type Transition,
-} from '@wsfg/core/contract'
-import { createRng, type Rng } from '@wsfg/core/rng'
+} from '@ogn/core/contract'
+import { createRng, type Rng } from '@ogn/core/rng'
 import type { AppLogger } from './logger.ts'
 import type { Clock, TimerHandle } from './clock.ts'
 import { RoomError } from './errors.ts'

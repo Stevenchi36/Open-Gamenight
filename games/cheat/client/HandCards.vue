@@ -20,8 +20,8 @@
 
 <script setup lang="ts">
 // Your hand, grouped by rank. Tap cards to pick the ones to play; picked cards rise.
-import type { Card, Rank, Suit } from '@wsfg/core/kit'
-import { PlayingCard, useArrivals } from '@wsfg/core/ui'
+import type { Card, Rank, Suit } from '@ogn/core/kit'
+import { PlayingCard, useArrivals } from '@ogn/core/ui'
 import { computed } from 'vue'
 
 const props = defineProps<{

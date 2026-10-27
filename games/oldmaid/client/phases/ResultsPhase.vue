@@ -34,8 +34,8 @@
 </template>
 
 <script setup lang="ts">
-import type { PlayerId } from '@wsfg/core/contract'
-import { nameOf, NextRoundButton, ordinal, PlayingCard, ScoreBoard, StatusCard } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import { nameOf, NextRoundButton, ordinal, PlayingCard, ScoreBoard, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import MaidTable from '../MaidTable.vue'
 import type { PhaseProps } from '../props.ts'

@@ -2,8 +2,8 @@
  * Old Maid types shared by the server module and the Vue client:
  * settings, client actions and the per-player view.
  */
-import type { GameMeta } from '@wsfg/core/contract'
-import type { Card, Suit } from '@wsfg/core/kit'
+import type { GameMeta } from '@ogn/core/contract'
+import type { Card, Suit } from '@ogn/core/kit'
 import { z } from 'zod'
 
 type PlayerId = string

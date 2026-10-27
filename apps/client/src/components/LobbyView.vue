@@ -92,8 +92,8 @@
 </template>
 
 <script setup lang="ts">
-import type { RoomView } from '@wsfg/core/protocol'
-import { clientGames } from '@wsfg/games/client'
+import type { RoomView } from '@ogn/core/protocol'
+import { clientGames } from '@ogn/games/client'
 import { computed, defineAsyncComponent, ref, type Component } from 'vue'
 import { gameTitle } from '../lib/games.ts'
 import { send } from '../lib/room.ts'

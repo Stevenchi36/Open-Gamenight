@@ -160,8 +160,8 @@
 </template>
 
 <script setup lang="ts">
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { clientGames } from '@wsfg/games/client'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { clientGames } from '@ogn/games/client'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect, type Component } from 'vue'
 import { useRouter } from 'vue-router'
 import AttentionGlow from '../components/AttentionGlow.vue'

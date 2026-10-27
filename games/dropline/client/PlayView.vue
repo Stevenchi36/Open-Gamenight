@@ -48,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import type { PlayViewProps } from '@wsfg/core/client'
-import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import type { PlayViewProps } from '@ogn/core/client'
+import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { ClientAction, DropLineSettings, DropLineView } from '../shared/index.ts'
 import { LANDED_MS, winnerConfetti } from './celebration.ts'

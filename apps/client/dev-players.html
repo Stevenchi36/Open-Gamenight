@@ -119,7 +119,7 @@
           header.innerHTML = `<b>P${i}</b><span>${host ? 'host · your session' : 'guest'} · ${origin}</span>`
           const iframe = document.createElement('iframe')
           // The frame's name becomes its window.name: the storage prefix in packages/core/src/ui/storage.ts.
-          iframe.name = `wsfg-p${i}`
+          iframe.name = `ogn-p${i}`
           iframe.src = origin + path()
           const reload = document.createElement('button')
           reload.type = 'button'

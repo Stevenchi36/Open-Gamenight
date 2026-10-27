@@ -16,8 +16,8 @@
 </template>
 
 <script setup lang="ts">
-import type { PlayerId } from '@wsfg/core/contract'
-import { FLIGHT_MS, LoseReveal, nameOf, PlayingCard } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import { FLIGHT_MS, LoseReveal, nameOf, PlayingCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'

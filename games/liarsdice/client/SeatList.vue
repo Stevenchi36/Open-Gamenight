@@ -19,9 +19,9 @@
 
 <script setup lang="ts">
 // Players in seat order (turns go this way) with how many dice each has left.
-import type { PlayerId } from '@wsfg/core/contract'
-import type { RoomView } from '@wsfg/core/protocol'
-import { isConnected, nameOf } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import type { RoomView } from '@ogn/core/protocol'
+import { isConnected, nameOf } from '@ogn/core/ui'
 import type { Seat } from '../shared/index.ts'
 
 defineProps<{ seats: Seat[]; turn: PlayerId | null; me: PlayerId; room: RoomView }>()

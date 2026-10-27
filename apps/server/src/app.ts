@@ -6,8 +6,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { DatabaseSync } from 'node:sqlite'
 import type { AiCore } from './ai.ts'
-import { createCategoryService } from '@wsfg/core/categories'
-import { MAX_PLAYERS_CAP, type AnyGameModule, type ServerServices } from '@wsfg/core/contract'
+import { createCategoryService } from '@ogn/core/categories'
+import { MAX_PLAYERS_CAP, type AnyGameModule, type ServerServices } from '@ogn/core/contract'
 import { toNodeHandler } from 'better-auth/node'
 import express, { type ErrorRequestHandler, type Express } from 'express'
 import type { Auth } from './auth.ts'
@@ -18,13 +18,13 @@ import { originCheck, rateLimit, RateLimiter, realIp } from './middleware.ts'
 import { createAdminRouter, type AdminRooms } from './routes/admin.ts'
 
 /**
- * The build id Vite stamped into the built client's index.html (`<meta name="wsfg-build">`),
+ * The build id Vite stamped into the built client's index.html (`<meta name="ogn-build">`),
  * or null when there is no build (dev, tests without one).
  */
 export function readBuildId(clientDistDir: string): string | null {
   const file = join(clientDistDir, 'index.html')
   if (!existsSync(file)) return null
-  return /<meta name="wsfg-build" content="([^"]+)"/.exec(readFileSync(file, 'utf8'))?.[1] ?? null
+  return /<meta name="ogn-build" content="([^"]+)"/.exec(readFileSync(file, 'utf8'))?.[1] ?? null
 }
 
 export interface AppDeps {

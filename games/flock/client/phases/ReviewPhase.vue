@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { isHost, nameOf } from '@wsfg/core/ui'
+import { isHost, nameOf } from '@ogn/core/ui'
 import { computed, ref, watch } from 'vue'
 import GroupList from '../GroupList.vue'
 import QuestionCard from '../QuestionCard.vue'

@@ -5,8 +5,8 @@
  *
  * ORDERING -> RESULTS -> next_round -> ORDERING   (new_game after the game ends)
  */
-import { defineGame, gameError, type BaseCtx, type Effect, type GameError, type PlayerId, type ReduceCtx, type Transition } from '@wsfg/core/contract'
-import { isConnected } from '@wsfg/core/kit'
+import { defineGame, gameError, type BaseCtx, type Effect, type GameError, type PlayerId, type ReduceCtx, type Transition } from '@ogn/core/contract'
+import { isConnected } from '@ogn/core/kit'
 import {
   clientActionSchema,
   defaultSettings,

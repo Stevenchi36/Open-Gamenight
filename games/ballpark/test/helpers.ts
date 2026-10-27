@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { ballpark, type BallparkState, type BallparkTimer, type PreparedQuestion } from '../server/game.ts'
 import { defaultSettings, type BallparkSettings, type BallparkView, type Bet, type ClientAction } from '../shared/index.ts'
 

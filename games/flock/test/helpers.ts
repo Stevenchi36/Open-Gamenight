@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { flock, type FlockState, type FlockTimer, type PreparedQuestion } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type FlockSettings, type FlockView } from '../shared/index.ts'
 

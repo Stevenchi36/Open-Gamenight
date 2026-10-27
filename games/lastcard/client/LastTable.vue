@@ -53,9 +53,9 @@
 <script setup lang="ts">
 // The oval table: each seat's face-down cards (plus the Last card tag and points), and in the
 // middle the draw pile, the top card, the colour in play, the direction and any pending stack.
-import type { PlayerId } from '@wsfg/core/contract'
-import type { RoomView } from '@wsfg/core/protocol'
-import { CardTable, PlayingCard, reducedMotion } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import type { RoomView } from '@ogn/core/protocol'
+import { CardTable, PlayingCard, reducedMotion } from '@ogn/core/ui'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sameCard, type LastCardView, type LcCard as Card, type Seat } from '../shared/index.ts'
 import { tableFlights, topDelay } from './flights.ts'

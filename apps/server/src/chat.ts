@@ -9,8 +9,8 @@
  */
 import { randomUUID } from 'node:crypto'
 import type Anthropic from '@anthropic-ai/sdk'
-import { gameMcpTools } from '@wsfg/core/categories'
-import { AiError, type AnyGameModule, type Logger, type McpToolDef, type ServerServices } from '@wsfg/core/contract'
+import { gameMcpTools } from '@ogn/core/categories'
+import { AiError, type AnyGameModule, type Logger, type McpToolDef, type ServerServices } from '@ogn/core/contract'
 import { z } from 'zod'
 import type { AiCore } from './ai.ts'
 import type { Config } from './config.ts'

@@ -45,10 +45,10 @@
 <script setup lang="ts">
 // The watch page's Gone Fishin': the table with every seat's cards and books, the latest ask,
 // the pond and the moves so far, sized for a TV. It's the view built for SPECTATOR_ID: no hand.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { MoveLog, moveLogEntries, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { MoveLog, moveLogEntries, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { GoneFishinSettings, GoneFishinView } from '../shared/index.ts'
 import FishTable from './FishTable.vue'

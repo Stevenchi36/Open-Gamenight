@@ -1,4 +1,4 @@
-import { assertValidGame } from '@wsfg/core/contract'
+import { assertValidGame } from '@ogn/core/contract'
 import { describe, expect, it } from 'vitest'
 import { closedBy, dotsAndBoxes, lineExists } from '../server/game.ts'
 import { settingsSchema } from '../shared/index.ts'

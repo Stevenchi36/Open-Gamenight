@@ -9,7 +9,7 @@ main() {
   set -euo pipefail
   cd "$(dirname "$0")/.."
 
-  local program="${SUPERVISOR_PROGRAM:-family-games}"
+  local program="${SUPERVISOR_PROGRAM:-open-gamenight}"
   local before
   before="$(git rev-parse --short HEAD)"
 
@@ -25,7 +25,7 @@ main() {
   # failed build took the site down.
   local client=apps/client
   rm -rf "$client/dist.next"
-  pnpm --filter @wsfg/client exec vite build --outDir dist.next
+  pnpm --filter @ogn/client exec vite build --outDir dist.next
   rm -rf "$client/dist.old"
   if [ -d "$client/dist" ]; then mv "$client/dist" "$client/dist.old"; fi
   mv "$client/dist.next" "$client/dist"

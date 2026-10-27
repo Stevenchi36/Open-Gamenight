@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, scoreStandings, winTitle, WinCelebration } from '@wsfg/core/ui'
+import { nameOf, scoreStandings, winTitle, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import AnsweringPhase from './phases/AnsweringPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'

@@ -9,9 +9,9 @@
 <script setup lang="ts">
 // This round's bids as a numbered move list, newest first; once called, the called bid and the
 // call are coloured by how they went (see bidRows).
-import type { PlayerId } from '@wsfg/core/contract'
-import type { RoomView } from '@wsfg/core/protocol'
-import { MoveLog, moveLogEntries, nameOf } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import type { RoomView } from '@ogn/core/protocol'
+import { MoveLog, moveLogEntries, nameOf } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { LiarsDiceView } from '../shared/index.ts'
 import { bidRows } from './text.ts'

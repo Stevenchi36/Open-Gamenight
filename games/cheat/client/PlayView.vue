@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { FLIGHT_MS, nameOf, WinCelebration } from '@wsfg/core/ui'
+import { FLIGHT_MS, nameOf, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'

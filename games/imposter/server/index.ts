@@ -3,8 +3,8 @@
  * which the core wires up: migrations, prepareRound (word from the library),
  * a public categories route for the lobby, admin routes, and MCP tools.
  */
-import { defineGame } from '@wsfg/core/contract'
-import { newestBatch, newestBatchStats } from '@wsfg/core/library'
+import { defineGame } from '@ogn/core/contract'
+import { newestBatch, newestBatchStats } from '@ogn/core/library'
 import express from 'express'
 import { BUILTIN_CATEGORIES } from './builtin-words.ts'
 import { imposter as game, type ImposterState, type ImposterTimer, type PreparedWord } from './game.ts'

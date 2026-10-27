@@ -42,9 +42,9 @@
 <script setup lang="ts">
 // The oval table: each seat's face-down card count (or out / eliminated), the seat being drawn
 // from highlighted, and the discard pile of pairs in the middle.
-import type { PlayerId } from '@wsfg/core/contract'
-import type { RoomView } from '@wsfg/core/protocol'
-import { CardTable, ordinal, PlayingCard } from '@wsfg/core/ui'
+import type { PlayerId } from '@ogn/core/contract'
+import type { RoomView } from '@ogn/core/protocol'
+import { CardTable, ordinal, PlayingCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { OldMaidView, Seat } from '../shared/index.ts'
 import { tableFlights } from './flights.ts'

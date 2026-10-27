@@ -1,4 +1,4 @@
-# ws-family-games
+# open-gamenight
 
 A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice**, **Flock** (everyone answers the same question and scores by matching the most popular answer), **Color Mix** (guess the colour a few paints make when mixed), **In Order** (co-op: describe your secret number to fit a theme, then put the table's clues in order together), and two 2-player games: **Tic-Tac-Toe** and **Drop Line** (drop discs to make a line of 3 to 6).
 
@@ -60,8 +60,8 @@ With `http://[::1]:5173` in `ALLOWED_ORIGINS` (it's in the dev `.env` above), op
 Add your machine's LAN address to `ALLOWED_ORIGINS` (e.g. `http://192.168.1.20:5173`) and start Vite with `--host`:
 
 ```bash
-pnpm --filter @wsfg/server dev            # terminal 1
-pnpm --filter @wsfg/client dev --host     # terminal 2
+pnpm --filter @ogn/server dev            # terminal 1
+pnpm --filter @ogn/client dev --host     # terminal 2
 ```
 
 ## Scripts
@@ -86,7 +86,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 |---|---|---|
 | `NODE_ENV` | `development` | `production` turns on secure cookies |
 | `PORT` | `3000` | Express port |
-| `APP_NAME` | `Family Games` | App bar title and page title |
+| `APP_NAME` | `Open Gamenight` | App bar title and page title |
 | `APP_PRIMARY_COLOR` | `#6750A4` | **Quote it** in `.env` (`"#6750A4"`): an unquoted `#` starts a comment |
 | `BETTER_AUTH_SECRET` | none, required | At least 32 characters |
 | `BETTER_AUTH_URL` | none, required | Public URL of the site (in dev, the Vite URL) |
@@ -153,7 +153,7 @@ A game is a workspace package under `games/<id>/` that implements the contract i
    - `secrets` declares what each player may not see, and when. The core's leak test plays random games and checks every view against it.
 2. **Views (client).** Export a `GameClientModule` from `games/<id>/client/` with a lazy `PlayView` (props: `view`, `send`, `me`, `room`, `serverNow`) a `SettingsView` (props: `settings`, `update`, `isHost`), and `rules` loading the game's `games/<id>/RULES.md` (player-facing rules, shown by the room's **How to play** button). Settings forms can use the shell's `SettingSlider`, `SettingSelect` and `SettingToggle` components without importing them.
 3. **Register it:** one entry in `games/index.ts`, one in `games/client.ts`, and the package as a dependency in `games/package.json`.
-4. **Test it.** Drive the rules with `createSim` from `@wsfg/core/testing` (virtual clock, joins, disconnects) and run `runLeakTest` with the moves your game allows. See `games/imposter/test/`.
+4. **Test it.** Drive the rules with `createSim` from `@ogn/core/testing` (virtual clock, joins, disconnects) and run `runLeakTest` with the moves your game allows. See `games/imposter/test/`.
 5. **Optional integrations**, all handed core services instead of reaching into the server:
    - `migrations` (tables prefixed `<id>_`) and `prepareRound` (async I/O before a round, such as picking a word from the database)
    - `adminRouter` (mounted at `/api/admin/<id>`, already admin-only) and `adminPages` on the client
@@ -161,7 +161,7 @@ A game is a workspace package under `games/<id>/` that implements the contract i
    - `mcpTools` (registered as `<id>_<tool>`)
    - `categories` (use the shared categories table; you get the Categories admin page and MCP tools for free)
 
-Within the repo, a game imports only from `@wsfg/core/*` and its own folder (npm packages like `zod` or `vue` are fine), so it never depends on server internals.
+Within the repo, a game imports only from `@ogn/core/*` and its own folder (npm packages like `zod` or `vue` are fine), so it never depends on server internals.
 
 ## Deploying
 

@@ -55,10 +55,10 @@
 // (cards slide to their new places), who is ready and the lives left; no numbers until the
 // reveal, then the cards turn over one by one as players see it. It's the view built for
 // SPECTATOR_ID: no cards of its own.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { nameOf, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { nameOf, SpectatorLayout, StatusCard, WhoAnswered, WinCelebration } from '@ogn/core/ui'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import type { InOrderSettings, InOrderView } from '../shared/index.ts'
 import LineCard from './LineCard.vue'

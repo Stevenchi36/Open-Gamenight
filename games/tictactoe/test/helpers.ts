@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { ticTacToe, type TicTacToeState } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type TicTacToeSettings, type TicTacToeView } from '../shared/index.ts'
 

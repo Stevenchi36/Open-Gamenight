@@ -1,5 +1,5 @@
 // How cards move on Gone Fishin's table, worked out from the move log (see core flights.ts).
-import { type CardFlight, dealFlights, FLIGHT_MS } from '@wsfg/core/ui'
+import { type CardFlight, dealFlights, FLIGHT_MS } from '@ogn/core/ui'
 import type { GoneFishinView, Move } from '../shared/index.ts'
 
 /** The deal before the first ask; then the latest moves (two, in case they arrive together). */

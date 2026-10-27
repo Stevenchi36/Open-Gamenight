@@ -2,9 +2,9 @@
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
-import { load } from '@wsfg/core/ui/storage'
+import { load } from '@ogn/core/ui/storage'
 
-export const THEME_KEY = 'wsfg.theme'
+export const THEME_KEY = 'ogn.theme'
 
 export default createVuetify({
   theme: {

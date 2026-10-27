@@ -3,7 +3,7 @@
  * settings, client actions, the per-player view, and the bid rules
  * (the client uses them to offer only legal raises).
  */
-import type { GameMeta } from '@wsfg/core/contract'
+import type { GameMeta } from '@ogn/core/contract'
 import { z } from 'zod'
 
 type PlayerId = string

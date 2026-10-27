@@ -68,10 +68,10 @@
 <script setup lang="ts">
 // The watch page's Last Card: the table (draw pile, top card, colour, direction), the latest move
 // and any uncalled last card, sized for a TV. It's the view built for SPECTATOR_ID: no hand.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { MoveLog, moveLogEntries, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { MoveLog, moveLogEntries, nameOf, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import { handPoints, type LastCardSettings, type LastCardView } from '../shared/index.ts'
 import LastTable from './LastTable.vue'

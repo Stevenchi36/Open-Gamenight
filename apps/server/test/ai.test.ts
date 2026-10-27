@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { AiError } from '@wsfg/core/contract'
+import { AiError } from '@ogn/core/contract'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { createAiCore, type AiCore } from '../src/ai.ts'

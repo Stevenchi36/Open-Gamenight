@@ -50,10 +50,10 @@
 // The watch page's Old Maid: the table with every seat's face-down cards, the latest draw, the
 // pairs down and the scores, sized for a TV. It's the view built for SPECTATOR_ID: no hand, and
 // no card taken unless it made a pair.
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import { FLIGHT_MS, LoseReveal, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, SpectatorLayout, StatusCard } from '@wsfg/core/ui'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { FLIGHT_MS, LoseReveal, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, SpectatorLayout, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { OldMaidSettings, OldMaidView } from '../shared/index.ts'
 import MaidTable from './MaidTable.vue'

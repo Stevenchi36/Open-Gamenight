@@ -53,10 +53,10 @@
 <script setup lang="ts">
 // The watch page's Cheat: the table, the latest move and the call countdown, sized for a TV.
 // It's the view built for SPECTATOR_ID, so there's no hand; moveText never says "you".
-import { SPECTATOR_ID } from '@wsfg/core/protocol'
-import type { SpectatorViewProps } from '@wsfg/core/client'
-import type { PlayerId } from '@wsfg/core/contract'
-import { FLIGHT_MS, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, SpectatorLayout, StatusCard, useCountdown, WinCelebration } from '@wsfg/core/ui'
+import { SPECTATOR_ID } from '@ogn/core/protocol'
+import type { SpectatorViewProps } from '@ogn/core/client'
+import type { PlayerId } from '@ogn/core/contract'
+import { FLIGHT_MS, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, SpectatorLayout, StatusCard, useCountdown, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { CheatSettings, CheatView } from '../shared/index.ts'
 import CheatTable from './CheatTable.vue'

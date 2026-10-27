@@ -1,4 +1,4 @@
-import { createSim, type GameSim } from '@wsfg/core/testing'
+import { createSim, type GameSim } from '@ogn/core/testing'
 import { colorMix, type ColorMixState, type ColorMixTimer } from '../server/game.ts'
 import { defaultSettings, type ClientAction, type ColorMixSettings, type ColorMixView } from '../shared/index.ts'
 

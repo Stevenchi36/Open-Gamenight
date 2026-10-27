@@ -2,7 +2,7 @@
  * Minimal leveled logger. Writes to stderr only, so the same logger is safe
  * inside the stdio MCP process (where stdout is the protocol).
  */
-import type { Logger } from '@wsfg/core/contract'
+import type { Logger } from '@ogn/core/contract'
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent'
 
