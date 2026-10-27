@@ -217,10 +217,24 @@ describe('Arrange hand', () => {
     const sim = newGame()
     const [, , c] = setTable(sim, { hands: [['2S'], ['3S'], ['9S', '4S']] })
     expect(sim.act(c!, { type: 'arrange', order: [1, 0] })).toEqual({ ok: false, error: 'Arrange hand is off' })
-    expect(sim.act(c!, { type: 'shuffle' })).toEqual({ ok: false, error: 'Arrange hand is off' })
     expect(codes(sim.view(c!).you.hand)).toEqual(['9S', '4S'])
     drawCard(sim, 1)
     expect(sim.state.log[0]!.card).toEqual(cards('4S')[0])
+  })
+
+  it('shuffling is up to each player, with or without the setting, and never happens by itself', () => {
+    const sim = newGame()
+    const [a, b, c] = setTable(sim, { hands: [['2S', '5D'], ['3S', '6D', '7D', '8D'], ['9S', '4S', 'KH', 'JC']] })
+    drawCard(sim, 0) // a takes from c; c's other cards keep their order
+    expect(codes(sim.view(c!).you.hand)).toEqual(['4S', 'KH', 'JC'])
+    expect(codes(sim.view(b!).you.hand)).toEqual(['3S', '6D', '7D', '8D'])
+    const orders = new Set<string>()
+    for (let i = 0; i < 10; i++) {
+      act(sim, b!, { type: 'shuffle' })
+      orders.add(codes(sim.view(b!).you.hand).join())
+    }
+    expect(orders.size).toBeGreaterThan(1)
+    expect(sim.act(a!, { type: 'shuffle' })).toEqual({ ok: true })
   })
 
   it('never sorts a dealt hand', () => {

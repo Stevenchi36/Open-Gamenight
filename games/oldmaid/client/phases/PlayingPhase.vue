@@ -26,7 +26,7 @@
       <div class="d-flex align-center flex-wrap ga-2 mb-2">
         <span class="text-label-large">Your hand</span>
         <v-spacer />
-        <v-btn v-if="view.settings.arrange && !sorted" size="small" variant="tonal" prepend-icon="mdi-shuffle-variant" @click="send({ type: 'shuffle' })">Shuffle</v-btn>
+        <v-btn v-if="!sorted" size="small" variant="tonal" prepend-icon="mdi-shuffle-variant" @click="send({ type: 'shuffle' })">Shuffle</v-btn>
         <v-btn-toggle :model-value="sorted" density="compact" variant="outlined" divided mandatory aria-label="Show your hand" @update:model-value="setSorted">
           <v-btn :value="false" size="small">As held</v-btn>
           <v-btn :value="true" size="small">By rank</v-btn>

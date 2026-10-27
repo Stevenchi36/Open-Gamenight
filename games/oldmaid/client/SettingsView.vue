@@ -20,7 +20,7 @@
       label="Arrange hand"
       :model-value="settings.arrange"
       :items="onOff"
-      :hint="settings.arrange ? 'Order or shuffle your own hand, to hide where the queen is' : 'Hands stay in the random order they were dealt'"
+      :hint="settings.arrange ? 'Move single cards in your hand, to hide where the queen is' : 'Hands keep their order; anyone can still shuffle theirs'"
       :disabled="!isHost"
       @update:model-value="(v: unknown) => set('arrange', v as boolean)"
     />

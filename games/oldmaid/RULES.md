@@ -35,16 +35,16 @@ The host deals the next round. Everyone keeps their seat, and the first turn mov
 
 - **Format** (default **Classic**): Classic or Royale, as above.
 - **Match colour** (default off): pairs need the same rank and colour.
-- **Arrange hand** (default off): you can change the order of your hand. Tap a card, then where it should go, or tap **Shuffle**.
+- **Arrange hand** (default off): you can move single cards in your hand. Tap a card, then where it should go.
 
-Your hand is never sorted. It stays in the random order it was dealt, and a card you take lands in a random place. The next player picks from it as if facing you across the table: your leftmost card is their rightmost.
+Your hand is never sorted, and it's never shuffled unless you tap **Shuffle**, which you can do any time. It stays in the random order it was dealt, and a card you take lands in a random place. The next player picks from it as if facing you across the table: your leftmost card is their rightmost.
 
 To see which ranks you still need pairs for, switch your hand from **As held** to **By rank**. Only your screen changes: the next player still picks from your hand as held.
 
 ## Tips
 
 - If you're holding the queen, the next player can take it from you, so keep a straight face.
-- With **Arrange hand**, try moving the queen around. Or leave it in the same spot and hope they don't guess.
+- Holding the queen? **Shuffle** so the next player can't track it. With **Arrange hand** you can also move it on purpose, or leave it where it is and hope they don't guess.
 - If you're away when it's your turn, a card is taken for you at random after a few seconds.
 - If a player leaves mid-round, their cards are dealt out to the others, so the queen stays in play.
 - If you join mid-game, you're dealt in from the next round (in Royale, the next Royale).

@@ -42,7 +42,7 @@ export const settingsSchema = z.object({
   format: formatSchema,
   /** Pairs need the same colour as well as the same rank. */
   matchColour: z.boolean(),
-  /** Players can reorder or shuffle their own hand. Either way the next player draws from the hand in its order, which only its owner sees. */
+  /** Players can move single cards in their own hand (anyone can shuffle theirs). The next player draws from the hand in its order, which only its owner sees. */
   arrange: z.boolean(),
 })
 

@@ -1261,7 +1261,7 @@ The thirteenth game and the fourth card game: the classic pairs game under its t
 |---|---|---|
 | Format | `classic` | `classic` (every round is a game; all but the Old Maid score 1) or `royale` (the Old Maid is eliminated each round; the last player in wins) |
 | Match colour | off | pairs need the same rank **and** colour |
-| Arrange hand | off | on: you can rearrange or shuffle your hand, to bluff where the queen sits. Either way your hand shows in the order the next player draws from: the random order it was dealt in, never sorted |
+| Arrange hand | off | on: you can move single cards in your hand, to bluff where the queen sits. **Shuffle** is always there. Either way your hand shows in the order the next player draws from: the random order it was dealt in, never sorted |
 
 ### State machine
 ```
@@ -1279,7 +1279,7 @@ PLAYING -> RESULTS -> next_round -> PLAYING
 |---|---|---|
 | `draw` | `{ index }` (a place in `from`'s hand, 0 to its size − 1) | the player to draw, `PLAYING` |
 | `arrange` | `{ order }` (a permutation of the places in your hand) | any player holding cards, Arrange hand on, `PLAYING` |
-| `shuffle` | `{}` | any player holding cards, Arrange hand on, `PLAYING`; the server shuffles your hand (`ctx.rng`) |
+| `shuffle` | `{}` | any player holding cards, `PLAYING`, whatever the settings; the server shuffles your hand (`ctx.rng`). Hands are never shuffled otherwise |
 | `next_round` | `{}` | host, `RESULTS`, 2+ players to deal in |
 
 A `draw` and an `arrange` of the same hand can race; the room's action queue takes them in order and `index` picks from the hand as it is then. Neither player sees faces either way, so nothing is lost.
@@ -1311,7 +1311,7 @@ type Move = {                                // public, except `card`
 ### Client
 - **Table**: `CardTable` with each seat's face-down fan and count, pairs thrown, and tags for **Out** (with their place) and, in Royale, **Eliminated** (dimmed). The centre holds the discard pile, its latest pair face up. The turn seat and the seat it draws from are both highlighted, with an arrow between them.
 - **Drawing**: on your turn the hand you draw from is shown large above your own as a fan of face-down cards (game-local `PickFan`), mirrored as if facing them: the owner's leftmost card is the drawer's rightmost (the client turns the place round before sending `draw`). Tap a card to lift it (tap it again to put it back), then **Take it**.
-- **Your hand**: below the table, shown openly (not behind `HoldToReveal`, as in Gone Fishin'). New cards drop into place as they land (`useArrivals`). With Arrange hand, tap a card, then the place it should go, or tap **Shuffle**; a line says who draws from your hand next. An **As held / By rank** toggle, saved per browser, shows your hand sorted to spot what you need pairs for; it changes only your screen (arranging pauses while sorted).
+- **Your hand**: below the table, shown openly (not behind `HoldToReveal`, as in Gone Fishin'). New cards drop into place as they land (`useArrivals`). **Shuffle** is always there; with Arrange hand, tap a card, then the place it should go. A line says who draws from your hand next. An **As held / By rank** toggle, saved per browser, shows your hand sorted to spot what you need pairs for; it changes only your screen (Shuffle and arranging pause while sorted).
 - **Moving cards** (`CardTable` flights, see Gone Fishin'): the deal, then the dealt pairs flying to the discard; each draw flying face down from the giver to the drawer (face up as it lands in your hand when you took it); a pair flying face up to the discard; at the end the old maid card flipping face up over its seat.
 - **The Old Maid**: no confetti. On `RESULTS`, on your phone and the TV, core **`LoseReveal`**: the screen greys over, the old maid card drops in and flips face up, and the caught player's name sits under a small rain cloud ("Bea is the Old Maid!"). Like `WinCelebration`, it fires when the result arrives (never on first render), goes by itself or on a tap, doesn't block the page, and plays still under `prefers-reduced-motion`. In Royale the subtitle says they're eliminated, or on the last round who won the Royale ("Cal wins the Royale").
 - **Results**: the order out, the Old Maid last, and the points (Classic) or the players still in (Royale).

@@ -344,6 +344,7 @@ function reduce(state: OldMaidState, action: ClientAction, ctx: ReduceCtx<OldMai
 
     case 'arrange': {
       const hand = handOf(state, actor)
+      if (!state.settings.arrange) return gameError('Arrange hand is off')
       const problem = handProblem(state, actor)
       if (problem) return gameError(problem)
       const order = action.order
@@ -367,9 +368,8 @@ function reduce(state: OldMaidState, action: ClientAction, ctx: ReduceCtx<OldMai
   }
 }
 
-/** Why `id` can't rearrange their hand right now, or null if they can. */
+/** Why `id` can't reorder their hand right now, or null if they can. Shuffling is always allowed; arranging needs the setting too. */
 function handProblem(state: OldMaidState, id: PlayerId): string | null {
-  if (!state.settings.arrange) return 'Arrange hand is off'
   if (state.phase !== 'PLAYING') return 'The round is over'
   if (!holders(state).includes(id)) return 'You have no cards'
   return null
