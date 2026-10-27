@@ -3,7 +3,9 @@
     <v-card class="mb-4">
       <v-card-title class="d-flex align-center">
         Players
-        <v-chip size="small" class="ml-2" variant="tonal">{{ room.players.length }}/{{ currentGame?.maxPlayers ?? 12 }}</v-chip>
+        <v-chip size="small" class="ml-2" variant="tonal" :color="tooMany ? 'error' : undefined">
+          {{ room.players.length }}/{{ currentGame?.maxPlayers ?? 12 }}
+        </v-chip>
       </v-card-title>
       <v-list density="comfortable">
         <v-list-item v-for="p in room.players" :key="p.id" :title="p.name">
@@ -57,7 +59,7 @@
       color="primary"
       size="x-large"
       block
-      :disabled="tooFew"
+      :disabled="tooFew || tooMany"
       prepend-icon="mdi-play"
       @click="send({ type: 'start_game' })"
     >
@@ -65,6 +67,10 @@
     </v-btn>
     <div v-if="tooFew" class="text-center text-body-medium text-medium-emphasis mt-2">
       Waiting for players: {{ currentGame?.minPlayers }} needed to start.
+    </div>
+    <div v-else-if="tooMany" class="text-center text-body-medium text-error mt-2">
+      Too many players: {{ room.game.name }} takes at most {{ currentGame?.maxPlayers }}.
+      {{ isHost ? `Remove ${extra} or pick another game.` : `Waiting for ${hostName} to remove ${extra} or pick another game.` }}
     </div>
     <div v-else-if="!isHost" class="text-center text-body-large text-medium-emphasis mt-2">
       Waiting for {{ hostName }} to start the game.
@@ -96,7 +102,13 @@ const props = defineProps<{ room: RoomView }>()
 const isHost = computed(() => props.room.hostId === props.room.you.id)
 const currentGame = computed(() => props.room.availableGames.find((g) => g.id === props.room.game.id))
 const tooFew = computed(() => props.room.players.length < (currentGame.value?.minPlayers ?? 1))
-const hostName = computed(() => props.room.players.find((p) => p.isHost)?.name ?? 'the host')
+// The room keeps everyone when the host switches to a smaller game; the server refuses to start too.
+const extra = computed(() => {
+  const over = props.room.players.length - (currentGame.value?.maxPlayers ?? Infinity)
+  return over === 1 ? '1 player' : `${over} players`
+})
+const tooMany = computed(() => props.room.players.length > (currentGame.value?.maxPlayers ?? Infinity))
+const hostName =computed(() => props.room.players.find((p) => p.isHost)?.name ?? 'the host')
 
 const settingsViews = new Map<string, Component>()
 const settingsView = computed(() => {
