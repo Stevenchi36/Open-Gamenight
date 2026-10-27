@@ -120,6 +120,12 @@ export function leaveRoom(): void {
   clearRoom(null)
 }
 
+/** Host, in the lobby: close the room for everyone. The server tells the others, not us. */
+export function closeRoom(): void {
+  send({ type: 'close_room' })
+  clearRoom(null)
+}
+
 /** Watch a room without a seat. Failures land in `removedReason`, for the watch page to show. */
 export function watchRoom(code: string): void {
   watching = code

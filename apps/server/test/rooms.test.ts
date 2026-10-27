@@ -214,6 +214,28 @@ describe('lobby', () => {
     expect(room.players.map((p) => p.name)).toEqual(['Host', 'Guest1'])
   })
 
+  it('lets the host close the room from the lobby, sending everyone out', async () => {
+    const { rooms, send, host, guests, room, code } = await roomWith(4)
+    const tv = new FakeConn()
+    await send(tv, { type: 'spectate_room', code })
+    await send(guests[0]!, { type: 'close_room' })
+    expect(guests[0]!.last('error')).toMatchObject({ code: 'forbidden' })
+    await send(host, { type: 'start_game' })
+    await send(host, { type: 'close_room' })
+    expect(host.last('error')).toMatchObject({ code: 'validation', message: 'Only in the lobby' })
+    await send(host, { type: 'return_to_lobby' })
+
+    await send(host, { type: 'close_room' })
+    expect(rooms.rooms.has(code)).toBe(false)
+    expect(room.closed).toBe(true)
+    expect(host.last('notice')).toBeUndefined()
+    expect(host.room).toBeNull()
+    for (const c of [...guests, tv]) {
+      expect(c.last('notice')).toMatchObject({ kind: 'removed', message: 'The host closed the room.' })
+      expect(c.room).toBeNull()
+    }
+  })
+
   it('passes host on when the host leaves and closes the room when the last player leaves', async () => {
     const { rooms, send, host, guests, room, code } = await roomWith(2)
     await send(host, { type: 'leave' })

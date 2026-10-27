@@ -30,7 +30,7 @@
             />
           </template>
         </v-tooltip>
-        <v-btn icon="mdi-exit-run" variant="text" title="Leave" aria-label="Leave" @click="leave" />
+        <v-btn icon="mdi-exit-run" variant="text" title="Leave" aria-label="Leave" @click="askLeave" />
       </div>
       <!-- Floated, so the play view's top row (round, score) wraps beside them instead of under them. -->
       <template v-else>
@@ -119,6 +119,20 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <v-dialog v-model="confirmLeave" max-width="400">
+        <v-card
+          title="Leave the room?"
+          :text="`Close the room to send everyone home, or leave on your own and ${nextHost} becomes host.`"
+        >
+          <v-card-actions>
+            <v-btn @click="confirmLeave = false">Cancel</v-btn>
+            <v-spacer />
+            <v-btn @click="leave">Leave</v-btn>
+            <v-btn color="error" prepend-icon="mdi-door-closed" @click="close">Close room</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </template>
 
     <div v-else-if="rejoining" class="text-center py-12">
@@ -155,7 +169,7 @@ import LobbyView from '../components/LobbyView.vue'
 import RulesDialog from '../components/RulesDialog.vue'
 import WatcherCount from '../components/WatcherCount.vue'
 import { immersive } from '../lib/layout.ts'
-import { joinRoom, lastName, leaveRoom, resumeSeat, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
+import { closeRoom, joinRoom, lastName, leaveRoom, resumeSeat, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
 import { useThemeToggle } from '../lib/theme.ts'
 
 const props = defineProps<{ code: string }>()
@@ -173,6 +187,7 @@ const joining = ref(false)
 // On the form, not a toast, so retries don't queue up (see HomePage).
 const joinError = ref<string | null>(null)
 const confirmLobby = ref(false)
+const confirmLeave = ref(false)
 const rejoining = ref(false)
 const showTv = ref(false)
 const inviteTip = ref(false)
@@ -251,7 +266,25 @@ async function join() {
 }
 
 function leave() {
+  confirmLeave.value = false
   leaveRoom()
+  void router.push('/')
+}
+
+// The lobby host gets the choice; alone in the room, leaving closes it anyway.
+const nextHost = computed(() => {
+  const others = room.value?.players.filter((p) => p.id !== room.value!.you.id) ?? []
+  return (others.find((p) => p.connected) ?? others[0])?.name ?? 'someone else'
+})
+function askLeave() {
+  if (isHost.value && room.value!.players.length > 1) confirmLeave.value = true
+  else leave()
+}
+
+function close() {
+  confirmLeave.value = false
+  closeRoom()
+  toast('Room closed', 'info')
   void router.push('/')
 }
 

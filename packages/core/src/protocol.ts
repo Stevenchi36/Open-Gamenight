@@ -52,6 +52,7 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('return_to_lobby') }),
   z.object({ type: z.literal('transfer_host'), playerId }),
   z.object({ type: z.literal('kick'), playerId }),
+  z.object({ type: z.literal('close_room') }),
   z.object({ type: z.literal('action'), action: z.unknown() }),
 ])
 

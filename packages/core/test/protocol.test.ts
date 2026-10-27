@@ -19,6 +19,7 @@ describe('parseClientMessage', () => {
       { type: 'return_to_lobby' },
       { type: 'transfer_host', playerId: 'p2' },
       { type: 'kick', playerId: 'p2' },
+      { type: 'close_room' },
       { type: 'action', action: { type: 'cast_vote', targetId: 'p3' } },
     ]
     for (const m of messages) expect(parse(m), JSON.stringify(m)).toMatchObject({ ok: true })

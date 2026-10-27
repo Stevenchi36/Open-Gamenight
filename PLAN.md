@@ -169,6 +169,7 @@ The client shell provides small shared Vuetify field components (`SettingSlider`
   - **Automatic migration:** if the host is disconnected for ~2 minutes, host passes to the next connected player in join order, guest or not, for the rest of the room's life. Login gates *creating* rooms (the abuse gate), not running one you're already in. The room keeps counting against the original creator's `MAX_ROOMS_PER_USER`.
 - **Reconnect:** `joined` returns a `token`; the client stores `{ code, token }` in localStorage and sends `reconnect` on page load or after the socket drops.
 - **Kick:** host only; removes the player and calls `onPlayerRemoved`.
+- **Close room:** host only, in the lobby (the lobby's Leave button asks the host: Leave, passing host on, or Close room). Everyone else, spectators included, gets `notice { kind: 'removed' }` "The host closed the room."; the code and the creator's room slot are freed.
 - **Room state is in memory.** Restarting the server ends all rooms. On `SIGTERM` the server broadcasts `notice { kind: 'server_restarting' }`, closes sockets cleanly, then exits; clients show "The server is restarting, rejoin in a moment" instead of spinning on "reconnecting...". Deploy when nobody is playing. (State is plain data, so persisting rooms remains possible later.)
 - Rooms expire after ~1h idle; max players is the game's `maxPlayers` (cap 12).
 
@@ -206,6 +207,7 @@ JSON messages `{ type, ...payload }`, every one validated with zod. Connect to `
 | `return_to_lobby` | `{}` | host |
 | `transfer_host` | `{ playerId }` | host |
 | `kick` | `{ playerId }` | host |
+| `close_room` | `{}` (lobby only) | host |
 | `action` | `{ action }` (validated by the game's `actionSchema`, then `reduce`) | per game |
 
 **Server -> Client**

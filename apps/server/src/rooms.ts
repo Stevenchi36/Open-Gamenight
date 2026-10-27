@@ -401,6 +401,13 @@ export class RoomManager {
         return
       }
 
+      case 'close_room':
+        hostOnly()
+        lobbyOnly()
+        // The host's client goes home on its own, so only the others are told.
+        this.closeRoom(room, 'The host closed the room.', conn)
+        return
+
       case 'action':
         if (!room.game) throw new RoomError('validation', 'No game is running')
         await this.runner.action(room, player.id, msg.action)
@@ -536,14 +543,14 @@ export class RoomManager {
     room.phase = 'lobby'
   }
 
-  private closeRoom(room: Room, message: string | null): void {
+  private closeRoom(room: Room, message: string | null, closer: Conn | null = null): void {
     if (room.closed) return
     room.closed = true
     this.runner.stop(room)
     this.cancelHostTimer(room)
     for (const p of room.players) {
       if (!p.conn) continue
-      if (message) this.notice(p.conn, 'removed', message)
+      if (message && p.conn !== closer) this.notice(p.conn, 'removed', message)
       p.conn.room = null
       p.conn.playerId = null
     }
