@@ -37,7 +37,7 @@ The host deals the next round. Everyone keeps their seat, and the first turn mov
 - **Match colour** (default off): pairs need the same rank and colour.
 - **Arrange hand** (default off): you can change the order of your hand. Tap a card, then where it should go, or tap **Shuffle**.
 
-Your hand is never sorted. It stays in the random order it was dealt, and a card you take lands in a random place. What you see is the order the next player picks from.
+Your hand is never sorted. It stays in the random order it was dealt, and a card you take lands in a random place. The next player picks from it as if facing you across the table: your leftmost card is their rightmost.
 
 ## Tips
 

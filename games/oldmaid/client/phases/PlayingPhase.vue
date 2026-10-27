@@ -54,6 +54,7 @@ import { computed, ref, watch } from 'vue'
 import HandCards from '../HandCards.vue'
 import MaidTable from '../MaidTable.vue'
 import PickFan from '../PickFan.vue'
+import { ownerPlace } from '../places.ts'
 import type { PhaseProps } from '../props.ts'
 import { moveText, moveTone } from '../text.ts'
 
@@ -92,6 +93,6 @@ watch(
 )
 
 function take() {
-  if (picked.value !== null) props.send({ type: 'draw', index: picked.value })
+  if (picked.value !== null) props.send({ type: 'draw', index: ownerPlace(fromCards.value, picked.value) })
 }
 </script>
