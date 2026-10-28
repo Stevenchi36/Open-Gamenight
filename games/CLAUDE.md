@@ -26,6 +26,7 @@ Build from the shared pieces, and grow them rather than copying:
 - `@ogn/core/ui` (`packages/core/src/ui/`): play-view helpers (`nameOf`, `isHost`, `useCountdown`, ...) and components (`StatusCard`, `HoldToReveal`, `SubmitField`, `PlayerPicker`, `VoteBreakdown`, `ScoreBoard`, `NextRoundButton`, `PlayingCard`, `CardTable`, `OrderList`, `MoveLog` + `moveLogEntries`, `MoveLogDialog`, `WhoAnswered`, `WinCelebration` + `winTitle`/`scoreStandings`, `LoseReveal`, `TurnOrder`, `SpectatorLayout`, ...), and card motion (`CardFlight`, `dealFlights`, `useArrivals`: see the Gone Fishin' client in `PLAN.md`).
 - `@ogn/core/library` (server only): batches for library games: `resolveBatch` when adding, `recentOrder` for a "Recently added" pick, `newestBatch`/`newestBatchStats`, `removeUsed` for the admin's Clear used, and `BATCH_RULE`/`batchField` for MCP add tools.
 - `SettingSlider`, `SettingSelect`, `SettingToggle`: global components for a `SettingsView`, used without imports.
+- Icons: write MDI names as usual (`icon="mdi-sheep"`), but only those listed in `apps/client/src/plugins/icons.ts` are bundled. Add a line there for a new one; `apps/client/test/icons.test.ts` fails on any name that's missing. A name built at runtime (`` `mdi-dice-${face}` ``) needs every value listed and a case in that test.
 
 When a game needs something a second game could use, add it to `kit` or `ui` (with a core test for `kit`) and record it in `docs/decisions.md`. Keep it in the game only when it carries that game's rules or words.
 

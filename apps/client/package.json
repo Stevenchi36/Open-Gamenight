@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "@fontsource/roboto": "^5.3.0",
-    "@mdi/font": "^7.4.47",
+    "@mdi/js": "^7.4.47",
     "@ogn/core": "workspace:*",
     "@ogn/games": "workspace:*",
     "better-auth": "^1.7.12",
