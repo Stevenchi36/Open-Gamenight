@@ -25,7 +25,13 @@ main() {
   # failed build took the site down.
   local client=apps/client
   rm -rf "$client/dist.next"
-  pnpm --filter @ogn/client exec vite build --outDir dist.next
+  # Run from the folder, not `pnpm --filter <name>`: this script is read before `git pull`, so a
+  # package rename in the pull made the old filter match nothing, which pnpm treats as success.
+  (cd "$client" && pnpm exec vite build --outDir dist.next)
+  if [ ! -f "$client/dist.next/index.html" ]; then
+    echo "Client build produced no $client/dist.next/index.html; leaving dist/ in place." >&2
+    exit 1
+  fi
   rm -rf "$client/dist.old"
   if [ -d "$client/dist" ]; then mv "$client/dist" "$client/dist.old"; fi
   mv "$client/dist.next" "$client/dist"
