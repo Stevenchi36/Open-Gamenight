@@ -77,6 +77,27 @@ describe('create and join', () => {
     expect(m.rooms.rooms.size).toBe(0)
   })
 
+  it('guests can create rooms with ROOM_CREATION=anyone, named and capped per IP', async () => {
+    const m = createManager({ games, roomCreation: 'anyone', maxRoomsPerUser: 1 })
+    const unnamed = new FakeConn(null)
+    await m.send(unnamed, { type: 'create_room' })
+    expect(unnamed.last('error')).toMatchObject({ code: 'validation' })
+
+    const guest = new FakeConn(null, '10.1.1.1')
+    await m.send(guest, { type: 'create_room', name: 'Sam' })
+    const state = guest.last('state')!
+    expect(state.room).toMatchObject({ hostId: guest.playerId })
+    expect(state.room.players[0]).toMatchObject({ name: 'Sam', isHost: true, isLoggedIn: false })
+    expect(m.rooms.list()[0]!.creatorName).toBe('Sam (guest)')
+
+    const sameIp = new FakeConn(null, '10.1.1.1')
+    await m.send(sameIp, { type: 'create_room', name: 'Sam' })
+    expect(sameIp.last('error')).toMatchObject({ code: 'room_cap' })
+    const otherIp = new FakeConn(null, '10.1.1.2')
+    await m.send(otherIp, { type: 'create_room', name: 'Alex' })
+    expect(otherIp.last('joined')).toBeDefined()
+  })
+
   it('creates a room with the default game and makes the creator host', async () => {
     const { host, room } = await roomWith(1)
     expect(room.code).toMatch(/^[A-HJ-NP-Z]{4}$/)

@@ -48,7 +48,7 @@
           </template>
         </RulesDialog>
         <v-spacer />
-        <v-btn v-if="signedIn" color="primary" variant="flat" prepend-icon="mdi-plus" @click="emit('start', game.id)">Start a room</v-btn>
+        <v-btn v-if="canStart" color="primary" variant="flat" prepend-icon="mdi-plus" @click="emit('start', game.id)">Start a room</v-btn>
         <v-btn v-else to="/login" variant="text">Sign in to start</v-btn>
       </v-card-actions>
     </v-card>
@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-// Every game: browse, filter by name, style and player count, read the rules; signed-in players can start a room.
+// Every game: browse, filter by name, style and player count, read the rules; whoever may create rooms can start one.
 import type { GameStyle } from '@ogn/core/contract'
 import { GAME_STYLE_LABELS } from '@ogn/core/contract'
 import type { AvailableGame } from '@ogn/core/protocol'
@@ -71,7 +71,7 @@ import { config } from '../lib/config.ts'
 import { playerRange } from '../lib/games.ts'
 import RulesDialog from './RulesDialog.vue'
 
-defineProps<{ signedIn: boolean }>()
+defineProps<{ canStart: boolean }>()
 const emit = defineEmits<{ start: [gameId: string] }>()
 
 const search = ref<string | null>('')

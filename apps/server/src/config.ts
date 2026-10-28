@@ -46,6 +46,7 @@ const schema = z.object({
   AI_CHAT_MESSAGES_PER_HOUR: int(60),
   MAX_ROOMS: int(50),
   MAX_ROOMS_PER_USER: int(2),
+  ROOM_CREATION: z.enum(['accounts', 'anyone']).default('accounts'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
 })
 

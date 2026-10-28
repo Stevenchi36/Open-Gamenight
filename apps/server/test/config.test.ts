@@ -13,6 +13,7 @@ describe('parseConfig', () => {
     expect(config.ALLOWED_ORIGINS).toEqual(['https://games.example.com', 'https://other.example.com'])
     expect(config.PORT).toBe(3000)
     expect(config.MAX_ROOMS_PER_USER).toBe(2)
+    expect(config.ROOM_CREATION).toBe('accounts')
     expect(config.ANTHROPIC_API_KEY).toBeUndefined()
     expect(config.gamesDbPath.replace(/\\/g, '/')).toMatch(/\/srv\/ogn\/data\/games\.db$/)
   })

@@ -98,13 +98,14 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 | `ANTHROPIC_MODEL` | `claude-haiku-5-5` | Model for generation |
 | `AI_DAILY_OUTPUT_TOKEN_CAP` | `200000` | Shared by all games and admins; resets at midnight UTC |
 | `AI_PER_ADMIN_CALLS_PER_HOUR` | `20` | |
-| `MAX_ROOMS` / `MAX_ROOMS_PER_USER` | `50` / `2` | Abuse limits |
+| `MAX_ROOMS` / `MAX_ROOMS_PER_USER` | `50` / `2` | Abuse limits. Guests' rooms count per IP |
+| `ROOM_CREATION` | `accounts` | Who may create rooms: `accounts` (signed-in users) or `anyone` (guests too; meant for a private network, since anyone who can reach the site could open rooms) |
 | `LOG_LEVEL` | `info` | `debug` \| `info` \| `warn` \| `error` \| `silent` (logs go to stderr) |
 
 ## Accounts and admin
 
 - Public sign-up is closed. Admins create accounts in **Admin → Users** (temporary password, role, ban, reset password). Forgotten passwords are reset there too.
-- An account is only needed to **create** rooms. Guests join with a code and a name; the host role can pass to a guest (manually, or automatically after the host has been away for about 2 minutes).
+- An account is only needed to **create** rooms (unless `ROOM_CREATION=anyone`). Guests join with a code and a name; the host role can pass to a guest (manually, or automatically after the host has been away for about 2 minutes).
 - **Admin → Word Imposter** has **Categories** (add, rename, delete empty ones) and the **Word library** (browse, add, edit or move words, delete, and generate-then-review when `ANTHROPIC_API_KEY` is set). Categories running low on unused words are flagged.
 - **Admin → Flock** has **Categories** and the **Question library**, the same way.
 - **Admin → In Order** has **Categories** and the **Theme library** (each theme is a scale with what 1 and 100 mean), the same way.

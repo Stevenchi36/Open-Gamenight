@@ -15,7 +15,7 @@
       </v-card-text>
     </v-card>
 
-    <GameLibrary v-if="tab === 'library'" :signed-in="!!user" @start="openStart" />
+    <GameLibrary v-if="tab === 'library'" :can-start="canCreate" @start="openStart" />
 
     <template v-else>
       <v-card class="mb-4">
@@ -43,7 +43,7 @@
         </v-card-text>
       </v-card>
   
-      <v-card v-if="user">
+      <v-card v-if="canCreate">
         <v-card-title>Start a new room</v-card-title>
         <v-card-text>
           <v-form @submit.prevent="create()">
@@ -109,6 +109,8 @@ const tab = computed({
 })
 const session = authClient.useSession()
 const user = computed(() => session.value.data?.user ?? null)
+// Matches the server's create_room rule (ROOM_CREATION).
+const canCreate = computed(() => !!user.value || config.guestRooms)
 
 const current = computed(() => roomState.room)
 const code = ref('')

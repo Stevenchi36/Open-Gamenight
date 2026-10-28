@@ -247,7 +247,7 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 | Who | Can do |
 |---|---|
 | Guest (no account) | Join a room by code with a display name, play, become host via transfer/migration |
-| `user` | Everything a guest can, plus **create rooms** (max `MAX_ROOMS_PER_USER` open) |
+| `user` | Everything a guest can, plus **create rooms** (max `MAX_ROOMS_PER_USER` open). With `ROOM_CREATION=anyone`, guests can create rooms too (counted per IP) |
 | `admin` | Everything a user can, plus the **admin panel**: users, and every game's admin pages |
 
 ### Getting accounts
@@ -257,7 +257,7 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 ### Where auth is enforced (server side, always)
 1. **REST:** `requireSession` / `requireAdmin` call `auth.api.getSession({ headers: fromNodeHeaders(req.headers) })` and check `session.user.role === 'admin'`. Never trust a client-sent role. (Verify `role` is on the session user in the running app.)
 2. **Game admin routes:** the core mounts each game's `adminRouter` under `/api/admin/<gameId>` **behind `requireAdmin` and the Origin check**. A game cannot mount routes outside its prefix or bypass the guard.
-3. **WebSocket:** resolve the session on the HTTP **upgrade** request (the `noServer` handler in section 4) with the same `getSession` call; attach `{ user }` (or `null`) to the socket. `create_room` requires `socket.user`. **Check the `Origin` header on upgrade** against `ALLOWED_ORIGINS` (cross-site websocket hijacking otherwise).
+3. **WebSocket:** resolve the session on the HTTP **upgrade** request (the `noServer` handler in section 4) with the same `getSession` call; attach `{ user }` (or `null`) to the socket. `create_room` requires `socket.user` unless `ROOM_CREATION=anyone`. **Check the `Origin` header on upgrade** against `ALLOWED_ORIGINS` (cross-site websocket hijacking otherwise).
 4. **State-changing REST routes** (POST/PUT/DELETE) run an `Origin` check on top of SameSite cookies.
 5. Client route guards and hidden buttons are UX only.
 

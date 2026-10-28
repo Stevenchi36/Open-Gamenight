@@ -87,6 +87,7 @@ export function createApp(deps: AppDeps): Express {
       appName: config.APP_NAME,
       primaryColor: config.APP_PRIMARY_COLOR,
       aiEnabled: !!deps.ai,
+      guestRooms: config.ROOM_CREATION === 'anyone',
       // Alphabetical, like every game menu (the room's lobby list too).
       games: [...games].sort((a, b) => a.name.localeCompare(b.name)).map((g) => ({
         id: g.id,

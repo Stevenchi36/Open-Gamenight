@@ -56,8 +56,8 @@ export interface Player {
 
 export interface Room {
   code: string
-  /** Who created it; the room counts against their MAX_ROOMS_PER_USER until it closes. */
-  creatorUserId: string
+  /** Who created it (`user:<id>`, or `ip:<addr>` for a guest); the room counts against their MAX_ROOMS_PER_USER until it closes. */
+  creatorKey: string
   /** Account name at creation, for the admin rooms list. */
   creatorName: string
   createdAt: number
@@ -93,7 +93,7 @@ export interface RoomSummary {
 
 export interface RoomManagerDeps {
   games: readonly AnyGameModule[]
-  config: Pick<Config, 'MAX_ROOMS' | 'MAX_ROOMS_PER_USER'>
+  config: Pick<Config, 'MAX_ROOMS' | 'MAX_ROOMS_PER_USER' | 'ROOM_CREATION'>
   servicesFor: (game: AnyGameModule) => ServerServices
   logger: AppLogger
   clock?: Clock
@@ -225,22 +225,25 @@ export class RoomManager {
   // ---- create / join / reconnect / leave
 
   private async createRoom(conn: Conn, gameId: string | undefined, name: string | undefined): Promise<void> {
-    if (!conn.user) throw new RoomError('unauthorized', 'Sign in to create a room')
+    if (!conn.user && this.config.ROOM_CREATION !== 'anyone') throw new RoomError('unauthorized', 'Sign in to create a room')
+    if (!conn.user && !name) throw new RoomError('validation', 'Enter your name')
     const game = gameId ? this.games.find((g) => g.id === gameId) : this.games[0]
     if (!game) throw new RoomError('not_found', 'Unknown game')
     if (this.rooms.size >= this.config.MAX_ROOMS) throw new RoomError('room_cap', 'The server is full, try again later')
-    const mine = [...this.rooms.values()].filter((r) => r.creatorUserId === conn.user!.id).length
+    // Guests have no account, so their rooms count per IP.
+    const creatorKey = conn.user ? `user:${conn.user.id}` : `ip:${conn.ip}`
+    const mine = [...this.rooms.values()].filter((r) => r.creatorKey === creatorKey).length
     if (mine >= this.config.MAX_ROOMS_PER_USER) {
       throw new RoomError('room_cap', `You already have ${mine} open room${mine === 1 ? '' : 's'}. Close one first.`)
     }
-    const playerName = name ?? defaultName(conn.user.name)
+    const playerName = name ?? defaultName(conn.user!.name)
     if (conn.room) await this.leave(conn)
 
     const now = this.clock.now()
     const room: Room = {
       code: this.newCode(),
-      creatorUserId: conn.user.id,
-      creatorName: conn.user.name,
+      creatorKey,
+      creatorName: conn.user ? conn.user.name : `${playerName} (guest)`,
       createdAt: now,
       hostId: '',
       players: [],
@@ -260,7 +263,7 @@ export class RoomManager {
       const player = this.addPlayer(room, conn, playerName)
       room.hostId = player.id
     })
-    this.logger.info('room created', { code: room.code, game: game.id, user: conn.user.id })
+    this.logger.info('room created', { code: room.code, game: game.id, creator: creatorKey })
   }
 
   private async joinRoom(conn: Conn, rawCode: string, name: string): Promise<void> {

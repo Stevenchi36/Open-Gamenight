@@ -82,7 +82,13 @@ export const user = (id: string, role: 'user' | 'admin' = 'user'): SessionUser =
 })
 
 export function createManager(
-  options: { games?: readonly AnyGameModule[]; maxRooms?: number; maxRoomsPerUser?: number; joinLimit?: number } = {},
+  options: {
+    games?: readonly AnyGameModule[]
+    maxRooms?: number
+    maxRoomsPerUser?: number
+    joinLimit?: number
+    roomCreation?: 'accounts' | 'anyone'
+  } = {},
 ) {
   const clock = new ManualClock()
   const games = options.games ?? registry
@@ -90,7 +96,11 @@ export function createManager(
   migrateGamesDb(db, games)
   const rooms = new RoomManager({
     games,
-    config: { MAX_ROOMS: options.maxRooms ?? 50, MAX_ROOMS_PER_USER: options.maxRoomsPerUser ?? 2 },
+    config: {
+      MAX_ROOMS: options.maxRooms ?? 50,
+      MAX_ROOMS_PER_USER: options.maxRoomsPerUser ?? 2,
+      ROOM_CREATION: options.roomCreation ?? 'accounts',
+    },
     logger: createLogger('test', 'silent'),
     servicesFor: (game) => ({
       gameId: game.id,
