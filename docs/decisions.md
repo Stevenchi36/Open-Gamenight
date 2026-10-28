@@ -3,7 +3,7 @@
 One line each: what we decided and why. See `PLAN.md` for details. Revisit a decision by editing it here, not by quietly diverging in code.
 
 ## Platform
-- **The project is called Open Gamenight (`open-gamenight`), shortened to `ogn` where a short form fits (the `@ogn/*` package scope, storage keys, header and meta names).** Renamed from ws-family-games: the user wanted a name that's about games and says open source. The local checkout folder keeps its old name, so local absolute paths in `docs/mcp.md` still say `ws-family-games`.
+- **The project is called Open Gamenight (`open-gamenight`), shortened to `ogn` where a short form fits (the `@ogn/*` package scope, storage keys, header and meta names).** Renamed from ws-family-games: the user wanted a name that's about games and says open source.
 - **Generic platform, Imposter as the first game.** More games are expected; rooms, auth and sockets shouldn't be rewritten per game.
 - **Game contract is a pure reducer (`init` / `reduce` / `view`) with effects for timers.** Testable with seeded `rng`/`now`, and the core can guarantee secrecy by only ever sending `view()` output.
 - **Player actions (`A`, `reduce`) and timer actions (`T`, `onTimer`) are separate types and handlers.** With one action type, `actionSchema` had to be cast and every timer case had to re-check `actorId === null`; now `actorId` is always a player, clients can't name a timer action, and the compiler keeps the two apart.

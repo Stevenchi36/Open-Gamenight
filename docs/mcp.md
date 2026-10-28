@@ -34,8 +34,8 @@ Prerequisites: the repo is checked out and `pnpm install` has run.
 
 ```bash
 claude mcp add open-gamenight \
-  --env GAMES_DB_PATH=C:/Users/Steve/WebBench/ws-family-games/data/games.db \
-  -- node C:/Users/Steve/WebBench/ws-family-games/apps/mcp/src/server.ts
+  --env GAMES_DB_PATH=C:/Users/Steve/WebBench/open-gamenight/data/games.db \
+  -- node C:/Users/Steve/WebBench/open-gamenight/apps/mcp/src/server.ts
 ```
 
 Use absolute paths, because Claude starts the process from an unknown working directory. If you leave out `GAMES_DB_PATH`, it defaults to `<repo>/data/games.db`.
@@ -51,8 +51,8 @@ Edit `claude_desktop_config.json` (Settings → Developer → Edit Config):
   "mcpServers": {
     "open-gamenight": {
       "command": "node",
-      "args": ["C:/Users/Steve/WebBench/ws-family-games/apps/mcp/src/server.ts"],
-      "env": { "GAMES_DB_PATH": "C:/Users/Steve/WebBench/ws-family-games/data/games.db" }
+      "args": ["C:/Users/Steve/WebBench/open-gamenight/apps/mcp/src/server.ts"],
+      "env": { "GAMES_DB_PATH": "C:/Users/Steve/WebBench/open-gamenight/data/games.db" }
     }
   }
 }
