@@ -1,8 +1,10 @@
 <template>
   <v-container class="py-6" :style="{ maxWidth: tab === 'library' ? '760px' : '560px' }">
+    <!-- Tabs are one Tab stop with arrow keys between them (the ARIA tab pattern); a tab opens as
+         soon as it's focused, so the arrows alone switch it, with no Enter needed. -->
     <v-tabs v-model="tab" color="primary" grow class="mb-4">
-      <v-tab value="join" prepend-icon="mdi-login">Join</v-tab>
-      <v-tab value="library" prepend-icon="mdi-view-grid-outline">Game Library</v-tab>
+      <v-tab value="join" prepend-icon="mdi-login" @focus="tab = 'join'">Join</v-tab>
+      <v-tab value="library" prepend-icon="mdi-view-grid-outline" @focus="tab = 'library'">Game Library</v-tab>
     </v-tabs>
 
     <v-card v-if="current" class="mb-4" color="primary" variant="tonal">

@@ -4,7 +4,7 @@
       <div v-if="showing" class="lose-dim" aria-hidden="true" />
     </Transition>
     <Transition name="lose-pop">
-      <div v-if="showing" class="lose-reveal" role="status">
+      <div v-if="showing" class="lose-reveal">
         <v-card class="lose-reveal__card text-center" elevation="16" rounded="xl" @click="hide">
           <v-card-text class="py-6 px-6 px-sm-10">
             <div class="lose-reveal__stage">
@@ -36,8 +36,10 @@
 // The opposite of WinCelebration, for a game about who got caught (Old Maid): the screen greys
 // over, the losing card (the default slot) drops in and turns face up, and a small rain cloud
 // rains on the name. Like WinCelebration it fires when `active` turns true while on screen, never
-// on first render, goes by itself or on a tap, and only the card takes clicks.
+// on first render, goes by itself or on a tap (or Escape), only the card takes clicks, and screen
+// readers hear it through `announce`.
 import { onBeforeUnmount, ref, watch } from 'vue'
+import { announce } from './announce.ts'
 import PlayingCard from './PlayingCard.vue'
 
 const props = withDefaults(
@@ -67,10 +69,17 @@ onBeforeUnmount(hide)
 
 function show() {
   showing.value = true
+  document.addEventListener('keydown', onKey)
+  announce([props.title, props.subtitle].filter(Boolean).join('. '))
   timers.push(setTimeout(hide, props.duration))
 }
 
+function onKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') hide()
+}
+
 function hide() {
+  document.removeEventListener('keydown', onKey)
   timers.forEach(clearTimeout)
   timers = []
   showing.value = false

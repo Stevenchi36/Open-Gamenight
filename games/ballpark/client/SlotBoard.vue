@@ -6,19 +6,16 @@
       :color="winningIds?.includes(slot.id) ? 'success' : undefined"
       :variant="winningIds?.includes(slot.id) ? 'flat' : 'tonal'"
       class="mb-2"
-      :class="{ 'slot--in': stagger }"
+      :class="{ 'slot--in': stagger, 'slot--pickable': pickable }"
       :style="stagger ? { animationDelay: `${i * 150}ms` } : undefined"
-      v-bind="pickable ? { onClick: () => emit('pick', slot.id) } : {}"
     >
+      <button v-if="pickable" type="button" class="slot-pick" :aria-label="`Put a token on ${slotText(slot)}, pays ×${slot.odds}`" @click="emit('pick', slot.id)" />
       <v-card-text class="d-flex align-center ga-3 py-3">
         <div class="text-center" style="min-width: 3.5ch">
           <div class="text-title-large font-weight-bold">×{{ slot.odds }}</div>
         </div>
         <div class="flex-grow-1">
-          <div class="text-body-large font-weight-medium">
-            <template v-if="slot.value === null">All too high</template>
-            <template v-else>{{ formatValue(slot.value, unit) }}</template>
-          </div>
+          <div class="text-body-large font-weight-medium">{{ slotText(slot) }}</div>
           <div class="text-body-medium text-medium-emphasis">
             <template v-if="slot.value === null">The answer is below every guess</template>
             <template v-else>{{ slot.playerIds.map((id) => (id === me ? 'You' : nameOf(room, id))).join(', ') }}</template>
@@ -28,7 +25,16 @@
               <v-icon start size="small">mdi-poker-chip</v-icon>
               {{ t.label }}<template v-if="t.count > 1"> ×{{ t.count }}</template>
               <template v-if="t.stake"> +{{ t.stake }}</template>
-              <v-icon v-if="t.mine && removable" end size="small" @click.stop="emit('remove', slot.id)">mdi-close</v-icon>
+              <v-btn
+                v-if="t.mine && removable"
+                class="slot-remove ms-1 me-n2"
+                icon="mdi-close"
+                size="x-small"
+                density="comfortable"
+                variant="text"
+                :aria-label="`Take a token off ${slotText(slot)}`"
+                @click="emit('remove', slot.id)"
+              />
             </v-chip>
           </div>
         </div>
@@ -40,6 +46,8 @@
 
 <script setup lang="ts">
 // The betting board: one card per slot with its odds, who guessed it, and the tokens on it.
+// While picking, each card is covered by a transparent button (a v-card with @click alone isn't
+// keyboard reachable), with your tokens' remove buttons on top of it.
 import type { RoomView } from '@ogn/core/protocol'
 import { nameOf } from '@ogn/core/ui'
 import type { Bet, Slot } from '../shared/index.ts'
@@ -63,6 +71,8 @@ const props = defineProps<{
   stagger?: boolean
 }>()
 const emit = defineEmits<{ pick: [slot: string]; remove: [slot: string] }>()
+
+const slotText = (slot: Slot) => (slot.value === null ? 'All too high' : formatValue(slot.value, props.unit))
 
 interface Token {
   key: string
@@ -93,6 +103,33 @@ function tokensOn(slot: string): Token[] {
 </script>
 
 <style scoped>
+.slot--pickable {
+  position: relative;
+}
+.slot-pick {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  cursor: pointer;
+}
+.slot-pick:hover {
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+.slot-pick:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+/* Taps on the card's content fall through to the button, except on remove buttons. */
+.slot--pickable :deep(.v-card-text) {
+  position: relative;
+  pointer-events: none;
+}
+.slot-remove {
+  pointer-events: auto;
+}
 .slot--in {
   animation: slot-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
 }

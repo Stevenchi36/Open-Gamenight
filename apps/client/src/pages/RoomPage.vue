@@ -35,6 +35,7 @@
       <!-- Floated, so the play view's top row (round, score) wraps beside them instead of under them. -->
       <template v-else>
         <v-btn
+          ref="menuButton"
           class="menu-button"
           icon="mdi-menu"
           size="small"
@@ -60,24 +61,35 @@
       <AttentionGlow v-if="actionNeeded" />
 
       <!-- During a game the room's controls live here, out of the way; the app bar is hidden too. -->
-      <v-navigation-drawer v-if="playing" v-model="menu" temporary location="right" width="280">
+      <v-navigation-drawer
+        v-if="playing"
+        ref="drawer"
+        v-model="menu"
+        temporary
+        retain-focus
+        location="right"
+        width="280"
+        @keydown.esc="menu = false"
+      >
         <div class="pa-4">
           <div class="text-body-small text-medium-emphasis">Room code</div>
           <div class="text-headline-large room-code font-weight-bold">{{ room.code }}</div>
           <WatcherCount v-if="room.spectators > 0" class="mt-1" :count="room.spectators" />
         </div>
         <v-divider />
+        <!-- tabindex 0 on each item: a Vuetify list is otherwise one Tab stop, with arrow keys inside. -->
         <v-list nav>
           <RulesDialog v-if="gameModule" :game="gameModule">
             <template #activator="{ props: activator }">
-              <v-list-item v-bind="activator" prepend-icon="mdi-help-circle-outline" title="How to play" @click="menu = false" />
+              <v-list-item v-bind="activator" prepend-icon="mdi-help-circle-outline" title="How to play" tabindex="0" @click="menu = false" />
             </template>
           </RulesDialog>
-          <v-list-item prepend-icon="mdi-link-variant" title="Invite" @click="copyLink" />
-          <v-list-item prepend-icon="mdi-television" title="Show on TV" @click="openTv" />
+          <v-list-item prepend-icon="mdi-link-variant" title="Invite" tabindex="0" @click="copyLink" />
+          <v-list-item prepend-icon="mdi-television" title="Show on TV" tabindex="0" @click="openTv" />
           <v-list-item
             :prepend-icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
             :title="isDark ? 'Light theme' : 'Dark theme'"
+            tabindex="0"
             @click="toggleTheme"
           />
         </v-list>
@@ -85,8 +97,8 @@
         <template #append>
           <v-divider />
           <v-list nav>
-            <v-list-item v-if="isHost" prepend-icon="mdi-arrow-left" title="Back to lobby" @click="askLobby" />
-            <v-list-item prepend-icon="mdi-exit-run" title="Leave room" base-color="error" @click="askLeave" />
+            <v-list-item v-if="isHost" prepend-icon="mdi-arrow-left" title="Back to lobby" tabindex="0" @click="askLobby" />
+            <v-list-item prepend-icon="mdi-exit-run" title="Leave room" base-color="error" tabindex="0" @click="askLeave" />
           </v-list>
         </template>
       </v-navigation-drawer>
@@ -161,6 +173,7 @@
 
 <script setup lang="ts">
 import { SPECTATOR_ID } from '@ogn/core/protocol'
+import { announce } from '@ogn/core/ui'
 import { clientGames } from '@ogn/games/client'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect, type Component } from 'vue'
 import { useRouter } from 'vue-router'
@@ -168,6 +181,7 @@ import AttentionGlow from '../components/AttentionGlow.vue'
 import LobbyView from '../components/LobbyView.vue'
 import RulesDialog from '../components/RulesDialog.vue'
 import WatcherCount from '../components/WatcherCount.vue'
+import { useDrawerFocus } from '../lib/drawerFocus.ts'
 import { immersive } from '../lib/layout.ts'
 import { closeRoom, joinRoom, lastName, leaveRoom, resumeSeat, roomState, savedRoom, send, sendAction, serverNow, toast } from '../lib/room.ts'
 import { useThemeToggle } from '../lib/theme.ts'
@@ -201,6 +215,8 @@ const playing = computed(() => room.value?.phase === 'playing')
 watchEffect(() => (immersive.room = playing.value))
 onUnmounted(() => (immersive.room = false))
 watch(playing, () => (menu.value = false))
+
+const { drawer, button: menuButton } = useDrawerFocus(menu)
 
 function openTv() {
   menu.value = false
@@ -236,6 +252,10 @@ const actionNeeded = computed(() => {
   const r = room.value
   if (!r || r.phase !== 'playing' || !game.value) return false
   return gameModule.value?.needsAction?.(game.value, r.you.id, r, r.game.settings) ?? false
+})
+// The glow's words, for screen readers.
+watch(actionNeeded, (now) => {
+  if (now) announce('Your move')
 })
 
 const views = new Map<string, Component>()

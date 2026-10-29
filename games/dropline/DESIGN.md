@@ -65,3 +65,4 @@ PLAYING -> RESULTS -> new_game -> PLAYING
 - **Red and blue discs, red first.** Two colours that stay distinct in light and dark themes, and not the best-known version's red and yellow.
 - **Lines longer than the setting count as wins, and the whole line lights up.** Dropping a disc can join two shorter lines into one longer than required; refusing that win would be a strange rule.
 - **Disconnects, leavers, colour swapping and scoring work as in Tic-Tac-Toe.** Same two-player structure, same reasons.
+- **Columns stay focusable off your turn (`aria-disabled`, not `disabled`), and each one's name lists its discs from the bottom, marking the last move and the winning line.** The board is otherwise invisible to a screen reader, and a disabled button can't be reached to read it.

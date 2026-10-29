@@ -1,4 +1,5 @@
 <template>
+  <p class="d-sr-only">{{ summary }}</p>
   <svg class="db-board mx-auto mb-4" :viewBox="`0 0 ${size} ${size}`" :style="{ maxWidth: `${(grid + 1) * 60}px` }" role="group" aria-label="Board">
     <template v-for="(row, r) in boxes" :key="`b${r}`">
       <template v-for="(owner, c) in row" :key="`b${r},${c}`">
@@ -105,9 +106,37 @@ function diamond(l: Line): string {
   return [`${x1},${y1}`, sides[0], `${x2},${y2}`, sides[1]].join(' ')
 }
 
-function label(l: Line): string {
-  return l.dir === 'h' ? `Line across from row ${l.row + 1}, dot ${l.col + 1}` : `Line down from row ${l.row + 1}, dot ${l.col + 1}`
+function where(l: Line): string {
+  return l.dir === 'h' ? `across from row ${l.row + 1}, dot ${l.col + 1}` : `down from row ${l.row + 1}, dot ${l.col + 1}`
 }
+
+/** Sides drawn around a box, or null off the board. */
+function sides(r: number, c: number): number | null {
+  if (r < 0 || c < 0 || r >= props.grid || c >= props.grid) return null
+  return [props.h[r]![c], props.h[r + 1]![c], props.v[r]![c], props.v[r]![c + 1]].filter(Boolean).length
+}
+
+// Screen readers can't see which lines are drawn, so each target says what it does to the boxes
+// either side: "Line across from row 2, dot 1: completes the box above; the box below has 1 side".
+function label(l: Line): string {
+  const around: [string, number, number][] =
+    l.dir === 'h'
+      ? [['above', l.row - 1, l.col], ['below', l.row, l.col]]
+      : [['left', l.row, l.col - 1], ['right', l.row, l.col]]
+  const notes = around.flatMap(([side, r, c]) => {
+    const n = sides(r, c)
+    if (n === null) return []
+    const box = side === 'left' || side === 'right' ? `the box to the ${side}` : `the box ${side}`
+    return [n === 3 ? `completes ${box}` : `${box} has ${n} side${n === 1 ? '' : 's'}`]
+  })
+  return `Line ${where(l)}: ${notes.join('; ')}`
+}
+
+const summary = computed(() => {
+  const claimed = props.boxes.flat().filter((o) => o !== null).length
+  const last = props.last ? ` Last line: ${where(props.last)}.` : ''
+  return `Dots and Boxes board, ${props.grid} by ${props.grid} boxes, ${claimed} claimed.${last}`
+})
 </script>
 
 <style scoped>

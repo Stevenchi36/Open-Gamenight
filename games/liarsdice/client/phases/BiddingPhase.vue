@@ -24,9 +24,9 @@
       <v-card-text>
         <div class="text-body-medium mb-2">Your bid: at least</div>
         <div class="d-flex align-center justify-center ga-4 mb-3">
-          <v-btn icon="mdi-minus" variant="tonal" size="small" :disabled="quantity <= minForFace" @click="quantity--" />
-          <span class="text-headline-large font-weight-bold" style="min-width: 2ch; text-align: center">{{ quantity }}</span>
-          <v-btn icon="mdi-plus" variant="tonal" size="small" :disabled="quantity >= view.totalDice" @click="quantity++" />
+          <v-btn icon="mdi-minus" variant="tonal" size="small" :disabled="quantity <= minForFace" aria-label="One fewer" @click="quantity--" />
+          <span class="text-headline-large font-weight-bold" style="min-width: 2ch; text-align: center" aria-live="polite">{{ quantity }}</span>
+          <v-btn icon="mdi-plus" variant="tonal" size="small" :disabled="quantity >= view.totalDice" aria-label="One more" @click="quantity++" />
         </div>
         <div class="d-flex justify-center flex-wrap ga-1 mb-4">
           <v-btn
@@ -38,6 +38,7 @@
             :color="face === f.face ? 'primary' : undefined"
             :disabled="!f.allowed"
             :aria-label="`Face ${f.face}`"
+            :aria-pressed="face === f.face"
             @click="pickFace(f.face)"
           />
         </div>

@@ -2,7 +2,7 @@
   <Teleport to="body">
     <canvas v-if="bursting" ref="canvas" class="win-confetti" aria-hidden="true" />
     <Transition name="win-pop">
-      <div v-if="showing" class="win-celebration" role="status">
+      <div v-if="showing" class="win-celebration">
         <v-card class="win-celebration__card text-center" elevation="16" rounded="xl" @click="hide">
           <v-card-text class="py-8 px-6 px-sm-10">
             <v-icon v-if="!podium" icon="mdi-trophy" color="amber" size="72" class="mb-2" />
@@ -44,11 +44,13 @@
 // A confetti burst from the middle of the screen with a card that pops out of it, then
 // goes by itself (or on a tap). It fires when `active` turns true while on screen, never
 // on first render, so joining or reconnecting onto a finished game doesn't replay it.
-// Only the card takes clicks: the page underneath (a New game button) stays usable.
+// Only the card takes clicks: the page underneath (a New game button) stays usable. Escape closes it
+// too, and screen readers hear the result (and placings) through `announce`.
 // With `standings` it also shows a podium (2nd, 1st, 3rd from the left; tied players share
 // a step) and everyone below 3rd in a list, and stays longer so there's time to read it.
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { Standing } from '../client.ts'
+import { announce } from './announce.ts'
 import { ordinal } from './helpers.ts'
 
 const props = withDefaults(
@@ -94,11 +96,19 @@ onBeforeUnmount(hide)
 
 function fire() {
   showing.value = true
+  document.addEventListener('keydown', onKey)
+  const placings = props.standings && props.standings.length >= 3 ? props.standings.map((s) => `${ordinal(s.place)} ${s.name}`) : []
+  announce([props.title, props.subtitle, ...placings].filter(Boolean).join('. '))
   timers.push(setTimeout(hide, props.duration ?? (podium.value ? 7000 : 3500)))
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) void burst()
 }
 
+function onKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') hide()
+}
+
 function hide() {
+  document.removeEventListener('keydown', onKey)
   timers.forEach(clearTimeout)
   timers = []
   cancelAnimationFrame(frame)

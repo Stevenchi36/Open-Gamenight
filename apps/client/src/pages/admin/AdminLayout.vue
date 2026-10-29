@@ -1,16 +1,17 @@
 <template>
   <v-container class="py-4" style="max-width: 1200px">
     <!-- Phones: the nav is a slide-out drawer so the page content comes first -->
+    <!-- Nav items get tabindex 0: a Vuetify list is otherwise one Tab stop, with arrow keys inside. -->
     <template v-if="!mdAndUp">
-      <v-navigation-drawer v-model="drawer" temporary>
+      <v-navigation-drawer ref="drawerEl" v-model="drawer" temporary retain-focus @keydown.esc="drawer = false">
         <v-list nav density="comfortable">
           <template v-for="item in navItems" :key="item.key">
             <v-list-subheader v-if="item.subheader">{{ item.title }}</v-list-subheader>
-            <v-list-item v-else :prepend-icon="item.icon" :title="item.title" :to="item.to" :exact="item.exact" />
+            <v-list-item v-else :prepend-icon="item.icon" :title="item.title" :to="item.to" :exact="item.exact" tabindex="0" />
           </template>
         </v-list>
       </v-navigation-drawer>
-      <v-btn variant="tonal" prepend-icon="mdi-menu" class="mb-4" @click="drawer = true">
+      <v-btn ref="drawerButton" variant="tonal" prepend-icon="mdi-menu" class="mb-4" @click="drawer = true">
         {{ currentTitle ?? 'Admin' }}
       </v-btn>
     </template>
@@ -20,7 +21,7 @@
           <v-list nav density="comfortable">
             <template v-for="item in navItems" :key="item.key">
               <v-list-subheader v-if="item.subheader">{{ item.title }}</v-list-subheader>
-              <v-list-item v-else :prepend-icon="item.icon" :title="item.title" :to="item.to" :exact="item.exact" />
+              <v-list-item v-else :prepend-icon="item.icon" :title="item.title" :to="item.to" :exact="item.exact" tabindex="0" />
             </template>
           </v-list>
         </v-card>
@@ -38,12 +39,14 @@ import { clientGames } from '@ogn/games/client'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useDisplay } from 'vuetify'
+import { useDrawerFocus } from '../../lib/drawerFocus.ts'
 
 const route = useRoute()
 const router = useRouter()
 const { mdAndUp } = useDisplay()
 const drawer = ref(false)
 watch(() => route.fullPath, () => (drawer.value = false))
+const { drawer: drawerEl, button: drawerButton } = useDrawerFocus(drawer)
 
 /** Games that use the shared categories table (reported by the server). */
 const withCategories = ref(new Set<string>())

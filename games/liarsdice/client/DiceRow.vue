@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-wrap ga-1" :aria-label="dice.join(', ')">
+  <div class="d-flex flex-wrap ga-1" role="img" :aria-label="dice.length === 1 ? `Die: ${dice[0]}` : `Dice: ${dice.join(', ')}`">
     <v-icon
       v-for="(d, i) in dice"
       :key="i"

@@ -59,7 +59,7 @@
           :maxlength="MAX_LENGTH"
           @keydown.enter.exact.prevent="send"
         />
-        <v-btn icon="mdi-send" color="primary" :disabled="busy || !draft.trim()" :loading="busy" @click="send" />
+        <v-btn icon="mdi-send" color="primary" :disabled="busy || !draft.trim()" :loading="busy" aria-label="Send" @click="send" />
       </div>
     </v-card>
   </div>

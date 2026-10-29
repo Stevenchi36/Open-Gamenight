@@ -51,10 +51,12 @@
       closable
       @update:model-value="setToasts"
     />
+    <LiveRegion />
   </v-app>
 </template>
 
 <script setup lang="ts">
+import { LiveRegion } from '@ogn/core/ui'
 import { computed, defineAsyncComponent, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { authClient } from './lib/auth-client.ts'

@@ -10,9 +10,9 @@
       type="button"
       class="dl-column"
       :class="{ 'dl-column--playable': canDrop(c) }"
-      :disabled="!canDrop(c)"
-      :aria-label="`Column ${c + 1}`"
-      @click="emit('drop', c)"
+      :aria-disabled="!canDrop(c)"
+      :aria-label="columnLabel(column, c)"
+      @click="canDrop(c) && emit('drop', c)"
     >
       <span
         v-for="row in rows"
@@ -36,6 +36,8 @@
 // last disc dropped gets a dot and the winning line a ring. `large` sizes it for the watch page's TV.
 // A disc that arrives while the board is on screen falls into place, and a line won then pulses;
 // the first render shows the board as it stands, so joining or reconnecting replays nothing.
+// Columns stay focusable off your turn (aria-disabled, not disabled) so a screen reader can read
+// the board: each column's name lists its discs from the bottom.
 import { computed, ref, watch } from 'vue'
 import type { Disc, Spot } from '../shared/index.ts'
 
@@ -67,6 +69,16 @@ watch(
 // Falls from just above the board; time grows with the square root of the distance, like gravity.
 const dropTime = computed(() => (dropping.value ? Math.round(150 * Math.sqrt(props.rows - dropping.value.row)) : 0))
 const celebrate = computed(() => !!dropping.value && !!props.line && at(props.line, dropping.value.col, dropping.value.row))
+
+function columnLabel(column: Disc[], col: number): string {
+  const discs = column.map((disc, row) => {
+    const notes = [at(props.line, col, row) && 'winning line', !!props.last && isSpot(props.last, col, row) && 'last move'].filter(Boolean)
+    return notes.length ? `${disc} (${notes.join(', ')})` : disc
+  })
+  const free = props.rows - column.length
+  const parts = [...discs, free === 0 ? 'full' : `${free} empty`]
+  return `Column ${col + 1}: ${parts.join(', ')}`
+}
 
 function holeClass(column: Disc[], col: number, row: number) {
   return {
@@ -111,7 +123,13 @@ function discClass(disc: Disc, col: number, row: number) {
 .dl-column--playable:hover,
 .dl-column--playable:focus-visible {
   background: rgba(255, 255, 255, 0.35);
-  outline: none;
+}
+/* The tint alone barely shows on the dark theme's light primary; the ring reads on either. */
+.dl-column:focus-visible {
+  outline: 3px solid rgb(var(--v-theme-on-surface));
+  outline-offset: 1px;
+  position: relative;
+  z-index: 1;
 }
 .dl-column--playable:hover .dl-hole--next-red,
 .dl-column--playable:focus-visible .dl-hole--next-red {

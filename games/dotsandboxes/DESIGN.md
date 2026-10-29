@@ -68,3 +68,4 @@ type Line = { dir: 'h' | 'v', row, col }
 - **A leaver's seat and boxes stay on the board, they're skipped and can't win; under 2 players left ends the game with no points.** Removing their boxes would reopen closed squares; same leaver shape as Cheat.
 - **Line tap targets are diamonds (the line's two dots and the centres of the boxes either side).** They tile the board without gaps or overlaps, so every point picks exactly one line and targets stay as large as the grid allows.
 - **Boxes show the owner's initial as well as their colour.** Colour alone fails colour-blind players.
+- **Each line target's screen-reader name says what drawing it does to the boxes either side ("completes the box above; the box below has 1 side"), and a hidden summary gives the boxes claimed and the last line.** Drawn lines aren't focusable, so a screen reader would otherwise learn nothing about the board; box side counts are what a player decides on.
