@@ -36,10 +36,21 @@ When a game needs something a second game could use, add it to `kit` or `ui` (wi
 
 Never name a game, or its pieces and branding, after a trademarked game (Connect Four, UNO, Wits & Wagers, Herd Mentality): mechanics are free to use, names aren't. Give it a custom name (Drop Line, Last Card, Ballpark, Flock), or a traditional generic one nobody owns (Tic-Tac-Toe, Cheat, Dots and Boxes). The id follows the name, so settle it before scaffolding, and record why in the first entry of its `DESIGN.md` decisions.
 
+## Accessibility
+
+Every game has to be playable by keyboard and with a screen reader. `pnpm lint` (eslint-plugin-vuejs-accessibility) checks native elements, and `apps/client/test/a11y.test.ts` checks the Vuetify mistakes it can't see; neither covers the rest of this list:
+
+- **Anything tappable is a button.** A native `<button>`, a `v-btn`, or a `v-card` with `tag="button"`; a card holding buttons of its own gets a transparent button over it instead (Ballpark's `SlotBoard`, Flock's `GroupList`). Icon-only buttons get an `aria-label` naming what they do, and selection is `aria-pressed`.
+- **The board can be read.** Each square, column or line's name says what's there ("Column 3: red, blue, 4 empty"), and a board of many targets is one Tab stop with arrow keys (Dots and Boxes).
+- **Colour is never the only cue**, and text keeps 4.5:1 (3:1 for large bold text) on whatever colour it sits on.
+- **Secrets go through `HoldToReveal`**, and other players' hands through `CardCount`.
+- **Each new move is announced** with `useAnnounce` (see Spectators and animation above).
+- **Check by hand** with a screen reader and keyboard only (`docs/dev-testing.md`, Screen readers and keyboard).
+
 ## Adding a game
 
 1. **Spec.** Write the game's `DESIGN.md`, shaped like `imposter/DESIGN.md`: the spec (rules, settings, state machine, actions, view, secrets, client), then its decisions, one line each with the reason. Add it to the games list in `PLAN.md` section 7. Done when every phase, action and secret is named there.
 2. **Scaffold** a folder shaped like `imposter/`: `shared/` (`meta`: id, name, description, styles and player limits, spread into both the server and client modules; settings schema and defaults, client action schema, view types), `server/` (`game.ts` with the pure module; `index.ts` adding integrations), `client/` (`index.ts` manifest, `PlayView.vue`, `SettingsView.vue`, `SpectatorView.vue`, with animations per the section above), `test/`, `RULES.md`, plus `package.json` (`@ogn/game-<id>`, same `exports` as Imposter) and `tsconfig.json`.
 3. **Register** it: one entry in `games/index.ts`, one in `games/client.ts`, and the package in `games/package.json` dependencies, then `pnpm install`.
 4. **Test** with `createSim` and `runLeakTest` from `@ogn/core/testing`: game rules in `test/game.test.ts`, a `runLeakTest` suite covering every settings combination that changes what views show, and `needsAction` per phase. Done when the leak test reaches every phase and reports no leaks. A game with nothing hidden declares `secrets: []` and has no leak test (Tic-Tac-Toe).
-5. **Finish** with the root `CLAUDE.md` workflow checks (test, typecheck, lint, client build), then play a round on the dev-players page (`docs/dev-testing.md`) with a spectator window open.
+5. **Finish** with the root `CLAUDE.md` workflow checks (test, typecheck, lint, client build), then play a round on the dev-players page (`docs/dev-testing.md`) with a spectator window open, and one seat by keyboard with a screen reader on (the Accessibility list above).

@@ -1,5 +1,6 @@
 <template>
   <p class="d-sr-only">{{ summary }}</p>
+  <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -- arrow keys for the line buttons inside (roving tabindex) -->
   <svg
     class="db-board mx-auto"
     :viewBox="`0 0 ${size} ${size}`"

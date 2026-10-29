@@ -6,6 +6,7 @@
     <StatusCard v-else compact :overline="view.theme.text" title="Turning the cards over…" />
 
     <LineEnd :theme="view.theme" end="low" />
+    <!-- eslint-disable-next-line vuejs-accessibility/click-events-have-key-events, vuejs-accessibility/no-static-element-interactions -- a tap shortcut; Show all below is the button -->
     <div class="d-flex flex-column ga-2" role="list" @click="turned = view.line.length">
       <v-card v-for="(item, i) in view.line" :key="item.id" variant="tonal" class="px-4 py-2" role="listitem">
         <LineCard :item="item" :room="room" :me="me">

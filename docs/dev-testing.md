@@ -5,6 +5,7 @@ How to check changes on your own machine: the automated checks, and playing a ga
 - [Automated checks](#automated-checks)
 - [Several players in one window (dev players)](#several-players-in-one-window-dev-players)
 - [The watch page (TV view)](#the-watch-page-tv-view)
+- [Screen readers and keyboard](#screen-readers-and-keyboard)
 - [Phones on your network](#phones-on-your-network)
 - [Troubleshooting](#troubleshooting)
 
@@ -66,6 +67,28 @@ To see what a TV shows, open **http://localhost:5173/watch/CODE** in a normal ta
 - **It doesn't disturb your seat.** Watching never touches the saved room token. If that tab was a player, its seat is detached as if the socket dropped (you'll show as away in the grid). Leaving the watch page doesn't take the seat back (the same account may be playing it on a phone); opening that room's page in the tab does. P1 in the grid is unaffected either way, because frames keep their own tokens.
 - **Watch at TV size.** Resize the tab or use device emulation (1920×1080), and try the **Full screen** button. Games without a `SpectatorView` show the player list during play.
 - **It counts as a join for the rate limit**, and it re-spectates on every reconnect, so a dev server that restarts often adds to the 20-per-minute budget.
+
+## Screen readers and keyboard
+
+`pnpm lint` and `apps/client/test/a11y.test.ts` catch missing names and unreachable controls; whether a game can actually be played without a mouse or a screen only shows by playing it. The checklist is in `games/CLAUDE.md` (Accessibility).
+
+- **Open the seat under test in its own tab** (`http://localhost:5173/room/CODE`), with the other players in the dev-players grid. Screen readers are awkward inside the grid's frames.
+- **Keyboard only.** Unplug the mouse in your head: Tab, Shift+Tab, Enter, Space, Escape and the arrow keys must reach and work every control, in the lobby, every phase, the ☰ menu and its dialogs. Focus should always be visible, should move into a menu or dialog when it opens, and come back when it closes.
+- **NVDA** (free, nvaccess.org; the best fit with Firefox on Windows). Ctrl+Alt+N starts it, Insert+Q quits. **NVDA menu (Insert+N) → Tools → Speech Viewer** shows everything it says as text. In its browse mode the arrow keys read the page; on a board that takes arrow keys (Dots and Boxes), NVDA+Space switches to focus mode so they reach the game. Windows Narrator (Win+Ctrl+Enter) also works, less reliably with Firefox.
+- **What to listen for:** "Your move" when your turn comes, every other player's move as it happens, your secret when you hold or activate a Hold to reveal card, the result at the end, and a name for everything you Tab to. Reloading mid-game should read nothing out.
+- **Without a screen reader**, this logs every announcement to the console (paste it into devtools in the seat's tab; it lasts until a reload):
+
+  ```js
+  new MutationObserver((records) => {
+    for (const r of records) {
+      const region = (r.target.nodeType === 1 ? r.target : r.target.parentElement).closest('[aria-live]')
+      const text = region?.textContent.trim()
+      if (text) console.log('🔊', text)
+    }
+  }).observe(document.body, { childList: true, characterData: true, subtree: true })
+  ```
+
+- **Colour and contrast.** Firefox devtools → Accessibility → **Check for issues** (contrast, keyboard, text labels) on the page as it stands, and **Simulate** for colour-blindness types. Check light and dark themes.
 
 ## Phones on your network
 
