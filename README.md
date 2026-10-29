@@ -140,7 +140,7 @@ docs/
   decisions.md   platform design decisions and why
   dev-testing.md checks, dev-players page (several players in one window)
   mcp.md         Claude / MCP guide
-PLAN.md          the platform design and build plan (each game's is in games/<id>/DESIGN.md)
+PLAN.md          the platform design (each game's is in games/<id>/DESIGN.md)
 ```
 
 ## Writing a game

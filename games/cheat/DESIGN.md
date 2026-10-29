@@ -65,6 +65,7 @@ type Move =                                     // public: what the table saw an
 - **Your hand**: below the table, sorted by rank; tap cards to pick up to 4 (picked cards rise). On your turn with Next rank, the button reads **Play 2 as sevens**; with Nearby, pick the rank first from the allowed three. During the call time the button waits with a countdown.
 - **Cheat!**: a big button for everyone but the latest play's player, naming the play ("Cheat! Bea's two sevens"), while it's open.
 - The latest move shows in a status card above the table; after a call it shows the turned-up cards, marked true or false.
+- **Watch page**: a `SpectatorView` with the table fixed to the oval (flights included, so the TV sees every play and pickup), the latest move large (after a call, the turned-up cards with false ones outlined), a countdown while anyone can call Cheat!, the next claim, earlier moves and the games won; on `RESULTS` the winner.
 - **Win**: a `WinCelebration` once the last play has landed, on your phone and the TV, with a podium of places by fewest cards left (ties share a place; leavers aren't placed).
 - `needsAction`: your turn (stage `play`), or the host on `RESULTS`. Not a callable play: the cue would hint that calling is wise.
 

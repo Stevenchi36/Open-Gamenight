@@ -1,10 +1,10 @@
-# open-gamenight: Build Plan
+# open-gamenight: Platform design
 
-A self-hostable multiplayer party-game platform for groups playing together on their phones. The first game is **Word Imposter** (3-12 players). The platform core owns rooms, connections, auth, reconnect, timers and admin; each game is a plug-in module that implements a small, pure contract.
+A self-hostable multiplayer party-game platform for groups playing together on their phones. **Word Imposter** (3-12 players) was the first game and is the reference implementation; each game's design is in `games/<id>/DESIGN.md` (section 7). The platform core owns rooms, connections, auth, reconnect, timers and admin; each game is a plug-in module that implements a small, pure contract.
 
 **Stack:** TypeScript everywhere. **Express 5 + `ws`** backend, **Vue 3 (Vite) + Vuetify 4** frontend, **Better Auth** for accounts, **SQLite** (Node's built-in `node:sqlite`) for data, **pnpm workspaces**, **Vitest**. Room creators must be logged in; guests join with just a name. Admins get a panel (users, plus pages contributed by games, e.g. Imposter's word library with Claude-powered generation). A stdio **MCP server** exposes game tools (e.g. adding words) to Claude Code/Desktop.
 
-The repo starts **empty** (greenfield): nothing is installed yet. Decisions and their reasons are listed in [`docs/decisions.md`](docs/decisions.md).
+Platform decisions and their reasons are listed in [`docs/decisions.md`](docs/decisions.md).
 
 ## 1. Platform architecture
 
@@ -404,28 +404,16 @@ The VPS already runs Laravel apps. **Assumed setup, to verify at deploy time:** 
 - Cloudflare: add the DNS record (proxied); websockets work through the proxy.
 - `TRUSTED_PROXY_HOPS` / `REAL_IP_HEADER` as in section 9.
 - Back up `data/*.db` (e.g. `sqlite3 .backup` via cron).
+- Updates: `npm run deploy` (`scripts/deploy.sh`: pull, frozen install, build beside the live client and swap it in, restart; see Deployment in `docs/decisions.md`).
 - Deploy when nobody is playing (restarts end rooms; clients get the restart notice).
 
-## 12. Build order (commit after each milestone)
-1. **Repo setup:** `git init`, pnpm workspaces (`packageManager` and `engines.node` in the root `package.json`), `tsconfig.base.json`, Vitest, ESLint (flat config), `.env.example`, `.gitignore`. Install the latest stable packages from section 1 (TypeScript 6.0.x). pnpm blocks dependency build scripts by default; allow-list only reviewed ones via `allowBuilds` in `pnpm-workspace.yaml`. Confirm `node:sqlite` loads before moving on.
-2. **`packages/core`:** game contract, protocol types + zod schemas, generic leak-test harness.
-3. **Imposter reducer:** `games/imposter/server/game.ts` (`init`/`reduce`/`view`/`secrets`) with full unit tests and the leak test.
-4. **Server foundation:** `db.ts` (both DBs, migrations), Better Auth, create the first admin via CLI, `requireSession`/`requireAdmin`/Origin/real-IP middleware, auth route tests.
-5. **Game runner:** ws upgrade with session + Origin check, rooms, reconnect, host transfer + migration, game switching, effects/timers, per-player views, rate limits and caps, SIGTERM notice, core tests.
-6. **Imposter word library + MCP:** migrations, `validate.ts`, `library.ts`, `builtin-words.ts`, `prepareRound`/`pickWord`, `apps/mcp`. Register it and ask Claude to add 20 words.
-7. **Client:** shell (Vuetify, theme, login, home, room shell, lobby, game picker), Imposter settings + play views, `HoldToReveal`. Playable end to end.
-8. **Integration simulation test** (section 10).
-9. **Admin:** `/admin` shell, `/admin/users`, core AI service with token cap and `ai_usage`, Imposter admin routes + `/admin/imposter/words` with review-then-save generation and low-stock flags.
-10. **Deploy and docs:** nginx/Supervisor/Cloudflare setup, README (setup, env vars, create-admin, MCP registration, reverse proxy, writing a game against `packages/core`).
+## 12. Status
+The original build order (milestones 1-9: repo setup, core, Imposter, server, game runner, word library and MCP, client, integration test, admin) is done; the games since are in section 7. Milestone 10 is partly done: production runs on the VPS and updates through `npm run deploy` (section 11), and the README covers setup, env vars, create-admin, MCP registration and writing a game. Still to write: a step-by-step deploy guide (Supervisor, nginx, Cloudflare, backups).
 
 ## 13. Out of scope for v1
 Multiple imposters, OAuth/social login, email (password reset, invites), persisting rooms across restarts, remote HTTP MCP, Docker image, license choice (pick deliberately before open-sourcing: MIT vs AGPL), auto-generated settings forms, browser E2E tests.
 
-## 14. Handoff prompt for Claude Code
-
-> Read `PLAN.md` and `docs/decisions.md` in this repo and build the platform and the Word Imposter game as described. The repo is empty: nothing is installed yet. Use pnpm workspaces and TypeScript everywhere. Install the latest stable packages listed in section 1 (TypeScript stays on 6.0.x) with `pnpm add <pkg>@latest`. Follow the build order in section 12, committing after each milestone. Before using Better Auth (and its admin plugin), Vuetify 4, `create-vuetify`, or the MCP server package (`@modelcontextprotocol/server` v2), check their current docs (see References) since options and package names change. Keep game reducers and views pure (no I/O, no `Math.random`/`Date.now`; use the injected `rng`/`now`), and have the core send only `view()` output. Games import only from `packages/core` and their own folder. Enforce auth on the server for every admin route (core and game) and for `create_room`, check the websocket and REST `Origin`, read the real client IP via the configured header, make sure the imposter never receives the secret word before RESULTS, and never write to stdout in the MCP process. Run `pnpm test` (including the leak test and the integration simulation) before declaring it done.
-
-## 15. References
+## 14. References
 - Better Auth, Express integration: https://better-auth.com/docs/integrations/express
 - Better Auth, admin plugin: https://www.better-auth.com/docs/plugins/admin
 - Better Auth, client (Vue): https://better-auth.com/docs/concepts/client
