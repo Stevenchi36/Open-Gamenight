@@ -16,7 +16,7 @@
           <LineCard :item="item" :room="room" :me="SPECTATOR_ID">
             <template #append>
               <template v-if="view.phase === 'ORDERING'">
-                <v-icon v-if="view.ready.includes(item.playerId)" color="success" :aria-label="`${name(item.playerId)} is ready`">mdi-check-circle</v-icon>
+                <v-icon v-if="view.ready.includes(item.playerId)" color="success" role="img" aria-hidden="false" :aria-label="`${name(item.playerId)} is ready`">mdi-check-circle</v-icon>
               </template>
               <div v-else-if="i < turned" class="d-flex align-center ga-2 number--in">
                 <v-icon :color="isWrong(item.id) ? 'error' : 'success'">{{ isWrong(item.id) ? 'mdi-close-circle' : 'mdi-check-circle' }}</v-icon>

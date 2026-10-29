@@ -3,7 +3,7 @@
     <template v-if="view.phase === 'PLAYING'">
       <StatusCard v-if="last" prominent :color="moveTone(last) ?? undefined" :overline="`Move ${view.logStart + view.log.length} · ${turnLine}`">
         {{ moveText(last, SPECTATOR_ID, name) }}
-        <div v-if="last.kind === 'call'" class="d-flex flex-wrap ga-2 mt-3" :aria-label="`Turned up: ${last.cards.map((c) => c.rank).join(', ')}`">
+        <div v-if="last.kind === 'call'" class="d-flex flex-wrap ga-2 mt-3" role="group" aria-label="Turned up">
           <PlayingCard v-for="card in last.cards" :key="card.rank + card.suit" :card="card" :class="{ 'card--false': card.rank !== last.claim }" />
         </div>
       </StatusCard>

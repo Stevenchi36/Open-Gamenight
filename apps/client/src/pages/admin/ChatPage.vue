@@ -11,7 +11,7 @@
         <div v-if="!items.length" class="text-medium-emphasis">
           <p class="mb-3">Ask in plain words and Claude makes the changes to the game libraries for you. For example:</p>
           <div class="d-flex flex-wrap ga-2">
-            <v-chip v-for="example in EXAMPLES" :key="example" variant="outlined" @click="draft = example">{{ example }}</v-chip>
+            <v-chip v-for="example in EXAMPLES" :key="example" variant="outlined" role="button" @click="draft = example">{{ example }}</v-chip>
           </div>
           <p class="text-body-small mt-4">
             It can add, edit and remove categories, words and questions. Before removing anything it asks you to confirm.

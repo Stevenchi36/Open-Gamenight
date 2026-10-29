@@ -12,7 +12,7 @@
           <v-icon v-if="!isConnected(room, seat.id)" size="small" class="mr-1">mdi-wifi-off</v-icon>{{ nameOf(room, seat.id) }}
         </div>
         <div v-if="seat.dice === 0" class="text-body-large mt-1">Out</div>
-        <div v-else class="d-flex justify-center flex-wrap ga-1 mt-1" :aria-label="`${seat.dice} dice`">
+        <div v-else class="d-flex justify-center flex-wrap ga-1 mt-1" role="img" :aria-label="seat.dice === 1 ? '1 die' : `${seat.dice} dice`">
           <v-icon v-for="n in seat.dice" :key="n" size="32">mdi-dice-d6</v-icon>
         </div>
       </v-card-text>

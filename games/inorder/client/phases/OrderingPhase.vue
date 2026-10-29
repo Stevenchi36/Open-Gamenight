@@ -45,11 +45,16 @@
       Talk it over and drag the clues into order, lowest number at the top. Anyone can move any card.
     </div>
     <LineEnd :theme="view.theme" end="low" />
-    <OrderList :items="view.line" :disabled="!playing" @move="(itemId, to) => send({ type: 'move_item', itemId, to })">
+    <OrderList
+      :items="view.line"
+      :disabled="!playing"
+      :item-label="(item) => item.clue ?? `${nameOf(room, item.playerId)}'s card`"
+      @move="(itemId, to) => send({ type: 'move_item', itemId, to })"
+    >
       <template #item="{ item }">
         <LineCard :item="item" :room="room" :me="me">
           <template #append>
-            <v-icon v-if="isReady(item.playerId)" size="small" color="success" :aria-label="`${nameOf(room, item.playerId)} is ready`">mdi-check-circle</v-icon>
+            <v-icon v-if="isReady(item.playerId)" size="small" color="success" role="img" aria-hidden="false" :aria-label="`${nameOf(room, item.playerId)} is ready`">mdi-check-circle</v-icon>
           </template>
         </LineCard>
       </template>

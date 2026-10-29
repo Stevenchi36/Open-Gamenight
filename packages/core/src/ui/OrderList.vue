@@ -12,7 +12,7 @@
         <div
           v-if="!disabled"
           class="order-handle d-flex align-center justify-center"
-          :aria-label="`Drag to move (${i + 1} of ${shown.length})`"
+          aria-hidden="true"
           @pointerdown="(e) => start(e, item.id, i)"
           @pointermove="moveTo"
           @pointerup="finish"
@@ -24,15 +24,25 @@
           <slot name="item" :item="item" :index="i" />
         </div>
         <div v-if="!disabled" class="d-flex flex-column pr-1">
-          <v-btn icon="mdi-chevron-up" size="x-small" variant="text" density="comfortable" :disabled="i === 0" aria-label="Move up" @click="commit(item.id, i - 1)" />
+          <v-btn
+            icon="mdi-chevron-up"
+            size="x-small"
+            variant="text"
+            density="comfortable"
+            data-move="up"
+            :disabled="i === 0"
+            :aria-label="`Move ${labelOf(item, i)} up`"
+            @click="commit(item.id, i - 1, 'up')"
+          />
           <v-btn
             icon="mdi-chevron-down"
             size="x-small"
             variant="text"
             density="comfortable"
+            data-move="down"
             :disabled="i === shown.length - 1"
-            aria-label="Move down"
-            @click="commit(item.id, i + 1)"
+            :aria-label="`Move ${labelOf(item, i)} down`"
+            @click="commit(item.id, i + 1, 'down')"
           />
         </div>
       </v-card>
@@ -44,9 +54,17 @@
 // A vertical list a player reorders by dragging a row's handle (pointer events, so touch works;
 // the rest of the row still scrolls the page) or with its up/down buttons. Emits move(id, to);
 // the new order shows straight away and gives way to the parent's items when they next change.
-import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from 'vue'
+// The handle is pointer-only (hidden from screen readers); the buttons are the keyboard way, they
+// name their row (`itemLabel`), and each move is announced with the row's new place.
+import { computed, nextTick, onUnmounted, ref, watch, type ComponentPublicInstance } from 'vue'
+import { announce } from './announce.ts'
 
-const props = defineProps<{ items: T[]; disabled?: boolean }>()
+const props = defineProps<{
+  items: T[]
+  disabled?: boolean
+  /** What a row is called in its buttons and announcements, e.g. its clue. Default "item 3". */
+  itemLabel?: (item: T) => string
+}>()
 const emit = defineEmits<{ move: [id: string, to: number] }>()
 defineSlots<{ item(props: { item: T; index: number }): unknown }>()
 
@@ -67,7 +85,9 @@ watch(
   () => (pending.value = null),
 )
 
-function commit(id: string, to: number) {
+const labelOf = (item: T, index: number) => props.itemLabel?.(item) ?? `item ${index + 1}`
+
+function commit(id: string, to: number, button?: 'up' | 'down') {
   const ids = shown.value.map((it) => it.id)
   const from = ids.indexOf(id)
   if (from === -1 || to < 0 || to >= ids.length || to === from) return
@@ -77,6 +97,18 @@ function commit(id: string, to: number) {
   clearTimeout(pendingTimer)
   pendingTimer = setTimeout(() => (pending.value = null), 2000)
   emit('move', id, to)
+  const item = shown.value[to]!
+  announce(`${labelOf(item, to)}, ${to + 1} of ${ids.length}`)
+  if (button) void refocus(id, button)
+}
+
+// The row moved in the DOM, which can drop focus, and its button may now be disabled (at an end):
+// put focus back on the same button, or the row's other one.
+async function refocus(id: string, button: 'up' | 'down') {
+  await nextTick()
+  const row = rows.get(id)
+  const pick = (dir: string) => row?.querySelector<HTMLButtonElement>(`[data-move="${dir}"]:not([disabled])`)
+  ;(pick(button) ?? pick(button === 'up' ? 'down' : 'up'))?.focus()
 }
 
 // ---- dragging

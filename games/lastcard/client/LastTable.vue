@@ -32,9 +32,9 @@
           <div v-else class="discard-empty" />
         </div>
         <div class="d-flex flex-column align-center ga-1 text-body-small">
-          <span class="color-dot" :style="{ background: CARD_COLORS[view.color] }" :aria-label="`Colour in play: ${view.color}`" />
-          <span>{{ view.color }}</span>
-          <v-icon size="small" :aria-label="view.direction === 1 ? 'Clockwise' : 'Anticlockwise'">
+          <span class="color-dot" :style="{ background: CARD_COLORS[view.color] }" aria-hidden="true" />
+          <span><span class="d-sr-only">Colour in play: </span>{{ view.color }}</span>
+          <v-icon size="small" role="img" aria-hidden="false" :aria-label="view.direction === 1 ? 'Clockwise' : 'Anticlockwise'">
             {{ view.direction === 1 ? 'mdi-rotate-right' : 'mdi-rotate-left' }}
           </v-icon>
           <span v-if="view.pendingDraw > 0" class="seat-tag seat-tag--error">+{{ view.pendingDraw }}</span>

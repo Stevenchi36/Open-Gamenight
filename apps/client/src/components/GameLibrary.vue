@@ -37,7 +37,7 @@
       <v-card-title class="d-flex align-center flex-wrap ga-2 px-5 pt-4">
         {{ game.name }}
         <v-chip size="small" variant="tonal" prepend-icon="mdi-account-group" class="players-chip">{{ playersText(game) }}</v-chip>
-        <v-chip v-for="s in game.styles" :key="s" size="small" variant="outlined" @click="style = s">{{ GAME_STYLE_LABELS[s] }}</v-chip>
+        <v-chip v-for="s in game.styles" :key="s" size="small" variant="outlined" role="button" @click="style = s">{{ GAME_STYLE_LABELS[s] }}</v-chip>
       </v-card-title>
       <v-card-text class="px-5">{{ game.description }}</v-card-text>
       <!-- 12px inset so the lg (8px) buttons' corners sit concentric with the card's 20px ones -->

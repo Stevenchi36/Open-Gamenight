@@ -1,6 +1,6 @@
 <template>
   <!-- On a light disc so the black sheep stays visible in the dark theme. -->
-  <v-icon :size="size" color="grey-darken-4" class="black-sheep" aria-label="Black sheep">mdi-sheep</v-icon>
+  <v-icon :size="size" color="grey-darken-4" class="black-sheep" role="img" aria-hidden="false" aria-label="Black sheep">mdi-sheep</v-icon>
 </template>
 
 <script setup lang="ts">

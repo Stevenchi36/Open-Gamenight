@@ -6,7 +6,7 @@
 
     <StatusCard v-if="last" compact :color="lastColor" :overline="turnLine">
       {{ moveText(last, me, (id) => nameOf(room, id)) }}
-      <div v-if="last.kind === 'call'" class="d-flex flex-wrap ga-2 mt-2" :aria-label="`Turned up: ${last.cards.map((c) => c.rank).join(', ')}`">
+      <div v-if="last.kind === 'call'" class="d-flex flex-wrap ga-2 mt-2" role="group" aria-label="Turned up">
         <PlayingCard v-for="card in last.cards" :key="card.rank + card.suit" :card="card" :class="{ 'card--false': card.rank !== last.claim }" />
       </div>
     </StatusCard>

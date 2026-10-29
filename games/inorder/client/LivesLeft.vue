@@ -1,5 +1,5 @@
 <template>
-  <span class="d-inline-flex align-center" :aria-label="`${lives} of ${max} lives left`">
+  <span class="d-inline-flex align-center" role="img" :aria-label="`${lives} of ${max} lives left`">
     <v-icon v-for="i in max" :key="i" :size="size" :color="i <= lives ? 'error' : undefined" :class="{ 'text-disabled': i > lives }">
       {{ i <= lives ? 'mdi-heart' : 'mdi-heart-outline' }}
     </v-icon>
