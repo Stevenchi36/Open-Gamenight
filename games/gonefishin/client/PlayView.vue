@@ -21,16 +21,25 @@
 
 <script setup lang="ts">
 import type { PlayerId } from '@ogn/core/contract'
-import { nameOf, WinCelebration } from '@ogn/core/ui'
+import { nameOf, useAnnounce, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import type { PhaseProps } from './props.ts'
-import { resultTitle, standings } from './text.ts'
+import { moveText, resultTitle, standings } from './text.ts'
 
 const props = defineProps<PhaseProps>()
 
 const name = (id: PlayerId) => nameOf(props.room, id)
+
+// Each new move is read out; counted from the game's first move, as the log may be trimmed.
+useAnnounce(
+  () => props.view,
+  (now, before) =>
+    now.game === before.game && now.logStart + now.log.length > before.logStart + before.log.length && now.log.length > 0
+      ? moveText(now.log.at(-1)!, props.me, name)
+      : null,
+)
 
 const myScore = computed(() => props.view.scores[props.me] ?? null)
 const phaseProps = computed(() => ({

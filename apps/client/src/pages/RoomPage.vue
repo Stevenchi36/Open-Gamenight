@@ -255,7 +255,7 @@ const actionNeeded = computed(() => {
 })
 // The glow's words, for screen readers.
 watch(actionNeeded, (now) => {
-  if (now) announce('Your move')
+  if (now) announce('Your move', { last: true })
 })
 
 const views = new Map<string, Component>()

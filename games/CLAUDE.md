@@ -17,6 +17,7 @@ A game is a description the core runs, not a class to extend. The core already o
 
 - **Every game has a spectator view.** A new game isn't done without its `SpectatorView`, sized for a TV, plus a "Watch page" bullet in its `DESIGN.md`. If the TV needs more than the outsider view shows, add only public data to `view()`: the TV is in every player's sight, so it can show only what the least-informed player knows.
 - **Animate where it helps people follow play:** moves landing (marks, discs, lines, cards), reveals, a phase or result arriving, the turn marker on the TV. Skip it where nothing changes hands or the motion would only slow play. Every game with a winner celebrates with `WinCelebration`, on the play view and the TV; a game about a loser (Old Maid) ends with `LoseReveal` instead, unless that round has a winner too (a won Royale).
+- **Turn-based games announce each new move** to screen readers: `useAnnounce` from `@ogn/core/ui` in the `PlayView`, comparing each view with the one before and returning the move as a sentence (the move log's text where there is one). The room already says "Your move" and the celebrations announce results.
 - **Animations are client only:** they go in the shared board/table components so both views get them, derive from view changes (never on first render, so joining or opening the TV mid-game doesn't replay moves), and are switched off by `prefers-reduced-motion`. Plain Vue transitions and CSS, Web Animations for card flights, no library.
 
 ## Reuse first

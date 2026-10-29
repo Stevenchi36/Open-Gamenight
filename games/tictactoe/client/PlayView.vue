@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import type { PlayViewProps } from '@ogn/core/client'
-import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@ogn/core/ui'
+import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, useAnnounce, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { ClientAction, TicTacToeSettings, TicTacToeView } from '../shared/index.ts'
 import GameBoard from './GameBoard.vue'
@@ -49,4 +49,17 @@ const props = defineProps<PlayViewProps<TicTacToeView, ClientAction, TicTacToeSe
 
 const myTurn = computed(() => props.view.phase === 'PLAYING' && props.view.turn === props.me)
 const gained = computed(() => (props.view.winnerId ? { [props.view.winnerId]: 1 } : {}))
+
+// Each new mark is read out, in the squares' own words: "Sam placed X in square 5".
+useAnnounce(
+  () => props.view,
+  (now, before) => {
+    if (now.game !== before.game) return null
+    const i = now.board.findIndex((cell, k) => cell && !before.board[k])
+    const mark = now.board[i]
+    if (!mark) return null
+    const who = now.marks[mark] === props.me ? 'You' : nameOf(props.room, now.marks[mark])
+    return `${who} placed ${mark} in square ${i + 1}`
+  },
+)
 </script>

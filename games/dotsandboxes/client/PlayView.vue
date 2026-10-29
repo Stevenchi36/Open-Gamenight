@@ -45,12 +45,12 @@
 <script setup lang="ts">
 import type { PlayViewProps } from '@ogn/core/client'
 import type { PlayerId } from '@ogn/core/contract'
-import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@ogn/core/ui'
+import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, useAnnounce, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import { COLORS, type ClientAction, type DotsSettings, type DotsView } from '../shared/index.ts'
 import DotsBoard from './DotsBoard.vue'
 import SeatChips from './SeatChips.vue'
-import { mostBoxes, resultTitle, standings, winnerConfetti } from './text.ts'
+import { mostBoxes, moveText, resultTitle, standings, winnerConfetti } from './text.ts'
 
 const props = defineProps<PlayViewProps<DotsView, ClientAction, DotsSettings>>()
 
@@ -60,6 +60,10 @@ const overline = computed(() => (props.view.you.seat === null ? '' : `You are ${
 const initials = computed(() => props.view.seats.map((s) => name(s.id).trim().charAt(0).toUpperCase()))
 const won = computed(() => props.view.winnerIds.includes(props.me))
 const gained = computed(() => Object.fromEntries(props.view.winnerIds.map((id) => [id, 1])))
+useAnnounce(
+  () => props.view,
+  (now, before) => moveText(now, before, props.me, name),
+)
 // Turns are skipped only while 3 or more are still in the game.
 const awayText = computed(() =>
   props.view.seats.filter((s) => !s.left).length > 2

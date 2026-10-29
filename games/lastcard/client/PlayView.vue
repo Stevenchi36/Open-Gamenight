@@ -20,14 +20,23 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, WinCelebration } from '@ogn/core/ui'
+import { nameOf, useAnnounce, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import type { PhaseProps } from './props.ts'
-import { gameWon, resultTitle } from './text.ts'
+import { gameWon, moveText, resultTitle } from './text.ts'
 
 const props = defineProps<PhaseProps>()
+
+// Each new move is read out; the log starts again every round.
+useAnnounce(
+  () => props.view,
+  (now, before) =>
+    now.game === before.game && now.round === before.round && now.log.length > before.log.length
+      ? moveText(now.log.at(-1)!, props.me, (id) => nameOf(props.room, id), now.settings.sevenZero)
+      : null,
+)
 
 const points = computed(() => props.view.settings.scoring === 'points')
 const myScore = computed(() => props.view.scores[props.me] ?? null)

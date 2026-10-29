@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
 import type { PlayViewProps } from '@ogn/core/client'
-import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, WinCelebration } from '@ogn/core/ui'
+import { isConnected, nameOf, NextRoundButton, ScoreBoard, StatusCard, useAnnounce, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { ClientAction, DropLineSettings, DropLineView } from '../shared/index.ts'
 import { LANDED_MS, winnerConfetti } from './celebration.ts'
@@ -61,4 +61,17 @@ const props = defineProps<PlayViewProps<DropLineView, ClientAction, DropLineSett
 const myTurn = computed(() => props.view.phase === 'PLAYING' && props.view.turn === props.me)
 const overline = computed(() => `You are ${props.view.you.disc} · ${props.view.lineLength} in a row wins`)
 const gained = computed(() => (props.view.winnerId ? { [props.view.winnerId]: 1 } : {}))
+
+// Each new disc is read out: "Sam dropped red in column 3".
+useAnnounce(
+  () => props.view,
+  (now, before) => {
+    const last = now.last
+    if (now.game !== before.game || !last || (before.last && before.last.col === last.col && before.last.row === last.row)) return null
+    const disc = now.columns[last.col]?.[last.row]
+    if (!disc) return null
+    const who = now.discs[disc] === props.me ? 'You' : nameOf(props.room, now.discs[disc])
+    return `${who} dropped ${disc} in column ${last.col + 1}`
+  },
+)
 </script>

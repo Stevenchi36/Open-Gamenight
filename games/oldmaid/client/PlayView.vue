@@ -25,16 +25,22 @@
 
 <script setup lang="ts">
 import type { PlayerId } from '@ogn/core/contract'
-import { FLIGHT_MS, LoseReveal, nameOf, PlayingCard, WinCelebration } from '@ogn/core/ui'
+import { FLIGHT_MS, LoseReveal, nameOf, PlayingCard, useAnnounce, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import type { PhaseProps } from './props.ts'
-import { maidSubtitle, maidTitle, royaleStandings, royaleWinSubtitle, royaleWinTitle } from './text.ts'
+import { maidSubtitle, maidTitle, moveText, royaleStandings, royaleWinSubtitle, royaleWinTitle } from './text.ts'
 
 const props = defineProps<PhaseProps>()
 
 const name = (id: PlayerId) => nameOf(props.room, id)
+
+// Each new move is read out; the log starts again every round.
+useAnnounce(
+  () => props.view,
+  (now, before) => (now.game === before.game && now.round === before.round && now.log.length > before.log.length ? moveText(now.log.at(-1)!, props.me, name) : null),
+)
 
 const myScore = computed(() => props.view.scores[props.me] ?? null)
 const phaseProps = computed(() => ({

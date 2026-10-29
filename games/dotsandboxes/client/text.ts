@@ -1,7 +1,7 @@
 import type { PlayerId } from '@ogn/core/contract'
 import { placings } from '@ogn/core/kit'
 import type { Standing } from '@ogn/core/client'
-import { COLORS, type Color, type DotsView } from '../shared/index.ts'
+import { COLORS, type Color, type DotsView, type Line } from '../shared/index.ts'
 
 /** Distinct in light and dark themes; red and blue match Drop Line's discs. */
 const HEX: Record<Color, string> = { red: '#e53935', blue: '#1e88e5', green: '#43a047', orange: '#fb8c00' }
@@ -10,6 +10,26 @@ export const seatColor = (seat: number): string => HEX[COLORS[seat]!]
 
 /** A box's initial: white reads at 3:1 (it's large, bold text) on all but orange, which takes dark. */
 export const onSeatColor = (seat: number): string => (COLORS[seat] === 'orange' ? '#1a1a1a' : '#fff')
+
+/** Where a line is, as the board's targets name it: "across from row 2, dot 1". */
+export function lineWhere(l: Line): string {
+  return l.dir === 'h' ? `across from row ${l.row + 1}, dot ${l.col + 1}` : `down from row ${l.row + 1}, dot ${l.col + 1}`
+}
+
+/**
+ * The newest line as a sentence, or null if there isn't a new one: "Bea drew across from row 2,
+ * dot 1 and claimed 2 boxes". A line that claims a box is its drawer's (they go again); otherwise
+ * it was drawn by whoever's turn it was.
+ */
+export function moveText(now: DotsView, before: DotsView, me: PlayerId, name: (id: PlayerId) => string): string | null {
+  const l = now.last
+  if (now.game !== before.game || !l || (before.last && before.last.dir === l.dir && before.last.row === l.row && before.last.col === l.col)) return null
+  const owners = now.boxes.flatMap((row, r) => row.flatMap((owner, c) => (owner !== null && before.boxes[r]?.[c] == null ? [owner] : [])))
+  const drawer = owners.length > 0 ? now.seats[owners[0]!]?.id : before.turn
+  const claimed = owners.length === 0 ? '' : ` and claimed ${owners.length === 1 ? 'a box' : `${owners.length} boxes`}`
+  if (!drawer) return `Line drawn ${lineWhere(l)}${claimed}`
+  return `${drawer === me ? 'You' : name(drawer)} drew ${lineWhere(l)}${claimed}`
+}
 
 /** "You win!", "Bea wins", "You and Al share the win". `me` may be SPECTATOR_ID, which never says "you". */
 export function resultTitle(view: DotsView, me: PlayerId, name: (id: PlayerId) => string): string {

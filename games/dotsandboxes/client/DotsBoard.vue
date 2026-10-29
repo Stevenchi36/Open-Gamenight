@@ -60,7 +60,7 @@
 // included so a screen reader can explore the whole board, and Enter or Space draws.
 import { computed, ref, watch } from 'vue'
 import type { Line } from '../shared/index.ts'
-import { onSeatColor, seatColor } from './text.ts'
+import { lineWhere as where, onSeatColor, seatColor } from './text.ts'
 
 const props = defineProps<{
   grid: number
@@ -160,10 +160,6 @@ function diamond(l: Line): string {
   const h = S / 2
   const sides = l.dir === 'h' ? [`${mx},${my - h}`, `${mx},${my + h}`] : [`${mx - h},${my}`, `${mx + h},${my}`]
   return [`${x1},${y1}`, sides[0], `${x2},${y2}`, sides[1]].join(' ')
-}
-
-function where(l: Line): string {
-  return l.dir === 'h' ? `across from row ${l.row + 1}, dot ${l.col + 1}` : `down from row ${l.row + 1}, dot ${l.col + 1}`
 }
 
 /** Sides drawn around a box, or null off the board. */
