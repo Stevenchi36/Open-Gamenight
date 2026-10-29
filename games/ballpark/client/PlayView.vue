@@ -21,14 +21,23 @@
 </template>
 
 <script setup lang="ts">
-import { nameOf, scoreStandings, winTitle, WinCelebration } from '@ogn/core/ui'
+import { nameOf, scoreStandings, useAnnounce, winTitle, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import BettingPhase from './phases/BettingPhase.vue'
 import GuessingPhase from './phases/GuessingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
+import { announceText, roundText } from './announce.ts'
 import type { PhaseProps } from './props.ts'
 
 const props = defineProps<PhaseProps>()
+
+// The question, who's guessed and bet, and the answer, for screen readers; the first question too
+// when the game has just started.
+useAnnounce(
+  () => props.view,
+  (now, before) => announceText(now, before, props.me, (id) => nameOf(props.room, id), props.settings),
+  (now) => (now.round === 1 && now.phase === 'GUESSING' && now.guessed.length === 0 ? roundText(now) : null),
+)
 
 const myScore = computed(() => props.view.scores[props.me] ?? null)
 const winnerIds = computed(() => props.view.result?.winnerIds ?? [])

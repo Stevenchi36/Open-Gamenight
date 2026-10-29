@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
-import { TOO_HIGH } from '../../shared/index.ts'
+import { closestText } from '../announce.ts'
 import { formatValue } from '../format.ts'
 import SlotBoard from '../SlotBoard.vue'
 import type { PhaseProps } from '../props.ts'
@@ -51,15 +51,7 @@ const result = computed(() => props.view.result)
 const gameOver = computed(() => (result.value?.winnerIds.length ?? 0) > 0)
 const gained = computed(() => result.value?.pointsAwarded[props.me] ?? 0)
 
-const headline = computed(() => {
-  const winning = props.view.slots.filter((s) => result.value?.winningSlotIds.includes(s.id))
-  if (winning.length === 0) return ''
-  if (winning[0]!.id === TOO_HIGH) return 'Every guess was too high!'
-  const writers = winning.flatMap((s) => s.playerIds)
-  const names = writers.map((id) => (id === props.me ? 'you' : nameOf(props.room, id)))
-  const closest = props.settings.winRule === 'over' ? 'Closest without going over' : 'Closest'
-  return `${closest}: ${names.join(' and ')}.`
-})
+const headline = computed(() => closestText(props.view, props.me, (id) => nameOf(props.room, id), props.settings.winRule))
 
 const winnerTitle = computed(() => {
   const ids = result.value?.winnerIds ?? []

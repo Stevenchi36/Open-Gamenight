@@ -17,6 +17,8 @@
     "./categories": "./src/categories.ts",
     "./library": "./src/library.ts",
     "./ui": "./src/ui/index.ts",
+    "./ui/announce": "./src/ui/announce.ts",
+    "./ui/helpers": "./src/ui/helpers.ts",
     "./ui/storage": "./src/ui/storage.ts"
   },
   "scripts": {

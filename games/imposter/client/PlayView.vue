@@ -15,7 +15,9 @@
 </template>
 
 <script setup lang="ts">
+import { nameOf, useAnnounce } from '@ogn/core/ui'
 import { computed } from 'vue'
+import { announceText, roundText } from './announce.ts'
 import CluesPhase from './phases/CluesPhase.vue'
 import GuessCheckPhase from './phases/GuessCheckPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
@@ -25,6 +27,14 @@ import VotingPhase from './phases/VotingPhase.vue'
 import type { PhaseProps } from './props.ts'
 
 const props = defineProps<PhaseProps>()
+
+// Clues, turns, votes, the reveal and the result, for screen readers (never a secret); round 1 too
+// when the game has just started.
+useAnnounce(
+  () => props.view,
+  (now, before) => announceText(now, before, props.me, (id) => nameOf(props.room, id)),
+  (now) => (now.round === 1 && now.phase === 'CLUES' && now.clues.length === 0 ? roundText(now) : null),
+)
 
 const clueMode = computed(() => props.settings.clueMode)
 const myScore = computed(() => props.view.scores[props.me] ?? null)

@@ -40,6 +40,7 @@ import { nameOf, NextRoundButton, ScoreBoard, StatusCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import GroupList from '../GroupList.vue'
 import BlackSheep from '../BlackSheep.vue'
+import { roundHeadline } from '../announce.ts'
 import { flockSummary } from '../flock-summary.ts'
 import type { PhaseProps } from '../props.ts'
 
@@ -49,11 +50,7 @@ const gameOver = computed(() => (result.value?.winnerIds.length ?? 0) > 0)
 const inFlock = computed(() => (result.value?.pointsAwarded[props.me] ?? 0) > 0)
 const flockLine = computed(() => flockSummary(props.view, 'final'))
 
-const headline = computed(() => {
-  if (props.view.you.status === 'waiting') return 'Round over'
-  if (inFlock.value) return 'You followed the flock!'
-  return props.view.flockId ? 'You strayed from the flock' : 'Nobody scores'
-})
+const headline = computed(() => roundHeadline(props.view, props.me))
 
 const winnerTitle = computed(() => {
   const ids = result.value?.winnerIds ?? []
