@@ -88,6 +88,8 @@ export function createManager(
     maxRoomsPerUser?: number
     joinLimit?: number
     roomCreation?: 'accounts' | 'anyone'
+    /** Games an admin turned off. */
+    disabled?: string[]
   } = {},
 ) {
   const clock = new ManualClock()
@@ -109,6 +111,7 @@ export function createManager(
       logger: createLogger(game.id, 'silent'),
       categories: createCategoryService(db, game.id),
     }),
+    isEnabled: (gameId) => !options.disabled?.includes(gameId),
     clock,
     joinLimiter: new RateLimiter({ windowMs: 60_000, max: options.joinLimit ?? 1000 }),
   })

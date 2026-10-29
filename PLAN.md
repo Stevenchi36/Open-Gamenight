@@ -160,7 +160,7 @@ The client shell provides small shared Vuetify field components (`SettingSlider`
 
 ## 3. Core room behaviour
 
-- A logged-in user creates a room (4-letter code) with an optional `gameId` (defaults to the first registered game). Anyone, logged in or not, joins with a display name.
+- A logged-in user creates a room (4-letter code) with an optional `gameId` (defaults to the first registered game an admin hasn't turned off). Anyone, logged in or not, joins with a display name.
 - **Display names:** trimmed, 1-16 chars, unique per room (case-insensitive; reject duplicates with a clear `validation` error). Logged-in users get their account name prefilled and may override it per room. No profanity filter.
 - **Lobby (core):** player list, game picker, the game's `SettingsView`, Start button (host). The host can **switch games in the lobby**: players and connections stay; game settings and scores reset to the new game's defaults.
 - **Return to lobby:** when a game emits `gameOver`, or the host sends `return_to_lobby`.
@@ -347,6 +347,7 @@ Each game's spec (rules, settings, state machine, actions, view, secrets, client
 | `/admin/users` | admin | List, create (email, name, password, role), set role, ban/unban, reset password |
 | `/admin/chat` | admin | Assistant: type what you want ("add 20 ocean animals to Word Imposter") and Claude does it with the library tools; shown only when AI is configured |
 | `/admin/rooms` | admin | Open rooms (code, game, status, players, who opened it), refreshed every 10s; Join (normal join, takes a seat) and Close (everyone is sent out with a notice) |
+| `/admin/games` | admin | Every game with an on/off switch; off hides it from the library, start-room form and lobby switcher (rooms already on it carry on); at least one stays on |
 | `/admin/<gameId>/*` | admin | Pages contributed by games, e.g. `/admin/imposter/words` |
 
 Router guards redirect non-admins from `/admin/*` (UX only).

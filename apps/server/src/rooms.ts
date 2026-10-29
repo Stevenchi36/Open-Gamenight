@@ -96,6 +96,8 @@ export interface RoomManagerDeps {
   config: Pick<Config, 'MAX_ROOMS' | 'MAX_ROOMS_PER_USER' | 'ROOM_CREATION'>
   servicesFor: (game: AnyGameModule) => ServerServices
   logger: AppLogger
+  /** Games hosts may pick (admin Games page). Defaults to all; a room already on a turned-off game keeps it. */
+  isEnabled?: (gameId: string) => boolean
   clock?: Clock
   /** Join/reconnect attempts per IP (room-code guessing). */
   joinLimiter?: RateLimiter
@@ -109,12 +111,14 @@ export class RoomManager {
   readonly logger: AppLogger
   private readonly games: readonly AnyGameModule[]
   private readonly config: RoomManagerDeps['config']
+  private readonly isEnabled: (gameId: string) => boolean
   private readonly joinLimiter: RateLimiter
   private readonly runner: GameRunner
 
   constructor(deps: RoomManagerDeps) {
     this.games = deps.games
     this.config = deps.config
+    this.isEnabled = deps.isEnabled ?? (() => true)
     this.logger = deps.logger
     this.clock = deps.clock ?? realClock
     this.joinLimiter = deps.joinLimiter ?? new RateLimiter({ windowMs: 60_000, max: 20 })
@@ -227,7 +231,7 @@ export class RoomManager {
   private async createRoom(conn: Conn, gameId: string | undefined, name: string | undefined): Promise<void> {
     if (!conn.user && this.config.ROOM_CREATION !== 'anyone') throw new RoomError('unauthorized', 'Sign in to create a room')
     if (!conn.user && !name) throw new RoomError('validation', 'Enter your name')
-    const game = gameId ? this.games.find((g) => g.id === gameId) : this.games[0]
+    const game = gameId ? this.pickable(gameId) : this.games.find((g) => this.isEnabled(g.id))
     if (!game) throw new RoomError('not_found', 'Unknown game')
     if (this.rooms.size >= this.config.MAX_ROOMS) throw new RoomError('room_cap', 'The server is full, try again later')
     // Guests have no account, so their rooms count per IP.
@@ -353,8 +357,7 @@ export class RoomManager {
       case 'select_game': {
         hostOnly()
         lobbyOnly()
-        const game = this.games.find((g) => g.id === msg.gameId)
-        if (!game) throw new RoomError('not_found', 'Unknown game')
+        const game = this.pickable(msg.gameId)
         room.gameId = game.id
         room.settings = structuredClone(game.defaultSettings)
         return
@@ -608,14 +611,18 @@ export class RoomManager {
       phase: room.phase,
       hostId: room.hostId,
       game: { id: game.id, name: game.name, settings: room.settings },
-      availableGames: [...this.games].sort((a, b) => a.name.localeCompare(b.name)).map((g) => ({
-        id: g.id,
-        name: g.name,
-        description: g.description,
-        styles: g.styles,
-        minPlayers: g.minPlayers,
-        maxPlayers: this.maxPlayers(g),
-      })),
+      // The room's own game stays listed after an admin turns it off: the lobby reads its details from here.
+      availableGames: this.games
+        .filter((g) => g.id === room.gameId || this.isEnabled(g.id))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((g) => ({
+          id: g.id,
+          name: g.name,
+          description: g.description,
+          styles: g.styles,
+          minPlayers: g.minPlayers,
+          maxPlayers: this.maxPlayers(g),
+        })),
       players: room.players.map((p) => ({
         id: p.id,
         name: p.name,
@@ -641,6 +648,14 @@ export class RoomManager {
   private gameOf(room: Room): AnyGameModule {
     const game = this.games.find((g) => g.id === room.gameId)
     if (!game) throw new Error(`room ${room.code} has unknown game ${room.gameId}`)
+    return game
+  }
+
+  /** A game a host may start a room with or switch to. */
+  private pickable(gameId: string): AnyGameModule {
+    const game = this.games.find((g) => g.id === gameId)
+    if (!game) throw new RoomError('not_found', 'Unknown game')
+    if (!this.isEnabled(game.id)) throw new RoomError('not_found', `${game.name} is turned off on this server`)
     return game
   }
 

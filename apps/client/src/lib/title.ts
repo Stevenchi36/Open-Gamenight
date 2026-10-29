@@ -24,6 +24,8 @@ function adminTitle(route: RouteLocationNormalizedLoaded): string {
       return 'Users'
     case 'admin-rooms':
       return 'Rooms'
+    case 'admin-games':
+      return 'Games'
     case 'admin-chat':
       return 'Assistant'
     case 'admin-categories':

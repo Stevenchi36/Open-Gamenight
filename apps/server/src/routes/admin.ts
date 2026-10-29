@@ -13,6 +13,7 @@ import type { AiCore } from '../ai.ts'
 import type { Auth } from '../auth.ts'
 import { CHAT_MESSAGE_MAX_LENGTH, type AdminChat } from '../chat.ts'
 import type { Config } from '../config.ts'
+import { GameAvailabilityError, type GameAvailability } from '../game-availability.ts'
 import { originCheck, rateLimit, RateLimiter, requireAdmin, sessionUser } from '../middleware.ts'
 import type { RoomManager } from '../rooms.ts'
 
@@ -22,6 +23,7 @@ export interface AdminRouterDeps {
   config: Config
   auth: Auth
   games: readonly AnyGameModule[]
+  availability: GameAvailability
   ai: AiCore | null
   rooms: AdminRooms
   servicesFor: (game: AnyGameModule) => ServerServices
@@ -34,7 +36,9 @@ const chatBody = z.object({
   message: z.string().trim().min(1, 'Type a message').max(CHAT_MESSAGE_MAX_LENGTH, `Keep it under ${CHAT_MESSAGE_MAX_LENGTH} characters`),
 })
 
-export function createAdminRouter({ config, auth, games, ai, rooms, servicesFor, chat }: AdminRouterDeps): Router {
+const gameToggleBody = z.object({ enabled: z.boolean() })
+
+export function createAdminRouter({ config, auth, games, availability, ai, rooms, servicesFor, chat }: AdminRouterDeps): Router {
   const router = express.Router()
   router.use(originCheck(config))
   router.use(requireAdmin(auth))
@@ -51,6 +55,31 @@ export function createAdminRouter({ config, auth, games, ai, rooms, servicesFor,
   /** Today's AI spend against the daily output-token cap. */
   router.get('/ai/usage', (_req, res) => {
     res.json(ai ? { enabled: true, ...ai.usageToday() } : { enabled: false })
+  })
+
+  /** Every registered game and whether players can pick it, alphabetical like the game menus. */
+  router.get('/games', (_req, res) => {
+    res.json({
+      games: [...games]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((g) => ({ id: g.id, name: g.name, description: g.description, enabled: availability.isEnabled(g.id) })),
+    })
+  })
+  /** Turn a game on or off for new rooms and the lobby switcher. Rooms already on it keep playing. */
+  router.put('/games/:gameId', (req, res) => {
+    const body = gameToggleBody.safeParse(req.body)
+    if (!body.success) {
+      res.status(400).json({ error: 'validation', message: 'Send { enabled: true | false }' })
+      return
+    }
+    try {
+      availability.set(req.params.gameId, body.data.enabled)
+    } catch (error) {
+      if (!(error instanceof GameAvailabilityError)) throw error
+      res.status(error.code === 'not_found' ? 404 : 409).json({ error: error.code, message: error.message })
+      return
+    }
+    res.json({ id: req.params.gameId, enabled: body.data.enabled })
   })
 
   /** Open rooms. Joining one is the normal join flow; closing sends everyone out. */

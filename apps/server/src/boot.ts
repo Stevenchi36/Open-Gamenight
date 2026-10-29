@@ -8,6 +8,7 @@ import { createAiCore, type MessagesClient } from './ai.ts'
 import { createAuth, type AuthOptions } from './auth.ts'
 import type { Config } from './config.ts'
 import { migrateGamesDb, openDatabase } from './db.ts'
+import { createGameAvailability } from './game-availability.ts'
 import { createLogger } from './logger.ts'
 
 export interface BootOptions {
@@ -27,6 +28,7 @@ export async function boot(config: Config, options: BootOptions = {}) {
   const gamesDb = openDatabase(config.gamesDbPath)
   const auth = await createAuth(config, authDb, options.auth)
   migrateGamesDb(gamesDb, games, logger.child('db'))
+  const availability = createGameAvailability(gamesDb, games)
   const ai = createAiCore({
     config,
     db: gamesDb,
@@ -38,7 +40,7 @@ export async function boot(config: Config, options: BootOptions = {}) {
     authDb.close()
     gamesDb.close()
   }
-  return { config, logger, auth, authDb, gamesDb, games, ai, close }
+  return { config, logger, auth, authDb, gamesDb, games, availability, ai, close }
 }
 
 export type Booted = Awaited<ReturnType<typeof boot>>

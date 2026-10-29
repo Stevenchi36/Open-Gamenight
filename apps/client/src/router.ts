@@ -25,6 +25,7 @@ const router = createRouter({
         { path: '', name: 'admin', component: () => import('./pages/admin/AdminHome.vue') },
         { path: 'users', name: 'admin-users', component: () => import('./pages/admin/UsersPage.vue') },
         { path: 'rooms', name: 'admin-rooms', component: () => import('./pages/admin/RoomsPage.vue') },
+        { path: 'games', name: 'admin-games', component: () => import('./pages/admin/GamesPage.vue') },
         { path: 'chat', name: 'admin-chat', component: () => import('./pages/admin/ChatPage.vue') },
         {
           path: ':gameId/categories',

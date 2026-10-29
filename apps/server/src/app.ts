@@ -13,6 +13,7 @@ import express, { type ErrorRequestHandler, type Express } from 'express'
 import type { Auth } from './auth.ts'
 import { createAdminChat } from './chat.ts'
 import type { Config } from './config.ts'
+import type { GameAvailability } from './game-availability.ts'
 import type { AppLogger } from './logger.ts'
 import { originCheck, rateLimit, RateLimiter, realIp } from './middleware.ts'
 import { createAdminRouter, type AdminRooms } from './routes/admin.ts'
@@ -32,6 +33,8 @@ export interface AppDeps {
   auth: Auth
   gamesDb: DatabaseSync
   games: readonly AnyGameModule[]
+  /** Which games players can pick; the admin Games page changes it. */
+  availability: GameAvailability
   logger: AppLogger
   ai: AiCore | null
   /** For the admin rooms page. */
@@ -71,7 +74,7 @@ function createPublicGameRouter(deps: AppDeps) {
 }
 
 export function createApp(deps: AppDeps): Express {
-  const { config, auth, games, logger } = deps
+  const { config, auth, games, availability, logger } = deps
   const app = express()
   app.disable('x-powered-by')
   app.set('trust proxy', config.TRUSTED_PROXY_HOPS)
@@ -88,8 +91,8 @@ export function createApp(deps: AppDeps): Express {
       primaryColor: config.APP_PRIMARY_COLOR,
       aiEnabled: !!deps.ai,
       guestRooms: config.ROOM_CREATION === 'anyone',
-      // Alphabetical, like every game menu (the room's lobby list too).
-      games: [...games].sort((a, b) => a.name.localeCompare(b.name)).map((g) => ({
+      // Turned-on games only, alphabetical like every game menu (the room's lobby list too).
+      games: availability.enabled().sort((a, b) => a.name.localeCompare(b.name)).map((g) => ({
         id: g.id,
         name: g.name,
         description: g.description,
@@ -102,7 +105,7 @@ export function createApp(deps: AppDeps): Express {
 
   const servicesFor = (game: AnyGameModule) => createServices(deps, game, { admin: true })
   const chat = deps.ai ? createAdminChat({ ai: deps.ai, config, games, servicesFor, logger: logger.child('chat') }) : null
-  app.use('/api/admin', createAdminRouter({ config, auth, games, ai: deps.ai, rooms: deps.rooms, servicesFor, chat }))
+  app.use('/api/admin', createAdminRouter({ config, auth, games, availability, ai: deps.ai, rooms: deps.rooms, servicesFor, chat }))
 
   app.use('/api/games', createPublicGameRouter(deps))
 

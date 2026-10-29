@@ -205,6 +205,30 @@ describe('lobby', () => {
     expect(room.settings).toEqual(imposter.defaultSettings)
   })
 
+  it('keeps turned-off games out of new rooms and the switcher, but not out of a room already on one', async () => {
+    const m = createManager({ games, disabled: ['imposter'] })
+    const host = new FakeConn(user('u1'))
+    await m.send(host, { type: 'create_room', gameId: 'imposter', name: 'Host' })
+    expect(host.last('error')).toMatchObject({ code: 'not_found', message: 'Word Imposter is turned off on this server' })
+    // No gameId: the first game that's still on, not the registry's first.
+    await m.send(host, { type: 'create_room', name: 'Host' })
+    const room = m.rooms.rooms.get(host.last('joined')!.code)!
+    expect(room.gameId).toBe('coin')
+    expect(host.last('state')!.room.availableGames.map((g) => g.id)).toEqual(['coin'])
+    await m.send(host, { type: 'select_game', gameId: 'imposter' })
+    expect(host.last('error')).toMatchObject({ code: 'not_found' })
+    expect(room.gameId).toBe('coin')
+  })
+
+  it('a room whose game is turned off keeps it listed and playable', async () => {
+    const disabled: string[] = []
+    const { send, host, room } = await roomWith(3, { disabled })
+    disabled.push('imposter')
+    await send(host, { type: 'start_game' })
+    expect(room.phase).toBe('playing')
+    expect(host.last('state')!.room.availableGames.map((g) => g.id)).toEqual(['coin', 'imposter'])
+  })
+
   it('renames in the lobby only', async () => {
     const { send, guests, host, room } = await roomWith(3)
     await send(guests[0]!, { type: 'set_name', name: 'Zed' })

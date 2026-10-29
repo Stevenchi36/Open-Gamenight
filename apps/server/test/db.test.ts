@@ -31,7 +31,7 @@ describe('migrateGamesDb', () => {
   it('applies core + game migrations once and records them', () => {
     const db = tempDb()
     const games = [game('demo', 'CREATE TABLE IF NOT EXISTS demo_things (id INTEGER PRIMARY KEY)')]
-    expect(migrateGamesDb(db, games)).toEqual(['core:001_ai_usage', 'core:002_categories', 'demo:001'])
+    expect(migrateGamesDb(db, games)).toEqual(['core:001_ai_usage', 'core:002_categories', 'core:003_disabled_games', 'demo:001'])
     expect(migrateGamesDb(db, games)).toEqual([])
     db.prepare('INSERT INTO demo_things DEFAULT VALUES').run()
     db.close()
@@ -81,7 +81,7 @@ describe('migrateGamesDb', () => {
         { id: '002_rename', sql: 'ALTER TABLE old_things RENAME TO renamed_things' },
       ],
     } as unknown as AnyGameModule
-    expect(migrateGamesDb(db, [v2])).toEqual(['core:001_ai_usage', 'core:002_categories', 'renamed:001', 'renamed:002_rename'])
+    expect(migrateGamesDb(db, [v2])).toEqual(['core:001_ai_usage', 'core:002_categories', 'core:003_disabled_games', 'renamed:001', 'renamed:002_rename'])
     db.prepare('INSERT INTO renamed_things DEFAULT VALUES').run()
     db.close()
   })

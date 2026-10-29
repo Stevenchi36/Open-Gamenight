@@ -37,6 +37,7 @@ export async function startServer(config: Config, options: StartOptions = {}): P
     config,
     logger: logger.child('rooms'),
     servicesFor: (game) => createServices(booted, game),
+    isEnabled: booted.availability.isEnabled,
   })
   const server = createServer(createApp({ ...booted, rooms }))
   const buildId = readBuildId(config.clientDistDir)

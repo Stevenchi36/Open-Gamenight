@@ -70,6 +70,7 @@ const navItems = computed<NavItem[]>(() => {
   if (aiEnabled.value) items.push({ key: 'chat', title: 'Assistant', icon: 'mdi-creation-outline', to: { name: 'admin-chat' } })
   items.push(
     { key: 'rooms', title: 'Rooms', icon: 'mdi-door-open', to: { name: 'admin-rooms' } },
+    { key: 'games', title: 'Games', icon: 'mdi-toggle-switch-outline', to: { name: 'admin-games' } },
     { key: 'users', title: 'Users', icon: 'mdi-account-multiple-outline', to: { name: 'admin-users' } },
   )
   for (const game of clientGames) {

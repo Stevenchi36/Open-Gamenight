@@ -110,6 +110,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 
 - Public sign-up is closed. Admins create accounts in **Admin → Users** (temporary password, role, ban, reset password). Forgotten passwords are reset there too.
 - An account is only needed to **create** rooms (unless `ROOM_CREATION=anyone`). Guests join with a code and a name; the host role can pass to a guest (manually, or automatically after the host has been away for about 2 minutes).
+- **Admin → Games** turns games off that your group never plays. They disappear from the Game Library, the start-room form and the lobby's game switcher; rooms already playing one carry on, and its library stays for when you turn it back on.
 - **Admin → Word Imposter** has **Categories** (add, rename, delete empty ones) and the **Word library** (browse, add, edit or move words, delete, and generate-then-review when `ANTHROPIC_API_KEY` is set). Categories running low on unused words are flagged.
 - **Admin → Flock** has **Categories** and the **Question library**, the same way.
 - **Admin → Ballpark** has **Categories** and the **Question library** (each question has a numeric answer, an optional unit and an optional fact), the same way.

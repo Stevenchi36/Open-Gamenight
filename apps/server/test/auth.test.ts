@@ -3,6 +3,7 @@ import { games } from '@ogn/games/server'
 import express from 'express'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { z } from 'zod'
+import { createGameAvailability } from '../src/game-availability.ts'
 import { FakeConn, user } from './helpers/rooms.ts'
 import { startTestServer, type TestServer } from './helpers/server.ts'
 
@@ -110,7 +111,30 @@ describe('accounts', () => {
 })
 
 describe('core and game admin routes', () => {
-  it.each(['/api/admin/status', '/api/admin/rooms', '/api/admin/probe/ping'])('%s: guest 401, user 403, admin 200', async (path) => {
+  it('turns games off and on for players, keeping at least one on', async () => {
+    const toggle = (id: string, enabled: unknown, cookie = adminCookie) =>
+      t.fetch(`/api/admin/games/${id}`, { method: 'PUT', cookie, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ enabled }) })
+    const configIds = async () => ((await (await t.fetch('/api/config')).json()) as { games: { id: string }[] }).games.map((g) => g.id)
+
+    expect((await toggle('probe', false, userCookie)).status).toBe(403)
+    expect((await toggle('nope', false)).status).toBe(404)
+    expect((await toggle('probe', 'no')).status).toBe(400)
+    expect((await toggle('probe', false)).status).toBe(200)
+    expect(await configIds()).toEqual(['imposter'])
+    const list = (await (await t.fetch('/api/admin/games', { cookie: adminCookie })).json()) as { games: { id: string; enabled: boolean }[] }
+    expect(list.games.map((g) => [g.id, g.enabled])).toEqual([['probe', false], ['imposter', true]])
+
+    const last = await toggle('imposter', false)
+    expect(last.status).toBe(409)
+    expect(await last.json()).toMatchObject({ error: 'last_game' })
+    // Saved in games.db, so a restart (a fresh availability over the same db) keeps it.
+    expect(createGameAvailability(t.booted.gamesDb, t.booted.games).isEnabled('probe')).toBe(false)
+
+    expect((await toggle('probe', true)).status).toBe(200)
+    expect(await configIds()).toEqual(['probe', 'imposter'])
+  })
+
+  it.each(['/api/admin/status', '/api/admin/rooms', '/api/admin/games', '/api/admin/probe/ping'])('%s: guest 401, user 403, admin 200', async (path) => {
     expect((await t.fetch(path)).status).toBe(401)
     expect((await t.fetch(path, { cookie: userCookie })).status).toBe(403)
     const res = await t.fetch(path, { cookie: adminCookie })

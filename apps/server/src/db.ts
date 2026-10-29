@@ -54,6 +54,16 @@ export const CORE_MIGRATIONS: Migration[] = [
     `,
   },
   CATEGORIES_MIGRATION,
+  {
+    // Games an admin turned off (game-availability.ts). No foreign key: game ids aren't a table.
+    id: '003_disabled_games',
+    sql: `
+      CREATE TABLE IF NOT EXISTS disabled_games (
+        game_id     TEXT PRIMARY KEY,
+        disabled_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `,
+  },
 ]
 
 const CREATE_TABLE = /create\s+(?:virtual\s+)?table\s+(?:if\s+not\s+exists\s+)?["`[]?(\w+)/gi
