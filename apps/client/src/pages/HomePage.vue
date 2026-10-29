@@ -29,6 +29,7 @@
               v-model="code"
               length="4"
               type="text"
+              label="Room code"
               class="mb-2 room-code"
               :disabled="joining"
               @update:model-value="(v: string) => (code = v.toUpperCase())"

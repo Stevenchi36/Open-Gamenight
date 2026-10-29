@@ -5,7 +5,7 @@
       <template v-for="(owner, c) in row" :key="`b${r},${c}`">
         <g v-if="owner !== null" class="db-box" :class="{ 'db-box--claimed': claimed.includes(`${r},${c}`) }">
           <rect :x="x(c) + 3" :y="x(r) + 3" :width="S - 6" :height="S - 6" rx="4" :fill="seatColor(owner)" />
-          <text :x="x(c) + S / 2" :y="x(r) + S / 2" class="db-initial">{{ initials[owner] }}</text>
+          <text :x="x(c) + S / 2" :y="x(r) + S / 2" class="db-initial" :fill="onSeatColor(owner)">{{ initials[owner] }}</text>
         </g>
       </template>
     </template>
@@ -44,7 +44,7 @@
 // claims then fill in; the first render shows the board as it stands, so nothing replays.
 import { computed, ref, watch } from 'vue'
 import type { Line } from '../shared/index.ts'
-import { seatColor } from './text.ts'
+import { onSeatColor, seatColor } from './text.ts'
 
 const props = defineProps<{
   grid: number
@@ -145,11 +145,7 @@ const summary = computed(() => {
   width: 100%;
   touch-action: manipulation;
 }
-.db-box rect {
-  opacity: 0.85;
-}
 .db-initial {
-  fill: #fff;
   font-size: 18px;
   font-weight: 700;
   text-anchor: middle;

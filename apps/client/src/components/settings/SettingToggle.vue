@@ -4,6 +4,7 @@
     <v-btn-toggle
       :model-value="modelValue"
       :disabled="disabled"
+      :aria-label="label"
       mandatory
       border
       divided

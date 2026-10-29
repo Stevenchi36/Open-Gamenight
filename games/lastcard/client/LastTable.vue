@@ -14,10 +14,7 @@
   >
     <template #seat="{ id }">
       <div v-if="byId[id]!.left" class="text-body-small text-medium-emphasis">left</div>
-      <div v-else class="d-flex align-center justify-center my-1" :aria-label="`${byId[id]!.cards} cards`">
-        <PlayingCard v-for="i in Math.min(byId[id]!.cards, 4)" :key="i" size="sm" :class="{ 'seat-card--stacked': i > 1 }" />
-        <span class="text-body-small font-weight-bold ml-1">{{ byId[id]!.cards }}</span>
-      </div>
+      <CardCount v-else :count="byId[id]!.cards" />
       <div v-if="!byId[id]!.left && (byId[id]!.cards === 1 || points)" class="d-flex flex-wrap justify-center ga-1">
         <span v-if="id === view.exposed" class="seat-tag seat-tag--error">No call!</span>
         <span v-else-if="byId[id]!.cards === 1 && view.phase === 'PLAYING'" class="seat-tag seat-tag--warning">Last card</span>
@@ -55,7 +52,7 @@
 // middle the draw pile, the top card, the colour in play, the direction and any pending stack.
 import type { PlayerId } from '@ogn/core/contract'
 import type { RoomView } from '@ogn/core/protocol'
-import { CardTable, PlayingCard, reducedMotion } from '@ogn/core/ui'
+import { CardCount, CardTable, PlayingCard, reducedMotion } from '@ogn/core/ui'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sameCard, type LastCardView, type LcCard as Card, type Seat } from '../shared/index.ts'
 import { tableFlights, topDelay } from './flights.ts'
@@ -103,9 +100,6 @@ onBeforeUnmount(() => clearTimeout(timer))
 </script>
 
 <style scoped>
-.seat-card--stacked {
-  margin-left: -14px;
-}
 .seat-tag {
   padding: 0 4px;
   border-radius: 4px;

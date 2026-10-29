@@ -76,6 +76,10 @@
         @update:options="load"
         @click:row="(_e: unknown, row: { item: QuestionRow }) => openEdit(row.item)"
       >
+        <template #[`header.edit`]><span class="d-sr-only">Edit</span></template>
+        <template #[`item.edit`]="{ item }">
+          <v-btn icon="mdi-pencil" size="small" variant="text" :aria-label="`Edit ${item.question}`" @click.stop="openEdit(item)" />
+        </template>
         <template #[`item.answer`]="{ item }">{{ answerText(item.answer, item.unit) }}</template>
         <template #[`item.times_used`]="{ item }">{{ item.times_used || '-' }}</template>
       </v-data-table-server>
@@ -183,7 +187,7 @@
             <v-table density="compact">
               <thead>
                 <tr>
-                  <th style="width: 40px" />
+                  <th style="width: 40px"><span class="d-sr-only">Keep</span></th>
                   <th style="width: 16%">Category</th>
                   <th>Question</th>
                   <th style="width: 14%">Answer</th>
@@ -193,12 +197,12 @@
               </thead>
               <tbody>
                 <tr v-for="(c, i) in candidates" :key="i" :class="c.keep ? '' : 'text-disabled'">
-                  <td><v-checkbox-btn v-model="c.keep" /></td>
-                  <td><v-text-field v-model="c.category" density="compact" variant="plain" hide-details /></td>
-                  <td><v-text-field v-model="c.question" density="compact" variant="plain" hide-details /></td>
-                  <td><v-text-field v-model="c.answer" density="compact" variant="plain" hide-details inputmode="decimal" /></td>
-                  <td><v-select v-model="c.unit" :items="unitItems" density="compact" variant="plain" hide-details /></td>
-                  <td><v-text-field v-model="c.fact" density="compact" variant="plain" hide-details /></td>
+                  <td><v-checkbox-btn v-model="c.keep" :aria-label="`Keep row ${i + 1}`" /></td>
+                  <td><v-text-field v-model="c.category" :aria-label="`Category, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
+                  <td><v-text-field v-model="c.question" :aria-label="`Question, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
+                  <td><v-text-field v-model="c.answer" :aria-label="`Answer, row ${i + 1}`" density="compact" variant="plain" hide-details inputmode="decimal" /></td>
+                  <td><v-select v-model="c.unit" :aria-label="`Unit, row ${i + 1}`" :items="unitItems" density="compact" variant="plain" hide-details /></td>
+                  <td><v-text-field v-model="c.fact" :aria-label="`Fact, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
                 </tr>
               </tbody>
             </v-table>
@@ -286,6 +290,8 @@ const headers = [
   { title: 'Answer', key: 'answer', sortable: false },
   { title: 'Category', key: 'category', sortable: false },
   { title: 'Used', key: 'times_used', sortable: false },
+  // A row click edits too, but rows can't take keyboard focus; this button can.
+  { title: 'Edit', key: 'edit', sortable: false, width: 56 },
 ]
 const unitItems = [
   { title: 'None', value: null as UnitCode | null },

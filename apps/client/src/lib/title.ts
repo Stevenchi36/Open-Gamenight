@@ -39,7 +39,7 @@ function adminTitle(route: RouteLocationNormalizedLoaded): string {
   }
 }
 
-function pageTitle(route: RouteLocationNormalizedLoaded): string {
+export function pageTitle(route: RouteLocationNormalizedLoaded): string {
   const code = String(route.params.code ?? '').toUpperCase()
   switch (route.name) {
     case 'home':

@@ -4,8 +4,10 @@
       <span>{{ label }}</span>
       <span class="font-weight-medium">{{ modelValue }}{{ suffix ?? '' }}</span>
     </div>
+    <!-- name: Vuetify names the slider's thumb from it, and from nothing else. -->
     <v-slider
       :model-value="modelValue"
+      :name="label"
       :min="min"
       :max="max"
       :step="step ?? 1"

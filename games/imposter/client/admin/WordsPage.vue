@@ -79,6 +79,10 @@
         @update:options="load"
         @click:row="(_e: unknown, row: { item: WordRow }) => openEdit(row.item)"
       >
+        <template #[`header.edit`]><span class="d-sr-only">Edit</span></template>
+        <template #[`item.edit`]="{ item }">
+          <v-btn icon="mdi-pencil" size="small" variant="text" :aria-label="`Edit ${item.word}`" @click.stop="openEdit(item)" />
+        </template>
         <template #[`item.difficulty`]="{ item }">
           <v-chip size="x-small" variant="tonal">{{ item.difficulty }}</v-chip>
         </template>
@@ -174,16 +178,16 @@
             </v-alert>
             <v-table density="compact">
               <thead>
-                <tr><th style="width: 40px" /><th>Category</th><th>Word</th><th>Hint</th><th>Difficulty</th></tr>
+                <tr><th style="width: 40px"><span class="d-sr-only">Keep</span></th><th>Category</th><th>Word</th><th>Hint</th><th>Difficulty</th></tr>
               </thead>
               <tbody>
                 <tr v-for="(c, i) in candidates" :key="i" :class="c.keep ? '' : 'text-disabled'">
-                  <td><v-checkbox-btn v-model="c.keep" /></td>
-                  <td><v-text-field v-model="c.category" density="compact" variant="plain" hide-details /></td>
-                  <td><v-text-field v-model="c.word" density="compact" variant="plain" hide-details /></td>
-                  <td><v-text-field v-model="c.hint" density="compact" variant="plain" hide-details /></td>
+                  <td><v-checkbox-btn v-model="c.keep" :aria-label="`Keep row ${i + 1}`" /></td>
+                  <td><v-text-field v-model="c.category" :aria-label="`Category, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
+                  <td><v-text-field v-model="c.word" :aria-label="`Word, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
+                  <td><v-text-field v-model="c.hint" :aria-label="`Hint, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
                   <td>
-                    <v-select v-model="c.difficulty" :items="difficulties" density="compact" variant="plain" hide-details />
+                    <v-select v-model="c.difficulty" :aria-label="`Difficulty, row ${i + 1}`" :items="difficulties" density="compact" variant="plain" hide-details />
                   </td>
                 </tr>
               </tbody>
@@ -267,6 +271,8 @@ const headers = [
   { title: 'Hint', key: 'hint', sortable: false },
   { title: 'Difficulty', key: 'difficulty', sortable: false },
   { title: 'Used', key: 'times_used', sortable: false },
+  // A row click edits too, but rows can't take keyboard focus; this button can.
+  { title: 'Edit', key: 'edit', sortable: false, width: 56 },
 ]
 
 const snack = reactive({ show: false, text: '', color: 'success' })

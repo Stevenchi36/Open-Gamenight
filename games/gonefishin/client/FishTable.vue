@@ -15,10 +15,7 @@
     <template #seat="{ id }">
       <div v-if="byId[id]!.left" class="text-body-small text-medium-emphasis">left</div>
       <div v-else-if="byId[id]!.cards === 0" class="text-body-small text-medium-emphasis my-1">no cards</div>
-      <div v-else class="d-flex align-center justify-center my-1" :aria-label="`${byId[id]!.cards} cards`">
-        <PlayingCard v-for="i in Math.min(byId[id]!.cards, 4)" :key="i" size="sm" :class="{ 'seat-card--stacked': i > 1 }" />
-        <span class="text-body-small font-weight-bold ml-1">{{ byId[id]!.cards }}</span>
-      </div>
+      <CardCount v-else :count="byId[id]!.cards" />
       <!-- Always there (even empty), so a seat's first book pops in like the rest. -->
       <TransitionGroup
         tag="div"
@@ -47,7 +44,7 @@
 import type { PlayerId } from '@ogn/core/contract'
 import { rankName } from '@ogn/core/kit'
 import type { RoomView } from '@ogn/core/protocol'
-import { CardTable, PlayingCard } from '@ogn/core/ui'
+import { CardCount, CardTable, PlayingCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { GoneFishinView, Seat } from '../shared/index.ts'
 import { tableFlights } from './flights.ts'
@@ -63,9 +60,6 @@ const flights = computed(() => tableFlights(props.view))
 </script>
 
 <style scoped>
-.seat-card--stacked {
-  margin-left: -14px;
-}
 /* A book: the rank on a small tag, so it can't be read as a card count. */
 .book-tag {
   min-width: 1.6em;

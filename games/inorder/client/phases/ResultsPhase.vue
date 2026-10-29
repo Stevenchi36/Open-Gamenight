@@ -13,8 +13,9 @@
             <div v-if="i < turned" class="d-flex align-center ga-1">
               <v-icon size="small" :color="isWrong(item.id) ? 'error' : 'success'">{{ isWrong(item.id) ? 'mdi-close-circle' : 'mdi-check-circle' }}</v-icon>
               <v-avatar :color="isWrong(item.id) ? 'error' : 'success'" size="44" class="text-title-large font-weight-bold">{{ item.number }}</v-avatar>
+              <span class="d-sr-only">{{ isWrong(item.id) ? 'out of order' : 'in order' }}</span>
             </div>
-            <v-avatar v-else variant="tonal" size="44"><v-icon>mdi-help</v-icon></v-avatar>
+            <v-avatar v-else variant="tonal" size="44"><v-icon>mdi-help</v-icon><span class="d-sr-only">not turned over yet</span></v-avatar>
           </template>
         </LineCard>
       </v-card>

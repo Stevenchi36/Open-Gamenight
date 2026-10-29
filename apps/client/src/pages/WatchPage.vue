@@ -71,6 +71,7 @@
             v-model="entered"
             length="4"
             type="text"
+            label="Room code"
             class="mb-2 room-code"
             @update:model-value="(v: string) => (entered = v.toUpperCase())"
           />

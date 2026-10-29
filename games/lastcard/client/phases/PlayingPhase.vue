@@ -42,9 +42,9 @@
         <v-btn
           v-for="c in COLORS"
           :key="c"
-          class="flex-grow-1 color-btn"
+          class="flex-grow-1"
           size="large"
-          :style="{ background: CARD_COLORS[c] }"
+          :style="{ background: CARD_COLORS[c], color: ON_CARD_COLORS[c] }"
           :aria-label="`Play the ${cardName(selectedCard)} as ${c}`"
           @click="play(c)"
         >
@@ -89,7 +89,7 @@ import { arriveDelay } from '../flights.ts'
 import HandCards from '../HandCards.vue'
 import LastTable from '../LastTable.vue'
 import type { PhaseProps } from '../props.ts'
-import { CARD_COLORS, cardName, moveText, moveTone } from '../text.ts'
+import { CARD_COLORS, cardName, moveText, moveTone, ON_CARD_COLORS } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
 
@@ -176,9 +176,3 @@ function callLastCard() {
 }
 </script>
 
-<style scoped>
-.color-btn {
-  color: #fff;
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
-}
-</style>

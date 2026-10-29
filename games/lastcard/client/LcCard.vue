@@ -2,11 +2,12 @@
   <div
     class="lc-card"
     :class="[`lc-card--${size}`, { 'lc-card--wild': !card.color }]"
-    :style="card.color ? { '--lc-color': CARD_COLORS[card.color] } : undefined"
+    :style="card.color ? { '--lc-color': CARD_COLORS[card.color], '--lc-on': ON_CARD_COLORS[card.color] } : undefined"
     role="img"
     :aria-label="cardName(card)"
   >
     <span v-if="size !== 'sm'" class="lc-card__corner">{{ symbol }}</span>
+    <span v-if="size !== 'sm' && card.color" class="lc-card__letter">{{ COLOR_LETTERS[card.color] }}</span>
     <span class="lc-card__oval">
       <v-icon v-if="icon" :icon="icon" class="lc-card__icon" />
       <span v-else>{{ symbol }}</span>
@@ -16,10 +17,11 @@
 
 <script setup lang="ts">
 // One Last Card card, face up: the card's colour (four quarters for a wild) with its number or
-// symbol on a white oval. Face-down cards use the core PlayingCard's back instead.
+// symbol on a white oval, and its colour's letter in the bottom corner. Face-down cards use the core
+// PlayingCard's back instead.
 import { computed } from 'vue'
 import type { LcCard } from '../shared/index.ts'
-import { CARD_COLORS, cardName } from './text.ts'
+import { CARD_COLORS, cardName, COLOR_LETTERS, ON_CARD_COLORS } from './text.ts'
 
 const props = withDefaults(defineProps<{ card: LcCard; size?: 'sm' | 'md' | 'lg' }>(), { size: 'md' })
 
@@ -92,12 +94,22 @@ const icon = computed(() => ICONS[props.card.value] ?? null)
 .lc-card__icon {
   font-size: 1.1em;
 }
-.lc-card__corner {
+.lc-card__corner,
+.lc-card__letter {
   position: absolute;
+  font-size: 0.55em;
+  color: var(--lc-on, #fff);
+}
+.lc-card__corner {
   top: 2px;
   left: 4px;
-  font-size: 0.55em;
-  color: #fff;
+}
+.lc-card__letter {
+  right: 4px;
+  bottom: 2px;
+}
+/* A wild's corner sits on the quarters, so it keeps a shadow to read on any of them. */
+.lc-card--wild .lc-card__corner {
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 </style>

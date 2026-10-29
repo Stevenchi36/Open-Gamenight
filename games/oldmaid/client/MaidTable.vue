@@ -15,10 +15,7 @@
       <div v-else-if="byId[id]!.eliminated" class="text-body-small text-medium-emphasis">eliminated</div>
       <div v-else-if="!byId[id]!.inRound" class="text-body-small text-medium-emphasis">next game</div>
       <div v-else-if="byId[id]!.outPlace !== null" class="my-1"><span class="out-tag">Out · {{ ordinal(byId[id]!.outPlace!) }}</span></div>
-      <div v-else class="d-flex align-center justify-center my-1" :aria-label="`${byId[id]!.cards} cards`">
-        <PlayingCard v-for="i in Math.min(byId[id]!.cards, 4)" :key="i" size="sm" :class="{ 'seat-card--stacked': i > 1 }" />
-        <span class="text-body-small font-weight-bold ml-1">{{ byId[id]!.cards }}</span>
-      </div>
+      <CardCount v-else :count="byId[id]!.cards" />
       <div v-if="id === view.from" class="text-body-small text-primary font-weight-bold">drawn from</div>
     </template>
     <template #center>
@@ -44,7 +41,7 @@
 // from highlighted, and the discard pile of pairs in the middle.
 import type { PlayerId } from '@ogn/core/contract'
 import type { RoomView } from '@ogn/core/protocol'
-import { CardTable, ordinal, PlayingCard } from '@ogn/core/ui'
+import { CardCount, CardTable, ordinal, PlayingCard } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { OldMaidView, Seat } from '../shared/index.ts'
 import { tableFlights } from './flights.ts'
@@ -57,9 +54,6 @@ const flights = computed(() => tableFlights(props.view))
 </script>
 
 <style scoped>
-.seat-card--stacked {
-  margin-left: -14px;
-}
 .discard-card--stacked {
   margin-left: -26px;
   transform: rotate(8deg);

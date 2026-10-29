@@ -76,6 +76,10 @@
         @update:options="load"
         @click:row="(_e: unknown, row: { item: ThemeRow }) => openEdit(row.item)"
       >
+        <template #[`header.edit`]><span class="d-sr-only">Edit</span></template>
+        <template #[`item.edit`]="{ item }">
+          <v-btn icon="mdi-pencil" size="small" variant="text" :aria-label="`Edit ${item.theme}`" @click.stop="openEdit(item)" />
+        </template>
         <template #[`item.scale`]="{ item }">{{ item.low }} → {{ item.high }}</template>
         <template #[`item.times_used`]="{ item }">{{ item.times_used || '-' }}</template>
       </v-data-table-server>
@@ -154,15 +158,15 @@
             </v-alert>
             <v-table density="compact">
               <thead>
-                <tr><th style="width: 40px" /><th style="width: 20%">Category</th><th>Theme</th><th style="width: 20%">1 means</th><th style="width: 20%">100 means</th></tr>
+                <tr><th style="width: 40px"><span class="d-sr-only">Keep</span></th><th style="width: 20%">Category</th><th>Theme</th><th style="width: 20%">1 means</th><th style="width: 20%">100 means</th></tr>
               </thead>
               <tbody>
                 <tr v-for="(c, i) in candidates" :key="i" :class="c.keep ? '' : 'text-disabled'">
-                  <td><v-checkbox-btn v-model="c.keep" /></td>
-                  <td><v-text-field v-model="c.category" density="compact" variant="plain" hide-details /></td>
-                  <td><v-text-field v-model="c.theme" density="compact" variant="plain" hide-details /></td>
-                  <td><v-text-field v-model="c.low" density="compact" variant="plain" hide-details /></td>
-                  <td><v-text-field v-model="c.high" density="compact" variant="plain" hide-details /></td>
+                  <td><v-checkbox-btn v-model="c.keep" :aria-label="`Keep row ${i + 1}`" /></td>
+                  <td><v-text-field v-model="c.category" :aria-label="`Category, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
+                  <td><v-text-field v-model="c.theme" :aria-label="`Theme, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
+                  <td><v-text-field v-model="c.low" :aria-label="`1 means, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
+                  <td><v-text-field v-model="c.high" :aria-label="`100 means, row ${i + 1}`" density="compact" variant="plain" hide-details /></td>
                 </tr>
               </tbody>
             </v-table>
@@ -233,6 +237,8 @@ const headers = [
   { title: '1 → 100', key: 'scale', sortable: false },
   { title: 'Category', key: 'category', sortable: false },
   { title: 'Used', key: 'times_used', sortable: false },
+  // A row click edits too, but rows can't take keyboard focus; this button can.
+  { title: 'Edit', key: 'edit', sortable: false, width: 56 },
 ]
 
 const snack = reactive({ show: false, text: '', color: 'success' })

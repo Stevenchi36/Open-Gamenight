@@ -9,6 +9,17 @@ export const CARD_COLORS: Record<Color, string> = {
   blue: '#1e6fd9',
 }
 
+/** Text on each card colour: dark on the light two, white on the dark two, for 4.5:1 contrast. */
+export const ON_CARD_COLORS: Record<Color, string> = {
+  red: '#fff',
+  yellow: '#1a1a1a',
+  green: '#1a1a1a',
+  blue: '#fff',
+}
+
+/** Printed in a card's corner, so colour isn't the only cue (yellow and green look alike to many). */
+export const COLOR_LETTERS: Record<Color, string> = { red: 'R', yellow: 'Y', green: 'G', blue: 'B' }
+
 const VALUE_NAMES: Partial<Record<LcCard['value'], string>> = {
   skip: 'Skip',
   reverse: 'Reverse',

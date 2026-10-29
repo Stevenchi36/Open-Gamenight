@@ -8,6 +8,9 @@ const HEX: Record<Color, string> = { red: '#e53935', blue: '#1e88e5', green: '#4
 
 export const seatColor = (seat: number): string => HEX[COLORS[seat]!]
 
+/** A box's initial: white reads at 3:1 (it's large, bold text) on all but orange, which takes dark. */
+export const onSeatColor = (seat: number): string => (COLORS[seat] === 'orange' ? '#1a1a1a' : '#fff')
+
 /** "You win!", "Bea wins", "You and Al share the win". `me` may be SPECTATOR_ID, which never says "you". */
 export function resultTitle(view: DotsView, me: PlayerId, name: (id: PlayerId) => string): string {
   const names = view.winnerIds.map((id) => (id === me ? 'You' : name(id)))

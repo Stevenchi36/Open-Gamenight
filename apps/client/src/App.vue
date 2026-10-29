@@ -38,6 +38,7 @@
       >
         <v-banner-text>{{ banner.text }}</v-banner-text>
       </v-banner>
+      <h1 v-if="heading" class="d-sr-only">{{ heading }}</h1>
       <router-view />
     </v-main>
 
@@ -61,6 +62,7 @@ import { computed, defineAsyncComponent, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { authClient } from './lib/auth-client.ts'
 import { config } from './lib/config.ts'
+import { focusHeadingOnNavigate, usePageHeading } from './lib/heading.ts'
 import { immersive } from './lib/layout.ts'
 import { refreshSession, roomState, toasts, type Toast } from './lib/room.ts'
 import { useThemeToggle } from './lib/theme.ts'
@@ -71,6 +73,8 @@ const router = useRouter()
 const { theme, isDark, toggleTheme } = useThemeToggle()
 const session = authClient.useSession()
 useDocumentTitle(route)
+const heading = usePageHeading(route)
+focusHeadingOnNavigate(router)
 
 const user = computed(() => session.value.data?.user ?? null)
 const isAdmin = computed(() => (user.value as { role?: string } | null)?.role === 'admin')

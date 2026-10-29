@@ -2,6 +2,7 @@
  * Shared client-side building blocks for games' play views: helpers, composables
  * and Vuetify components. Browser-only; checked by the client's vue-tsc, not core's tsc.
  */
+export { default as CardCount } from './CardCount.vue'
 export { default as CardTable } from './CardTable.vue'
 export { default as CountdownTimer } from './CountdownTimer.vue'
 export { default as HoldToReveal } from './HoldToReveal.vue'
