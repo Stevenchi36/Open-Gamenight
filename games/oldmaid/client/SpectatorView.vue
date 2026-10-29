@@ -36,13 +36,19 @@
     </template>
 
     <LoseReveal
-      :active="view.outcome === 'maid'"
+      :active="view.outcome === 'maid' && !view.royaleWinnerId"
       :title="maidTitle(view, SPECTATOR_ID, name)"
       :subtitle="maidSubtitle(view, SPECTATOR_ID, name)"
       :delay="FLIGHT_MS * 2"
     >
       <PlayingCard v-if="view.maidCard" :card="view.maidCard" size="lg" />
     </LoseReveal>
+    <WinCelebration
+      :active="view.outcome === 'maid' && !!view.royaleWinnerId"
+      :title="royaleWinTitle(view, SPECTATOR_ID, name)"
+      :subtitle="royaleWinSubtitle(view, SPECTATOR_ID, name)"
+      :delay="FLIGHT_MS * 2"
+    />
   </SpectatorLayout>
 </template>
 
@@ -53,11 +59,11 @@
 import type { SpectatorViewProps } from '@ogn/core/client'
 import type { PlayerId } from '@ogn/core/contract'
 import { SPECTATOR_ID } from '@ogn/core/protocol'
-import { FLIGHT_MS, LoseReveal, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, SpectatorLayout, StatusCard } from '@ogn/core/ui'
+import { FLIGHT_MS, LoseReveal, MoveLog, moveLogEntries, nameOf, PlayingCard, ScoreBoard, SpectatorLayout, StatusCard, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { OldMaidSettings, OldMaidView } from '../shared/index.ts'
 import MaidTable from './MaidTable.vue'
-import { maidSubtitle, maidTitle, moveText, moveTone } from './text.ts'
+import { maidSubtitle, maidTitle, moveText, moveTone, royaleWinSubtitle, royaleWinTitle } from './text.ts'
 
 const props = defineProps<SpectatorViewProps<OldMaidView, OldMaidSettings>>()
 

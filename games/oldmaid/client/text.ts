@@ -33,6 +33,18 @@ export function maidTitle(view: OldMaidView, me: PlayerId, name: (id: PlayerId) 
   return view.maidId === me ? "You're the Old Maid!" : `${name(view.maidId)} is the Old Maid!`
 }
 
+/** Royale's last round, which celebrates the winner instead: "You win the Royale!"; "Cal wins the Royale!" */
+export function royaleWinTitle(view: OldMaidView, me: PlayerId, name: (id: PlayerId) => string): string {
+  if (!view.royaleWinnerId) return ''
+  return view.royaleWinnerId === me ? 'You win the Royale!' : `${name(view.royaleWinnerId)} wins the Royale!`
+}
+
+/** Under the win: who was caught last. */
+export function royaleWinSubtitle(view: OldMaidView, me: PlayerId, name: (id: PlayerId) => string): string {
+  if (!view.maidId) return ''
+  return view.maidId === me ? "You're the Old Maid" : `${name(view.maidId)} is the Old Maid`
+}
+
 /** Under the reveal: what being caught means in this format. */
 export function maidSubtitle(view: OldMaidView, me: PlayerId, name: (id: PlayerId) => string): string {
   if (view.settings.format === 'classic') return 'Everyone else scores a point'

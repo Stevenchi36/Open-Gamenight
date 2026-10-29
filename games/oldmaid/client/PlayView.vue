@@ -9,20 +9,27 @@
     <ResultsPhase v-else-if="view.phase === 'RESULTS'" v-bind="phaseProps" />
 
     <!-- Here, not in ResultsPhase: it has to be on screen before RESULTS arrives to see the catch happen live. -->
-    <LoseReveal :active="view.outcome === 'maid'" :title="maidTitle(view, me, name)" :subtitle="maidSubtitle(view, me, name)" :delay="FLIGHT_MS * 2">
+    <LoseReveal :active="view.outcome === 'maid' && !view.royaleWinnerId" :title="maidTitle(view, me, name)" :subtitle="maidSubtitle(view, me, name)" :delay="FLIGHT_MS * 2">
       <PlayingCard v-if="view.maidCard" :card="view.maidCard" size="lg" />
     </LoseReveal>
+    <!-- The round that decides a Royale is the one round with a winner. -->
+    <WinCelebration
+      :active="view.outcome === 'maid' && !!view.royaleWinnerId"
+      :title="royaleWinTitle(view, me, name)"
+      :subtitle="royaleWinSubtitle(view, me, name)"
+      :delay="FLIGHT_MS * 2"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PlayerId } from '@ogn/core/contract'
-import { FLIGHT_MS, LoseReveal, nameOf, PlayingCard } from '@ogn/core/ui'
+import { FLIGHT_MS, LoseReveal, nameOf, PlayingCard, WinCelebration } from '@ogn/core/ui'
 import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import type { PhaseProps } from './props.ts'
-import { maidSubtitle, maidTitle } from './text.ts'
+import { maidSubtitle, maidTitle, royaleWinSubtitle, royaleWinTitle } from './text.ts'
 
 const props = defineProps<PhaseProps>()
 
