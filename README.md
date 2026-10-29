@@ -137,10 +137,10 @@ games/
   dotsandboxes/ Dots and Boxes (2-4 players, nothing hidden; grid size setting)
   oldmaid/    Old Maid (card game: draw blind from your neighbour; Classic or Royale; no library)
 docs/
-  decisions.md   every design decision and why
+  decisions.md   platform design decisions and why
   dev-testing.md checks, dev-players page (several players in one window)
   mcp.md         Claude / MCP guide
-PLAN.md          the full design and build plan
+PLAN.md          the platform design and build plan (each game's is in games/<id>/DESIGN.md)
 ```
 
 ## Writing a game

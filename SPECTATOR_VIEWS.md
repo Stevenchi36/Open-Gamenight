@@ -1,6 +1,6 @@
 # Spectator views
 
-Every game has a `SpectatorView` for the watch page (`/watch/:code`): Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card, Flock, Color Mix, Ballpark, Liar's Dice, Word Imposter, In Order and Old Maid. A future game should ship with one. See `PLAN.md` § Spectators, each game's "Watch page" bullet, and `docs/decisions.md`.
+Every game has a `SpectatorView` for the watch page (`/watch/:code`): Cheat, Dots and Boxes, Tic-Tac-Toe, Drop Line, Gone Fishin', Last Card, Flock, Color Mix, Ballpark, Liar's Dice, Word Imposter, In Order and Old Maid. A future game should ship with one. See `PLAN.md` § Spectators, `docs/decisions.md`, and each game's `DESIGN.md` (its "Watch page" bullet).
 
 ## How to add one
 
@@ -9,7 +9,7 @@ Every game has a `SpectatorView` for the watch page (`/watch/:code`): Cheat, Dot
 - Size it for a TV: game content in a `md="8"` column, and log and scores in a `md="4"` column.
 - If the outsider view lacks something a TV should show, add only public data to `view()`, check it against `secrets`, and keep `runLeakTest` green. The spectator check fails any secret the spectator can see that some player can't. Remember the TV is in every player's sight: it can only show what the least-informed player already knows (Word Imposter's category is the example).
 - Reuse the shared pieces: `WhoAnswered` (who has answered, never what), `MoveLog`, `TurnOrder large`, the large seat chips, `CardTable` (pulses its turn seat for the spectator), `WinCelebration` with `winTitle`/`scoreStandings`.
-- Update `PLAN.md` (the game's "Watch page" bullet) and `RULES.md` if players would notice the change.
+- Update the game's `DESIGN.md` (its "Watch page" bullet) and `RULES.md` if players would notice the change.
 
 ## Animation rules
 

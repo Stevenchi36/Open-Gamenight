@@ -1,7 +1,7 @@
 /**
  * Paint-like colour mixing: a typed port of the parts of spectral.js v3.0.0 that
  * Color Mix uses (sRGB -> reflectance spectrum, Kubelka-Munk mix, gamut-mapped hex).
- * Vendored rather than depended on so answers stay pinned (docs/decisions.md).
+ * Vendored rather than depended on so answers stay pinned (../DESIGN.md).
  * Pure functions only. test/spectral.test.ts holds results from the original to check the port.
  *
  * MIT License

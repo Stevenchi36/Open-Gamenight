@@ -1,6 +1,6 @@
 # Game ideas
 
-Candidates for future games, not yet filtered. Each entry has a one-line pitch, then what it would reuse, what it would need that doesn't exist yet, and its secrets. When a game is picked, write its `PLAN.md` section (see `games/CLAUDE.md`, "Adding a game") and remove it from here.
+Candidates for future games, not yet filtered. Each entry has a one-line pitch, then what it would reuse, what it would need that doesn't exist yet, and its secrets. When a game is picked, write its `DESIGN.md` (see `games/CLAUDE.md`, "Adding a game") and remove it from here.
 
 ## Recommended next
 

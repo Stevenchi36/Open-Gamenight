@@ -2,9 +2,10 @@
 
 Multiplayer party-game platform (pnpm workspace, TypeScript, Node 26). Word Imposter is the first game and the reference implementation for future ones.
 
-- `PLAN.md`: the design spec. Read the relevant section before building or changing a feature.
+- `PLAN.md`: the platform design spec. Read the relevant section before building or changing a feature.
+- `docs/decisions.md`: every platform design decision with its reason. Check it before changing behaviour. When you make or change a decision, add or edit its one-line entry there in the same change.
+- `games/<id>/DESIGN.md`: one game's spec and, at the end, its decisions, under the same rules as the two above. Game-specific material goes there, not in `PLAN.md` or `docs/decisions.md`.
 - `games/<id>/RULES.md`: each game's player-facing rules, shown in the room's How to play dialog. Update it with any rule or setting change.
-- `docs/decisions.md`: every design decision with its reason. Check it before changing behaviour. When you make or change a decision, add or edit its one-line entry there in the same change.
 - `docs/mcp.md`: read before touching MCP tools, or when working with the word library through the `open-gamenight` MCP server.
 - `docs/dev-testing.md`: manual testing in dev, including the dev-players page (several players in one window) and the `.env` origin it needs. Keep it current when changing `dev-players.html`, `packages/core/src/ui/storage.ts` or room join/reconnect behaviour.
 
