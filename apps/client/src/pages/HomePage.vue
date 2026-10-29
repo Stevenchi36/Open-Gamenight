@@ -68,6 +68,9 @@
       <p v-else class="text-center text-body-medium text-medium-emphasis">
         <router-link to="/login">Sign in</router-link> to start a room. Joining only needs a code.
       </p>
+      <div v-if="isAdmin" class="text-center mt-3">
+        <v-btn variant="text" prepend-icon="mdi-door-open" :to="{ name: 'admin-rooms' }">Manage open rooms</v-btn>
+      </div>
     </template>
 
     <v-dialog v-model="starting" max-width="400">
@@ -109,6 +112,7 @@ const tab = computed({
 })
 const session = authClient.useSession()
 const user = computed(() => session.value.data?.user ?? null)
+const isAdmin = computed(() => (user.value as { role?: string } | null)?.role === 'admin')
 // Matches the server's create_room rule (ROOM_CREATION).
 const canCreate = computed(() => !!user.value || config.guestRooms)
 
