@@ -404,7 +404,7 @@ The VPS already runs Laravel apps. **Assumed setup, to verify at deploy time:** 
 - Cloudflare: add the DNS record (proxied); websockets work through the proxy.
 - `TRUSTED_PROXY_HOPS` / `REAL_IP_HEADER` as in section 9.
 - Back up `data/*.db` (e.g. `sqlite3 .backup` via cron).
-- Updates: `npm run deploy` (`scripts/deploy.sh`: pull, frozen install, build beside the live client and swap it in, restart; see Deployment in `docs/decisions.md`).
+- Updates: `npm run deploy` (`scripts/deploy.sh`: pull, frozen install, lint/typecheck/tests, build beside the live client and swap it in, restart; see Deployment in `docs/decisions.md`).
 - Deploy when nobody is playing (restarts end rooms; clients get the restart notice).
 
 ## 12. Status

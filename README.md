@@ -184,6 +184,8 @@ pnpm start                       # set NODE_ENV=production and your domain in .e
 
 nginx needs a `location /ws` with websocket upgrade headers and a long read timeout. Back up `data/*.db` with `sqlite3 <db> ".backup <file>"`, which is safe while running. A step-by-step guide (Supervisor, nginx, Cloudflare, backups) is still to be written; the planned setup is in [PLAN.md section 11](PLAN.md#11-deployment-existing-vps). Restarting ends open rooms, and players see a "server is restarting" notice, so deploy when nobody is playing.
 
+Updates: `npm run deploy` on the server (`scripts/deploy.sh`) pulls, installs, runs lint, typecheck and tests, then builds and restarts; a failed check stops it before anything live changes. GitHub Actions runs the same checks on every push and pull request.
+
 ## License
 
 Not chosen yet (MIT vs AGPL is an open decision; see `docs/decisions.md`).

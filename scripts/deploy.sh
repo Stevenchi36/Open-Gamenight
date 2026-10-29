@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Production update: pull, install, build, restart under Supervisor.
+# Production update: pull, install, check, build, restart under Supervisor.
 # Restarting ends every open room, so run it when nobody is playing.
 #   npm run deploy                          (or: pnpm run deploy)
 #   SUPERVISOR_PROGRAM=other npm run deploy (if the [program:...] name differs)
@@ -18,6 +18,12 @@ main() {
 
   echo "==> Installing dependencies"
   pnpm install --frozen-lockfile
+
+  echo "==> Checking (lint, typecheck, tests)"
+  # Before anything live changes: a failure here leaves dist/ and the running server as they were.
+  pnpm lint
+  pnpm typecheck
+  pnpm test
 
   echo "==> Building client"
   # Into a new folder, swapped in only once it succeeds: Vite empties its outDir before building,
