@@ -98,3 +98,4 @@ CREATE TABLE inorder_themes (
 - **Card ids are `<playerId>#<k>` in deal order (not sorted) and the line starts in seat order.** Anything derived from the numbers before the reveal would leak their order.
 - **The drag-to-order list is `OrderList` in `@ogn/core/ui`, written on pointer events with no new dependency.** HTML5 drag and drop doesn't fire on touch screens, and ranking games in `games/IDEAS.md` could use the same list.
 - **Themes aren't secret, so the MCP tools may show them.** Knowing the theme gives nothing away; the numbers are dealt at play time.
+- **Screen readers hear other players' card moves ("Pizza moved to 3 of 5"), not who made them, and not their own a second time.** The view doesn't say who moved a card, as anyone can; your own moves are read by `OrderList` as you make them, so the client notes each one it sends and skips the server's echo (either card of a swap, since a swap fits both).

@@ -49,7 +49,7 @@
       :items="view.line"
       :disabled="!playing"
       :item-label="(item) => item.clue ?? `${nameOf(room, item.playerId)}'s card`"
-      @move="(itemId, to) => send({ type: 'move_item', itemId, to })"
+      @move="(itemId, to) => move(itemId, to)"
     >
       <template #item="{ item }">
         <LineCard :item="item" :room="room" :me="me">
@@ -89,6 +89,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { CLUE_MAX_LENGTH } from '../../shared/index.ts'
 import LineCard from '../LineCard.vue'
 import LineEnd from '../LineEnd.vue'
+import { noteOwnMove } from '../own-move.ts'
 import ThemeCard from '../ThemeCard.vue'
 import type { PhaseProps } from '../props.ts'
 
@@ -115,6 +116,11 @@ const editing = ref<string | null>(null)
 function edit(id: string, clue: string | null) {
   drafts[id] = clue ?? ''
   editing.value = id
+}
+
+function move(itemId: string, to: number) {
+  noteOwnMove(itemId, to)
+  props.send({ type: 'move_item', itemId, to })
 }
 
 function submitClue(itemId: string, text: string) {

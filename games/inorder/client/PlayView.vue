@@ -28,14 +28,15 @@ import ResultsPhase from './phases/ResultsPhase.vue'
 import type { PhaseProps } from './props.ts'
 import { roundDetail, TURN_MS } from './reveal.ts'
 import { announceText, roundText } from './announce.ts'
+import { isOwnMove } from './own-move.ts'
 
 const props = defineProps<PhaseProps>()
 
-// The theme, clues as they come in, who's ready, and the round's result, for screen readers; the
-// first theme too when the game has just started.
+// The theme, clues as they come in, cards moved by others, who's ready, and the round's result,
+// for screen readers; the first theme too when the game has just started.
 useAnnounce(
   () => props.view,
-  (now, before) => announceText(now, before, props.me, (id) => nameOf(props.room, id)),
+  (now, before) => announceText(now, before, props.me, (id) => nameOf(props.room, id), isOwnMove),
   (now) => (now.round === 1 && now.phase === 'ORDERING' && now.ready.length === 0 && now.line.every((i) => i.clue === null) ? roundText(now) : null),
 )
 

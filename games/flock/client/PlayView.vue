@@ -34,11 +34,11 @@ import type { PhaseProps } from './props.ts'
 
 const props = defineProps<PhaseProps>()
 
-// The question, who's answered, and how the flock fell, for screen readers; the first question too
-// when the game has just started.
+// The question, who's answered, the host's merges and splits, and how the flock fell, for screen
+// readers; the first question too when the game has just started.
 useAnnounce(
   () => props.view,
-  (now, before) => announceText(now, before, props.me, (id) => nameOf(props.room, id)),
+  (now, before) => announceText(now, before, props.me, (id) => nameOf(props.room, id), props.room.hostId),
   (now) => (now.round === 1 && now.phase === 'ANSWERING' && now.answered.length === 0 ? roundText(now) : null),
 )
 
