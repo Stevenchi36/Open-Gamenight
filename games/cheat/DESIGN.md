@@ -18,7 +18,7 @@ The eleventh game and the third card game: play cards face down, say what they a
 | Setting | Default | Notes |
 |---|---|---|
 | Claims | `next` | `next` (the rank after the last claim) or `nearby` (same, one up or one down) |
-| Call time | 5 | 3, 5 or 10 seconds after each play before the next play |
+| Call time | 5 | 3, 5, 10 or 20 seconds after each play before the next play |
 | Move history | `last5` | how many past moves plays and calls players and the TV can look back at: `off` (only the latest), `last5` or `all`. Trimmed in `view()` (`visibleMoves` from kit), so older moves never leave the server |
 
 ## State machine
@@ -75,7 +75,7 @@ type Move =                                     // public: what the table saw an
 - **2-10 players with one deck, all of it dealt.** Two can play (you still can't tell which of your opponent's cards went on the pile), and ten still get five cards each.
 - **Claims are a setting: Next rank (A, 2 … K, wrapping; default) or Nearby (same, one up or one down).** Next rank is the usual rule; Nearby is the common house rule that makes forced lies rarer.
 - **A play is 1-4 cards, and the count is always true.** At a real table everyone sees how many cards go down; four is the most of one rank a deck holds.
-- **After each play there is a call time (3/5/10s, default 5s) before the next play; calls stay open until the next play.** Otherwise a quick next player could shut the table out of calling. The window is a timer in state (`stage: 'calling'`), not a comparison with `ctx.now`, so `createSim` and the leak test can move through it.
+- **After each play there is a call time (3/5/10/20s, default 5s) before the next play; calls stay open until the next play.** Otherwise a quick next player could shut the table out of calling. 20s is for slower players and screen-reader users, who need time to hear a play before deciding to call it. The window is a timer in state (`stage: 'calling'`), not a comparison with `ctx.now`, so `createSim` and the leak test can move through it.
 - **A call names the play it's for (`{ play }`), and a call on a play that's already been called or covered is refused.** Two players tapping at once, or a tap landing just after the next play, must not hit a play nobody meant to call.
 - **After a call, play goes on with whoever's turn it already was, and the claims carry on.** The simplest common rule; restarting the sequence would give the loser of the call a free choice.
 - **Going out wins only once the call time passes uncalled.** The last play is the one most worth calling; a lie caught there means picking up the pile and playing on.

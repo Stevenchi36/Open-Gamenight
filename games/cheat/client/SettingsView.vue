@@ -45,6 +45,7 @@ const callItems = [
   { title: '3s', value: 3 },
   { title: '5s', value: 5 },
   { title: '10s', value: 10 },
+  { title: '20s', value: 20 },
 ]
 const historyItems = [
   { title: 'Off', value: 'off' },

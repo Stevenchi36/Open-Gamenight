@@ -32,7 +32,7 @@ The host starts a new game. Everyone keeps their seat, and the first turn moves 
 ## Settings
 
 - **Claims** (default **Next rank**): the claims go up one rank every turn. **Nearby**: claim the same rank as the last play, or one above or below (aces and kings count as neighbours); the first play of a game can claim any rank.
-- **Call time** (default **5 seconds**): how long everyone gets to call after each play: 3, 5 or 10 seconds.
+- **Call time** (default **5 seconds**): how long everyone gets to call after each play: 3, 5, 10 or 20 seconds. Pick 20 if anyone at the table needs longer to take in each play.
 - **Move history** (default **Last 5**): how many past plays and calls you can look back at under **Moves this game**: **Off** (only the latest, so it's all memory), **Last 5**, or **All**.
 
 ## Tips

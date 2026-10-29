@@ -42,7 +42,7 @@ export const settingsSchema = z.object({
   /** 'next': the rank after the last claim; 'nearby': the same, one up or one down. */
   claims: claimsSchema,
   /** Seconds after each play when calls are open and the next player waits. */
-  callSeconds: z.union([z.literal(3), z.literal(5), z.literal(10)]),
+  callSeconds: z.union([z.literal(3), z.literal(5), z.literal(10), z.literal(20)]),
   /** How many past plays and calls players can look back at; remembering the claims is the skill. */
   moveHistory: moveHistorySchema,
 })

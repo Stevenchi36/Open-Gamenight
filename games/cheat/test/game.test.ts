@@ -74,11 +74,11 @@ describe('playing', () => {
   })
 
   it('uses the call time from the settings', () => {
-    const sim = newGame({ settings: { callSeconds: 10 } })
+    const sim = newGame({ settings: { callSeconds: 20 } })
     const [a] = setTable(sim, { hands: [['AS', '9C'], ['2C'], ['3D']] })
     act(sim, a!, playCodes('A', 'AS'))
-    expect(sim.view(a!).callUntil).toBe(1_000_000 + 10_000)
-    sim.advance(5000)
+    expect(sim.view(a!).callUntil).toBe(1_000_000 + 20_000)
+    sim.advance(15_000)
     expect(sim.state.stage).toBe('calling')
   })
 
