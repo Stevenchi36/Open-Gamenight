@@ -1,6 +1,12 @@
 <template>
   <div>
     <StatusCard v-if="view.outcome === 'abandoned'" compact title="Round over">Not enough players were left to finish it.</StatusCard>
+    <StatusCard v-else-if="view.royaleWinnerId" prominent :color="view.royaleWinnerId === me ? 'success' : undefined" :overline="overline" :title="royaleWinTitle(view, me, name)">
+      <div class="d-flex flex-column align-center ga-2 mt-2 text-center">
+        <v-icon icon="mdi-trophy" color="amber" size="64" />
+        <span>{{ royaleWinSubtitle(view, me, name) }}</span>
+      </div>
+    </StatusCard>
     <StatusCard v-else prominent :color="view.maidId === me ? 'error' : undefined" :overline="overline" :title="maidTitle(view, me, name)">
       <div class="d-flex flex-column align-center ga-2 mt-2 text-center">
         <PlayingCard v-if="view.maidCard" :card="view.maidCard" size="lg" />
@@ -39,7 +45,7 @@ import { nameOf, NextRoundButton, ordinal, PlayingCard, ScoreBoard, StatusCard }
 import { computed } from 'vue'
 import MaidTable from '../MaidTable.vue'
 import type { PhaseProps } from '../props.ts'
-import { maidSubtitle, maidTitle } from '../text.ts'
+import { maidSubtitle, maidTitle, royaleWinSubtitle, royaleWinTitle } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
 

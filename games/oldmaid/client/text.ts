@@ -1,3 +1,4 @@
+import type { Standing } from '@ogn/core/client'
 import type { PlayerId } from '@ogn/core/contract'
 import { rankName, type Card } from '@ogn/core/kit'
 import type { Move, OldMaidView } from '../shared/index.ts'
@@ -43,6 +44,21 @@ export function royaleWinTitle(view: OldMaidView, me: PlayerId, name: (id: Playe
 export function royaleWinSubtitle(view: OldMaidView, me: PlayerId, name: (id: PlayerId) => string): string {
   if (!view.maidId) return ''
   return view.maidId === me ? "You're the Old Maid" : `${name(view.maidId)} is the Old Maid`
+}
+
+/**
+ * The won Royale's podium: the winner, then each Old Maid from the last caught to the first.
+ * Every round of a Royale catches one, so a player's index in `royaleOut` is their round. Leavers aren't placed.
+ */
+export function royaleStandings(view: OldMaidView, me: PlayerId, name: (id: PlayerId) => string): Standing[] {
+  if (!view.royaleWinnerId) return []
+  const left = new Set(view.seats.filter((s) => s.left).map((s) => s.id))
+  const who = (id: PlayerId) => (id === me ? 'You' : name(id))
+  const caught = view.royaleOut
+    .map((id, i) => ({ id, detail: `Old Maid in round ${i + 1}` }))
+    .reverse()
+    .filter((s) => !left.has(s.id))
+  return [{ id: view.royaleWinnerId, detail: 'Last one in' }, ...caught].map((s, i) => ({ ...s, name: who(s.id), place: i + 1 }))
 }
 
 /** Under the reveal: what being caught means in this format. */

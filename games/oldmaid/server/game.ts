@@ -425,6 +425,7 @@ function view(state: OldMaidState, viewerId: PlayerId): OldMaidView {
     maidId: results ? state.maidId : null,
     maidCard: results ? state.maidCard : null,
     royaleWinnerId: results ? state.royaleWinnerId : null,
+    royaleOut: state.eliminated,
     royaleGoesOn: royaleGoesOn(state),
     scores: state.scores,
   }

@@ -17,6 +17,7 @@
       :active="view.outcome === 'maid' && !!view.royaleWinnerId"
       :title="royaleWinTitle(view, me, name)"
       :subtitle="royaleWinSubtitle(view, me, name)"
+      :standings="royaleStandings(view, me, name)"
       :delay="FLIGHT_MS * 2"
     />
   </div>
@@ -29,7 +30,7 @@ import { computed } from 'vue'
 import PlayingPhase from './phases/PlayingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import type { PhaseProps } from './props.ts'
-import { maidSubtitle, maidTitle, royaleWinSubtitle, royaleWinTitle } from './text.ts'
+import { maidSubtitle, maidTitle, royaleStandings, royaleWinSubtitle, royaleWinTitle } from './text.ts'
 
 const props = defineProps<PhaseProps>()
 

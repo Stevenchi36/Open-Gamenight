@@ -159,7 +159,7 @@ describe('Royale', () => {
     const [x, y] = setTable(sim, { hands: [['7S'], ['7H', 'QS']] })
     act(sim, x!, { type: 'draw', index: 0 }) // takes the 7H: x is out and y is the Old Maid
     expect(sim.state.maidId).toBe(y)
-    expect(sim.view(b!)).toMatchObject({ royaleWinnerId: x, royaleGoesOn: false })
+    expect(sim.view(b!)).toMatchObject({ royaleWinnerId: x, royaleOut: [b, y], royaleGoesOn: false })
     expect(sim.state.scores[x!]).toBe(1)
 
     act(sim, 'p1', { type: 'next_round' })

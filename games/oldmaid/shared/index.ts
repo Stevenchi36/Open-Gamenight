@@ -132,6 +132,8 @@ export interface OldMaidView {
   maidCard: Card | null
   /** Royale: the last player in, once the Royale is won. */
   royaleWinnerId: PlayerId | null
+  /** Royale: each round's Old Maid so far, round 1's first (public: each was revealed to all). For the winner's podium. */
+  royaleOut: PlayerId[]
   /** Royale: the next round continues this Royale (rather than starting a new one). */
   royaleGoesOn: boolean
   scores: Record<PlayerId, number>

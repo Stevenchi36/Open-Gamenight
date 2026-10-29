@@ -6,6 +6,12 @@
     </template>
     <template v-else>
       <StatusCard v-if="view.outcome === 'abandoned'" prominent title="Round over">Not enough players were left to finish it.</StatusCard>
+      <StatusCard v-else-if="view.royaleWinnerId" prominent :overline="roundLabel" :title="royaleWinTitle(view, SPECTATOR_ID, name)">
+        <div class="d-flex flex-column align-center ga-2 mt-2 text-center">
+          <v-icon icon="mdi-trophy" color="amber" size="64" />
+          <span>{{ royaleWinSubtitle(view, SPECTATOR_ID, name) }}</span>
+        </div>
+      </StatusCard>
       <StatusCard v-else prominent :overline="roundLabel" :title="maidTitle(view, SPECTATOR_ID, name)">
         <div class="d-flex flex-column align-center ga-2 mt-2 text-center">
           <PlayingCard v-if="view.maidCard" :card="view.maidCard" size="lg" />
@@ -47,6 +53,7 @@
       :active="view.outcome === 'maid' && !!view.royaleWinnerId"
       :title="royaleWinTitle(view, SPECTATOR_ID, name)"
       :subtitle="royaleWinSubtitle(view, SPECTATOR_ID, name)"
+      :standings="royaleStandings(view, SPECTATOR_ID, name)"
       :delay="FLIGHT_MS * 2"
     />
   </SpectatorLayout>
@@ -63,7 +70,7 @@ import { FLIGHT_MS, LoseReveal, MoveLog, moveLogEntries, nameOf, PlayingCard, Sc
 import { computed } from 'vue'
 import type { OldMaidSettings, OldMaidView } from '../shared/index.ts'
 import MaidTable from './MaidTable.vue'
-import { maidSubtitle, maidTitle, moveText, moveTone, royaleWinSubtitle, royaleWinTitle } from './text.ts'
+import { maidSubtitle, maidTitle, moveText, moveTone, royaleStandings, royaleWinSubtitle, royaleWinTitle } from './text.ts'
 
 const props = defineProps<SpectatorViewProps<OldMaidView, OldMaidSettings>>()
 
