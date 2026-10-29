@@ -1,10 +1,14 @@
 # open-gamenight
 
-A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included: **Liar's Dice**, **Flock** (everyone answers the same question and scores by matching the most popular answer), **Color Mix** (guess the colour a few paints make when mixed), **In Order** (co-op: describe your secret number to fit a theme, then put the table's clues in order together), and two 2-player games: **Tic-Tac-Toe** and **Drop Line** (drop discs to make a line of 3 to 6).
+A self-hostable platform for party games that a group plays together on their phones, around one table. The first game is **Word Imposter** (3-12 players): everyone gets the same secret word except the imposter, who only knows the category. Players give one-word clues (typed or spoken), vote on who's faking it, and the imposter gets a last chance to guess the word. Also included:
+
+- **Party games:** **Flock** (everyone answers the same question and scores by matching the most popular answer), **Ballpark** (guess a number, then bet on whose guess wins), **Color Mix** (guess the colour a few paints make when mixed) and **In Order** (co-op: describe your secret number to fit a theme, then put the table's clues in order together).
+- **Card and dice games:** **Liar's Dice**, **Cheat** (play cards face down and bluff about what they are), **Last Card** (shed your hand onto a matching colour or number), **Gone Fishin'** (ask other players for cards to collect books of four) and **Old Maid** (draw blind from your neighbour and don't get stuck with the odd queen).
+- **Board games:** **Tic-Tac-Toe** and **Drop Line** (2 players: drop discs to make a line of 3 to 6), and **Dots and Boxes** (2-4 players).
 
 - **Rooms with a 4-letter code.** Signed-in users create rooms; anyone joins with just a name. Phones that drop off Wi-Fi reconnect into their seat.
 - **The server decides everything.** Each phone only receives its own view of the game, so the imposter's device never gets the secret word. A leak test checks this for every game with hidden information.
-- **Admin panel:** user accounts (no public sign-up), per-game categories, the Imposter word library and the Flock question library, with optional Claude-powered generation under a daily token cap.
+- **Admin panel:** user accounts (no public sign-up), per-game categories, and the word, question and theme libraries for Word Imposter, Flock, Ballpark and In Order, with optional Claude-powered generation under a daily token cap.
 - **Claude integration (MCP):** manage the word and question libraries from Claude Code or Claude Desktop on your Claude subscription; see [`docs/mcp.md`](docs/mcp.md).
 - **Built for more games.** The platform owns rooms, sockets, auth, timers and admin; a game is a small, pure module. See [Writing a game](#writing-a-game).
 
@@ -108,6 +112,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 - An account is only needed to **create** rooms (unless `ROOM_CREATION=anyone`). Guests join with a code and a name; the host role can pass to a guest (manually, or automatically after the host has been away for about 2 minutes).
 - **Admin → Word Imposter** has **Categories** (add, rename, delete empty ones) and the **Word library** (browse, add, edit or move words, delete, and generate-then-review when `ANTHROPIC_API_KEY` is set). Categories running low on unused words are flagged.
 - **Admin → Flock** has **Categories** and the **Question library**, the same way.
+- **Admin → Ballpark** has **Categories** and the **Question library** (each question has a numeric answer, an optional unit and an optional fact), the same way.
 - **Admin → In Order** has **Categories** and the **Theme library** (each theme is a scale with what 1 and 100 mean), the same way.
 
 ## Managing words with Claude
@@ -136,6 +141,9 @@ games/
   cheat/      Cheat (card game: bluff about the cards you play; no library)
   dotsandboxes/ Dots and Boxes (2-4 players, nothing hidden; grid size setting)
   oldmaid/    Old Maid (card game: draw blind from your neighbour; Classic or Royale; no library)
+  ballpark/   Ballpark: guess a number, bet on the winning guess; question library like flock/
+  lastcard/   Last Card (card game: match colour or number, with action cards; no library)
+  gonefishin/ Gone Fishin' (card game: ask for ranks to collect books; no library)
 docs/
   decisions.md   platform design decisions and why
   dev-testing.md checks, dev-players page (several players in one window)
