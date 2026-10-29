@@ -11,3 +11,5 @@ coverage/
 .idea/
 dist.next/
 dist.old/
+# Local working notes (audits, todo lists)
+notes/
