@@ -188,4 +188,12 @@ Updates: `npm run deploy` on the server (`scripts/deploy.sh`) pulls, installs, r
 
 ## License
 
-Not chosen yet (MIT vs AGPL is an open decision; see `docs/decisions.md`).
+Copyright © 2026 Steven Childrey. Licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only).
+
+You may use, change and share this software, including running it for others. If you run a modified version as a network service, you must offer its users the complete source of your version under the same license.
+
+Third-party code keeps its own license: `games/colormix/server/spectral.ts` is a port of [spectral.js](https://github.com/rvanwijnen/spectral.js) (MIT, notice in the file).
+
+### Contributing
+
+By submitting a contribution (a pull request, patch or other code), you agree that it is licensed under AGPL-3.0, and you grant Steven Childrey a perpetual, irrevocable right to also license your contribution under other terms, including commercial ones. This keeps the whole project relicensable by its author.
