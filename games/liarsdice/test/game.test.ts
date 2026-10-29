@@ -119,6 +119,23 @@ describe('a round', () => {
     expect(sim.state.diceCount[a]).toBe(4)
   })
 
+  it("keeps the match's called rounds for the move list, and starts afresh each match", () => {
+    const sim = newGame({ players: ['p1', 'p2'], settings: { startingDice: 1 } })
+    const [a, b] = sim.state.seats as [string, string]
+    setDice(sim, { [a]: [3], [b]: [4] })
+    act(sim, a, { type: 'bid', quantity: 1, face: 3 })
+    act(sim, b, { type: 'bid', quantity: 2, face: 3 })
+    act(sim, a, { type: 'call' })
+    const round = { callerId: a, call: 'liar', count: 1, loserId: b, gainerId: null }
+    expect(sim.view(b).history).toEqual([{ bids: sim.state.bids, ...round }])
+    expect(sim.view(b).history[0]!.bids).toHaveLength(2)
+
+    sim.advance(REVEAL_MS)
+    expect(sim.state.phase).toBe('RESULTS')
+    act(sim, sim.hostId, { type: 'new_match' })
+    expect(sim.view(a).history).toEqual([])
+  })
+
   it('a player whose turn comes round again cannot call their own bid', () => {
     const sim = newGame({ players: ['p1', 'p2'] })
     const [a, b] = sim.state.seats as [string, string]

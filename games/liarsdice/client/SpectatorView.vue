@@ -13,7 +13,7 @@
       <StatusCard v-else prominent overline="New round" :title="`${view.totalDice} dice in play`">{{ name(view.turn) }} opens the bidding.</StatusCard>
     </template>
     <template v-else-if="view.phase === 'REVEAL' && result">
-      <StatusCard prominent :color="result.loserId ? 'error' : 'success'" :overline="result.call === 'liar' ? 'Liar!' : 'Spot on?'" :title="revealTitle" />
+      <StatusCard prominent :color="callWon(result) ? 'success' : 'error'" :overline="outcome.overline" :title="outcome.title">{{ outcome.text }}</StatusCard>
     </template>
     <template v-else>
       <StatusCard v-if="!view.winnerId" prominent title="Match over">Not enough players were left to finish it.</StatusCard>
@@ -32,13 +32,13 @@
         </v-card-text>
       </v-card>
 
-      <!-- While bidding the newest bid is in the status card; once called, the whole round with the call. -->
+      <!-- While bidding the newest bid is in the status card, so the list holds the moves before it. -->
       <BidLog
         :view="view"
         :room="room"
         :me="SPECTATOR_ID"
-        :title="view.phase === 'BIDDING' ? 'Earlier bids' : view.phase === 'RESULTS' ? 'The last round\'s bids' : 'This round\'s bids'"
-        :skip-latest="view.phase === 'BIDDING'"
+        :title="view.bid ? 'Earlier moves' : 'Moves this match'"
+        :skip-latest="!!view.bid"
         large
       />
 
@@ -64,16 +64,13 @@ import BidLog from './BidLog.vue'
 import DiceSeats from './DiceSeats.vue'
 import { bidText } from './props.ts'
 import RoundResultCard from './RoundResultCard.vue'
+import { callWon, verdict } from './text.ts'
 
 const props = defineProps<SpectatorViewProps<LiarsDiceView, LiarsDiceSettings>>()
 
 const name = (id: PlayerId | null) => nameOf(props.room, id)
 const result = computed(() => props.view.lastRound)
-const revealTitle = computed(() => {
-  const r = result.value
-  if (!r) return ''
-  return r.gainerId ? `${name(r.gainerId)} gets a die back` : `${name(r.loserId)} loses a die`
-})
+const outcome = computed(() => (result.value ? verdict(result.value, SPECTATOR_ID, name) : { overline: '', title: '', text: '' }))
 const gained = computed(() => (props.view.winnerId ? { [props.view.winnerId]: 1 } : {}))
 
 // The dice turn up one player after another when the call happens live, not when the TV opens on it.

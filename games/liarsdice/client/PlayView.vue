@@ -26,17 +26,17 @@ import BiddingPhase from './phases/BiddingPhase.vue'
 import ResultsPhase from './phases/ResultsPhase.vue'
 import RevealPhase from './phases/RevealPhase.vue'
 import type { PhaseProps } from './props.ts'
-import { bidRows } from './text.ts'
+import { moveRows } from './text.ts'
 
 const props = defineProps<PhaseProps>()
 
-// Each new bid, and the call that ends a round ("Al called liar: there were 3."), is read out.
+// Each new bid, and the call that ends a round ("Al called liar: there were 3, so Bo told the truth."), is read out.
 useAnnounce(
   () => props.view,
   (now, before) => {
     const called = before.phase === 'BIDDING' && now.phase === 'REVEAL'
     if (now.round !== before.round || !(called || (now.phase === 'BIDDING' && now.bids.length > before.bids.length))) return null
-    return bidRows(now, props.me, (id) => nameOf(props.room, id)).at(-1)?.text ?? null
+    return moveRows(now, props.me, (id) => nameOf(props.room, id)).at(-1)?.text ?? null
   },
 )
 

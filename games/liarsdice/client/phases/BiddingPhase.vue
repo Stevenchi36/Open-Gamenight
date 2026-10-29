@@ -57,8 +57,8 @@
       Waiting for {{ nameOf(room, view.turn) }}…
     </div>
 
-    <div v-if="view.bids.length > 1 || view.lastRound" class="d-flex ga-2">
-      <MoveLogDialog v-if="view.bids.length > 1" title="Bids this round" :entries="bidEntries" class="flex-grow-1" />
+    <div v-if="moves.length > 1 || view.lastRound" class="d-flex ga-2">
+      <MoveLogDialog v-if="moves.length > 1" title="Moves this match" :entries="moves" class="flex-grow-1" />
       <MoveLogDialog v-if="view.lastRound" title="Last round" icon="mdi-history" class="flex-grow-1">
         <RoundResultCard :result="view.lastRound" :room="room" :wild-ones="settings.wildOnes" />
       </MoveLogDialog>
@@ -74,12 +74,13 @@ import DiceRow from '../DiceRow.vue'
 import RoundResultCard from '../RoundResultCard.vue'
 import SeatList from '../SeatList.vue'
 import { bidText, type PhaseProps } from '../props.ts'
-import { bidRows } from '../text.ts'
+import { moveRows } from '../text.ts'
 
 const props = defineProps<PhaseProps>()
-const bidEntries = computed(() =>
+// The first bid of a match is already in the status card, so the list waits for a second move.
+const moves = computed(() =>
   moveLogEntries(
-    bidRows(props.view, props.me, (id) => nameOf(props.room, id)),
+    moveRows(props.view, props.me, (id) => nameOf(props.room, id)),
     (r) => r.text,
     (r) => r.tone,
   ),

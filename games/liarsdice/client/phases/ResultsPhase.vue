@@ -10,7 +10,7 @@
     />
 
     <RoundResultCard v-if="view.lastRound" :result="view.lastRound" :room="room" :wild-ones="settings.wildOnes" />
-    <BidLog :view="view" :room="room" :me="me" title="The last round's bids" />
+    <BidLog :view="view" :room="room" :me="me" dialog />
 
     <ScoreBoard :scores="view.scores" :room="room" :gained="gained" class="mb-4" />
 

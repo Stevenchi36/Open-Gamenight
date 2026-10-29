@@ -112,6 +112,11 @@ export interface RoundResult {
   gainerId: PlayerId | null
 }
 
+/** A called round in the match's move list: its bids (the last is the one called) and how the call went. */
+export interface CalledRound extends Omit<RoundResult, 'dice' | 'bid'> {
+  bids: Bid[]
+}
+
 export interface Seat {
   id: PlayerId
   /** 0 = out of this match. */
@@ -137,6 +142,8 @@ export interface LiarsDiceView {
   bids: Bid[]
   /** The latest challenge: shown in REVEAL, then as a summary. */
   lastRound: RoundResult | null
+  /** This match's called rounds, oldest first, including the one being revealed. */
+  history: CalledRound[]
   /** RESULTS only. */
   winnerId: PlayerId | null
   scores: Record<PlayerId, number>

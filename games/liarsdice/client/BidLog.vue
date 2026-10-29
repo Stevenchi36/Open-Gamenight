@@ -1,5 +1,6 @@
 <template>
-  <v-card v-if="entries.length > 0" class="mb-4" :title="title">
+  <MoveLogDialog v-if="dialog && entries.length > 0" :title="title" :entries="entries" block class="mb-4" />
+  <v-card v-else-if="entries.length > 0" class="mb-4" :title="title">
     <v-card-text>
       <MoveLog :entries="entries" :large="large" />
     </v-card-text>
@@ -7,14 +8,15 @@
 </template>
 
 <script setup lang="ts">
-// This round's bids as a numbered move list, newest first; once called, the called bid and the
-// call are coloured by how they went (see bidRows).
+// The match's bids and calls as a numbered move list, newest first; in a called round the called
+// bid and the call are coloured by how they went (see moveRows). Phones open it as a dialog, the TV
+// shows it inline.
 import type { PlayerId } from '@ogn/core/contract'
 import type { RoomView } from '@ogn/core/protocol'
-import { MoveLog, moveLogEntries, nameOf } from '@ogn/core/ui'
+import { MoveLog, MoveLogDialog, moveLogEntries, nameOf } from '@ogn/core/ui'
 import { computed } from 'vue'
 import type { LiarsDiceView } from '../shared/index.ts'
-import { bidRows } from './text.ts'
+import { moveRows } from './text.ts'
 
 const props = withDefaults(
   defineProps<{
@@ -23,15 +25,16 @@ const props = withDefaults(
     me: PlayerId
     title?: string
     large?: boolean
+    dialog?: boolean
     /** Leave out the newest bid, when it's already shown big. */
     skipLatest?: boolean
   }>(),
-  { title: "This round's bids", large: false, skipLatest: false },
+  { title: 'Moves this match', large: false, dialog: false, skipLatest: false },
 )
 
 const entries = computed(() =>
   moveLogEntries(
-    bidRows(props.view, props.me, (id) => nameOf(props.room, id)),
+    moveRows(props.view, props.me, (id) => nameOf(props.room, id)),
     (r) => r.text,
     (r) => r.tone,
     { skipLatest: props.skipLatest, max: props.large ? 10 : Infinity },

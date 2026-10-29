@@ -55,6 +55,9 @@ BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
     dice: { [playerId]: number[] }, bid, callerId, call: 'liar' | 'spot_on',
     count, loserId: PlayerId | null, gainerId: PlayerId | null,
   } | null,
+  history: [{                             // this match's called rounds, oldest first (no dice)
+    bids, callerId, call, count, loserId, gainerId,
+  }],
   winnerId: PlayerId | null,              // RESULTS only
   scores,
 }
@@ -64,11 +67,14 @@ BIDDING -> REVEAL -> (BIDDING | RESULTS) -> new_match -> BIDDING
 ## Hold-to-reveal
 Your dice sit behind `HoldToReveal`, like Imposter's role card: phones lie on a shared table.
 
-## Bids list
-This round's bids as a numbered `MoveLog`, newest first, on phones (a "Bids this round" dialog, then on the reveal and results) and the TV. All plain while bidding; once called, the called bid turns green if it held or red if it didn't, and the call is added as the last row, green if it paid off for the caller.
+## Move list
+The match's moves as a numbered `MoveLog`, newest first: each called round's bids and its call ("Cy called liar: there were 4, so Bo told the truth."), then the bids in play. On phones a "Moves this match" dialog (while bidding, once there's more than the bid in the status card, and on the reveal and results); inline on the TV. Bids in play are plain; in a called round the called bid is green if it held or red if it didn't, and the call is green if it paid off for the caller. A round re-rolled after a leaver isn't listed.
+
+## Reveal
+The status card says who was right, not just who loses a die: "Liar!" / "Bo was bluffing" when the call caught a bluff, "Not a liar!" / "Bo told the truth" with "Cy was wrong to call liar" when the bid held, and "Spot on!" or "Not spot on" for the exact call.
 
 ## Client (watch page and win)
-- **Watch page**: a `SpectatorView` with a card per seat showing its dice as hidden dice (counts, never faces; the turn's card pulses), the current bid big, earlier bids this round, and the matches won. On a call, the outcome and everyone's dice with the counted ones lit, each player's turning up in turn when it happens live.
+- **Watch page**: a `SpectatorView` with a card per seat showing its dice as hidden dice (counts, never faces; the turn's card pulses), the current bid big, the match's earlier moves, and the matches won. On a call, the outcome (who was right) and everyone's dice with the counted ones lit, each player's turning up in turn when it happens live.
 - **Win**: a `WinCelebration` when the match is won, on your phone and the TV.
 
 ## Decisions
@@ -83,3 +89,5 @@ This round's bids as a numbered `MoveLog`, newest first, on phones (a "Bids this
 - **Your dice show only while held (`HoldToReveal`).** Same reason as Imposter's role card: phones lie on a shared table.
 - **REVEAL stays up for 8s, then the next round rolls; a summary of the last challenge stays visible while bidding.** Counting dice takes longer than reading an Imposter vote, and the summary keeps "what just happened" readable after the timer.
 - **No bid timer in v1.** The disconnect grace stops a stalled turn; a timer can come later if tables want one.
+- **The move list covers the whole match, not just this round's bids.** A per-round list emptied at every call, so there was nothing to look back on once the next round rolled; past rounds are public, so the list can keep them (no dice, which the "Last round" dialog shows).
+- **The reveal names who was right ("Bo told the truth", "Cy was wrong to call liar"), not "Liar!" whatever happened.** "Liar!" over a bid that held read as if the bidder had lied.

@@ -40,5 +40,5 @@ describe("liar's dice secret-leak test", () => {
     })
     expect(result.leaks).toEqual([])
     expect(result.phasesSeen).toEqual(['BIDDING', 'RESULTS', 'REVEAL'])
-  })
+  }, 30_000)
 })

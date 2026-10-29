@@ -27,6 +27,7 @@ import {
   REVEAL_MS,
   settingsSchema,
   type Bid,
+  type CalledRound,
   type ClientAction,
   type LiarsDiceSettings,
   type LiarsDiceView,
@@ -53,6 +54,8 @@ export interface LiarsDiceState {
   turnSeq: number
   bids: Bid[]
   lastRound: RoundResult | null
+  /** This match's called rounds, for the move list. A round re-rolled after a leaver isn't kept. */
+  history: CalledRound[]
   /** Who opens the round after the reveal. */
   nextStarter: PlayerId | null
   winnerId: PlayerId | null
@@ -112,6 +115,7 @@ function startMatch(prev: LiarsDiceState | null, ctx: Ctx): Step {
     turnSeq: prev?.turnSeq ?? 0,
     bids: [],
     lastRound: null,
+    history: [],
     nextStarter: null,
     winnerId: null,
     scores: carryScores(prev?.scores, ids),
@@ -163,7 +167,15 @@ function challenge(state: LiarsDiceState, callerId: PlayerId, call: RoundResult[
 
   const lastRound: RoundResult = { dice: state.dice, bid, callerId, call, count, loserId, gainerId }
   return {
-    state: { ...state, phase: 'REVEAL', turn: null, diceCount, lastRound, nextStarter: loserId ?? gainerId },
+    state: {
+      ...state,
+      phase: 'REVEAL',
+      turn: null,
+      diceCount,
+      lastRound,
+      history: [...state.history, { bids: state.bids, callerId, call, count, loserId, gainerId }],
+      nextStarter: loserId ?? gainerId,
+    },
     effects: [
       cancel('turn_skip'),
       { type: 'schedule', key: 'reveal', at: ctx.now + REVEAL_MS, action: { type: 'reveal_done', round: state.round } },
@@ -258,6 +270,7 @@ function view(state: LiarsDiceState, viewerId: PlayerId): LiarsDiceView {
     bid: state.phase === 'BIDDING' ? (state.bids.at(-1) ?? null) : null,
     bids: state.bids,
     lastRound: state.lastRound,
+    history: state.history,
     winnerId: state.phase === 'RESULTS' ? state.winnerId : null,
     scores: state.scores,
   }
