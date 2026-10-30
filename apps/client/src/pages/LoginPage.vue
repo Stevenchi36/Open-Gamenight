@@ -22,6 +22,9 @@
         You only need an account to create rooms; anyone can join a room with its code.
         Accounts are created by an admin. Forgot your password? Ask an admin to reset it.
       </v-card-text>
+      <v-card-text class="text-body-medium pt-0">
+        <router-link :to="{ name: 'recover' }">Have a recovery code?</router-link>
+      </v-card-text>
     </v-card>
   </v-container>
 </template>

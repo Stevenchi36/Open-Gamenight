@@ -46,6 +46,8 @@ export function pageTitle(route: RouteLocationNormalizedLoaded): string {
       return route.query.tab === 'library' ? 'Game Library' : ''
     case 'login':
       return 'Sign in'
+    case 'recover':
+      return 'Recover account'
     case 'room':
       return roomTitle(code, false)
     case 'watch':

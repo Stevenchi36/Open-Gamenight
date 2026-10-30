@@ -111,6 +111,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 
 - Public sign-up is closed. Admins create accounts in **Admin → Users** (temporary password, name, role, ban, reset password). Forgotten passwords are reset there too.
 - Signed-in users change their own name from the account menu (**Change name**); admins can change anyone's in **Admin → Users**. Names are 1-40 characters; a room seat prefills from the first 16.
+- **Locked out, with no admin who can help** (the only admin forgot their password, say): run `pnpm recover-account --email them@example.com` on the server (Docker: `docker compose exec app node apps/server/scripts/recover-account.ts --email them@example.com`). It prints a recovery code like `ABCD-EFGH-JKMN` that they enter at `/recover` (**Have a recovery code?** on the sign-in page) with a new password. A code works once, for 24 hours, and is stored only as a hash; making one voids any earlier code and signs the account out everywhere. The server can keep running.
 - Signed-in users change their own password from the account menu (**Change password**: current password, then the new one twice, optionally signing out their other devices). Admins use the same menu for their own; **Set password** on the Users page is for resetting someone else's.
 - An account is only needed to **create** rooms (unless `ROOM_CREATION=anyone`). Guests join with a code and a name; the host role can pass to a guest (manually, or automatically after the host has been away for about 2 minutes).
 - **Admin → Games** turns games off that your group never plays. They disappear from the Game Library, the start-room form and the lobby's game switcher; rooms already playing one carry on, and its library stays for when you turn it back on.
@@ -199,6 +200,8 @@ No Node or pnpm needed on the host. Every green commit on `main` publishes an im
 cp .env.example .env               # fill in BETTER_AUTH_SECRET, BETTER_AUTH_URL, ALLOWED_ORIGINS
 docker compose up -d
 docker compose exec app node apps/server/scripts/create-admin.ts --email you@example.com --name "You"
+# locked out? a one-time code to enter at /recover:
+docker compose exec app node apps/server/scripts/recover-account.ts --email you@example.com
 ```
 
 - **Data** lives in the `data` volume (`/data/auth.db`, `/data/games.db`); the `*_DB_PATH` lines in `.env` are ignored. Back up with `docker compose exec app node -e "new (require('node:sqlite').DatabaseSync)('/data/games.db').exec(\"VACUUM INTO '/data/games-backup.db'\")"` (same for `auth.db`), then `docker compose cp app:/data/games-backup.db .`.

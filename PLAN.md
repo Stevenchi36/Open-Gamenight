@@ -242,6 +242,7 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 - The server migrates `auth.db` itself on boot with `getMigrations(options).runMigrations()` from `better-auth/db/migration` (what `npx auth migrate` runs), before creating the instance. No CLI step.
 - **Mount order matters:** `app.all('/api/auth/*splat', toNodeHandler(auth))` (Express 5 pattern) **before** `express.json()`.
 - **No email in v1.** Forgotten passwords are reset by an admin from `/admin/users` (admin plugin set-password); the login page says "Forgot your password? Ask an admin to reset it."
+- **Recovery codes** for when no admin can help: `pnpm recover-account --email ...` on the server prints a one-time code (24 hours, stored hashed, signs the account out everywhere); the person redeems it at `/recover` for a new password. It's a Better Auth reset-password token, redeemed by Better Auth's `/reset-password`.
 - **Own account:** the account menu has Change name (`update-user`) and Change password (`change-password`: current password required, optionally signing out other devices; rate-limited like sign-in).
 
 ### Roles
@@ -341,7 +342,8 @@ Each game's spec (rules, settings, state machine, actions, view, secrets, client
 ### Routes
 | Route | Who | What |
 |---|---|---|
-| `/login` | public | Email + password sign-in, no sign-up, "ask an admin" reset note |
+| `/login` | public | Email + password sign-in, no sign-up, "ask an admin" reset note, link to `/recover` |
+| `/recover` | public | Recovery code (from `pnpm recover-account` on the server) + new password |
 | `/` | public | Two tabs. **Join** (default): join form (code + name), plus **Create room** (with game picker) when logged in. **Game Library** (`?tab=library`): every game in alphabetical order with its description, style tags and player range, searchable by name and filterable by style (`GAME_STYLES` in `contract.ts`; clicking a tag filters by it) and player count from a filter button beside the search (a menu over the list, with a dot while a filter is set), a **How to play** button (the game's `RULES.md`), and **Start a room** when logged in |
 | `/room/:code` | public | Core room shell: lobby (players, game picker, game `SettingsView`, Start) or the game's `PlayView` |
 | `/admin` | admin | Admin shell with nav. Overview: running version and an update notice (compared with `UPDATE_CHECK_REPO`'s `main` on GitHub, with the update command and how many rooms it would end), AI usage |

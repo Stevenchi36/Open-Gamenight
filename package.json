@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "typecheck": "pnpm -r --if-present typecheck",
     "create-admin": "pnpm --filter @ogn/server create-admin",
+    "recover-account": "pnpm --filter @ogn/server recover-account",
     "start": "pnpm --filter @ogn/server start",
     "deploy": "bash scripts/deploy.sh"
   },

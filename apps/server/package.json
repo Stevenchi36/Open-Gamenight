@@ -20,6 +20,7 @@
     "dev": "node --watch --watch-preserve-output src/index.ts",
     "start": "node src/index.ts",
     "create-admin": "node scripts/create-admin.ts",
+    "recover-account": "node scripts/recover-account.ts",
     "typecheck": "tsc -p ."
   },
   "exports": {

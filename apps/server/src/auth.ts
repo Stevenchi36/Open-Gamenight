@@ -40,7 +40,11 @@ function authOptions(config: Config, db: DatabaseSync, options: AuthOptions) {
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
+      // Redeeming a recovery code (src/recovery.ts) is a password reset; nobody else keeps the old sessions.
+      revokeSessionsOnPasswordReset: true,
     },
+    // Recovery codes are reset-password tokens: stored hashed, so a copy of auth.db can't use one.
+    verification: { storeIdentifier: { default: 'plain', overrides: { 'reset-password:': 'hashed' } } },
     plugins: [admin()],
     hooks: {
       // Better Auth accepts any string as a name. Every route that sets one goes through the
@@ -74,6 +78,8 @@ function authOptions(config: Config, db: DatabaseSync, options: AuthOptions) {
         '/sign-in/email': { window: 60, max: 5 },
         // It checks the current password, so a stolen session could otherwise guess at it quickly.
         '/change-password': { window: 60, max: 5 },
+        // Guessing recovery codes.
+        '/reset-password': { window: 60, max: 5 },
       },
     },
     advanced: {
