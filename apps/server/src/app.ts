@@ -12,11 +12,13 @@ import { toNodeHandler } from 'better-auth/node'
 import express, { type ErrorRequestHandler, type Express } from 'express'
 import type { Auth } from './auth.ts'
 import { createAdminChat } from './chat.ts'
+import { realClock } from './clock.ts'
 import type { Config } from './config.ts'
 import type { GameAvailability } from './game-availability.ts'
 import type { AppLogger } from './logger.ts'
 import { originCheck, rateLimit, RateLimiter, realIp } from './middleware.ts'
 import { createAdminRouter, type AdminRooms } from './routes/admin.ts'
+import { createUpdateChecker, runningVersion } from './updates.ts'
 
 /**
  * The build id Vite stamped into the built client's index.html (`<meta name="ogn-build">`),
@@ -105,7 +107,8 @@ export function createApp(deps: AppDeps): Express {
 
   const servicesFor = (game: AnyGameModule) => createServices(deps, game, { admin: true })
   const chat = deps.ai ? createAdminChat({ ai: deps.ai, config, games, servicesFor, logger: logger.child('chat') }) : null
-  app.use('/api/admin', createAdminRouter({ config, auth, games, availability, ai: deps.ai, rooms: deps.rooms, servicesFor, chat }))
+  const updates = createUpdateChecker({ config, version: runningVersion(config), clock: realClock, logger: logger.child('updates') })
+  app.use('/api/admin', createAdminRouter({ config, auth, games, availability, ai: deps.ai, rooms: deps.rooms, servicesFor, chat, updates }))
 
   app.use('/api/games', createPublicGameRouter(deps))
 

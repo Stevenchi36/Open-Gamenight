@@ -343,7 +343,7 @@ Each game's spec (rules, settings, state machine, actions, view, secrets, client
 | `/login` | public | Email + password sign-in, no sign-up, "ask an admin" reset note |
 | `/` | public | Two tabs. **Join** (default): join form (code + name), plus **Create room** (with game picker) when logged in. **Game Library** (`?tab=library`): every game in alphabetical order with its description, style tags and player range, searchable by name and filterable by style (`GAME_STYLES` in `contract.ts`; clicking a tag filters by it) and player count from a filter button beside the search (a menu over the list, with a dot while a filter is set), a **How to play** button (the game's `RULES.md`), and **Start a room** when logged in |
 | `/room/:code` | public | Core room shell: lobby (players, game picker, game `SettingsView`, Start) or the game's `PlayView` |
-| `/admin` | admin | Admin shell with nav |
+| `/admin` | admin | Admin shell with nav. Overview: running version and an update notice (compared with `UPDATE_CHECK_REPO`'s `main` on GitHub, with the update command and how many rooms it would end), AI usage |
 | `/admin/users` | admin | List, create (email, name, password, role), set role, ban/unban, reset password |
 | `/admin/chat` | admin | Assistant: type what you want ("add 20 ocean animals to Word Imposter") and Claude does it with the library tools; shown only when AI is configured |
 | `/admin/rooms` | admin | Open rooms (code, game, status, players, who opened it), refreshed every 10s; Join (normal join, takes a seat) and Close (everyone is sent out with a notice) |
@@ -386,6 +386,7 @@ ANTHROPIC_CHAT_MODEL=claude-opus-5-5         # admin Assistant
 AI_CHAT_MESSAGES_PER_HOUR=60                 # admin Assistant, per admin
 MAX_ROOMS=50
 MAX_ROOMS_PER_USER=2
+UPDATE_CHECK_REPO=Stevenchi36/Open-Gamenight  # admin Overview update notice; empty turns it off
 ```
 Nothing about the domain, branding or deployment is hard-coded; everything self-hosters need to change is here.
 

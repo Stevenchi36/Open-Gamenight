@@ -16,6 +16,7 @@ import type { Config } from '../config.ts'
 import { GameAvailabilityError, type GameAvailability } from '../game-availability.ts'
 import { originCheck, rateLimit, RateLimiter, requireAdmin, sessionUser } from '../middleware.ts'
 import type { RoomManager } from '../rooms.ts'
+import type { UpdateChecker } from '../updates.ts'
 
 export type AdminRooms = Pick<RoomManager, 'list' | 'close'>
 
@@ -29,6 +30,7 @@ export interface AdminRouterDeps {
   servicesFor: (game: AnyGameModule) => ServerServices
   /** The Assistant; null without AI. */
   chat: AdminChat | null
+  updates: UpdateChecker
 }
 
 const chatBody = z.object({
@@ -38,7 +40,7 @@ const chatBody = z.object({
 
 const gameToggleBody = z.object({ enabled: z.boolean() })
 
-export function createAdminRouter({ config, auth, games, availability, ai, rooms, servicesFor, chat }: AdminRouterDeps): Router {
+export function createAdminRouter({ config, auth, games, availability, ai, rooms, servicesFor, chat, updates }: AdminRouterDeps): Router {
   const router = express.Router()
   router.use(originCheck(config))
   router.use(requireAdmin(auth))
@@ -80,6 +82,12 @@ export function createAdminRouter({ config, auth, games, availability, ai, rooms
       return
     }
     res.json({ id: req.params.gameId, enabled: body.data.enabled })
+  })
+
+  /** Running version and whether upstream has newer commits; open rooms, since updating ends them. */
+  router.get('/updates', async (req, res) => {
+    const status = await updates.status({ refresh: req.query.refresh === '1' })
+    res.json({ ...status, openRooms: rooms.list().length })
   })
 
   /** Open rooms. Joining one is the normal join flow; closing sends everyone out. */

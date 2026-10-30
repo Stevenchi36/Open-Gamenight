@@ -47,6 +47,14 @@ const schema = z.object({
   MAX_ROOMS: int(50),
   MAX_ROOMS_PER_USER: int(2),
   ROOM_CREATION: z.enum(['accounts', 'anyone']).default('accounts'),
+  /** GitHub owner/repo whose main branch the admin Overview compares against; empty turns the check off. */
+  UPDATE_CHECK_REPO: z
+    .string()
+    .trim()
+    .regex(/^([\w.-]+\/[\w.-]+)?$/,'UPDATE_CHECK_REPO must look like owner/repo, or be empty')
+    .default('Stevenchi36/Open-Gamenight'),
+  /** Set by the Docker image: the commit it was built from (there's no .git to read). */
+  APP_COMMIT: optional.pipe(z.string().regex(/^[0-9a-f]{40}$/, 'APP_COMMIT must be a full commit SHA').optional()),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
 })
 

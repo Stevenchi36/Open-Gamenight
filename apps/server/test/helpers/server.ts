@@ -65,6 +65,8 @@ export async function startTestServer(
     ALLOWED_ORIGINS: ORIGIN,
     AUTH_DB_PATH: join(dir, 'auth.db'),
     GAMES_DB_PATH: join(dir, 'games.db'),
+    // Never call GitHub from tests.
+    UPDATE_CHECK_REPO: '',
     ...options.env,
   }, options.rootDir)
   const running = await startServer(config, {

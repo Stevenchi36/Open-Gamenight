@@ -29,7 +29,11 @@ COPY . .
 RUN pnpm install --frozen-lockfile --prod --filter "@ogn/server..." --filter "@ogn/mcp..."
 
 FROM node:${NODE_VERSION}-slim
-ENV NODE_ENV=production \
+# The commit the image is built from (CI passes it): the image has no .git, and the admin
+# Overview's update check needs to know the running version.
+ARG APP_COMMIT=
+ENV APP_COMMIT=${APP_COMMIT} \
+    NODE_ENV=production \
     AUTH_DB_PATH=/data/auth.db \
     GAMES_DB_PATH=/data/games.db
 WORKDIR /app

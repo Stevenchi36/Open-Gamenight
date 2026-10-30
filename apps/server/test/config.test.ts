@@ -33,4 +33,13 @@ describe('parseConfig', () => {
   it('treats a blank API key as unset', () => {
     expect(parseConfig({ ...base, ANTHROPIC_API_KEY: '  ' }).ANTHROPIC_API_KEY).toBeUndefined()
   })
+
+  it('checks for updates against upstream unless the repo is blanked, and ignores a blank APP_COMMIT', () => {
+    expect(parseConfig(base).UPDATE_CHECK_REPO).toBe('Stevenchi36/Open-Gamenight')
+    expect(parseConfig({ ...base, UPDATE_CHECK_REPO: '' }).UPDATE_CHECK_REPO).toBe('')
+    expect(() => parseConfig({ ...base, UPDATE_CHECK_REPO: 'https://github.com/x/y' })).toThrow(/UPDATE_CHECK_REPO/)
+    // The image sets APP_COMMIT empty when built without the build arg (a local `docker compose build`).
+    expect(parseConfig({ ...base, APP_COMMIT: '' }).APP_COMMIT).toBeUndefined()
+    expect(() => parseConfig({ ...base, APP_COMMIT: 'abc123' })).toThrow(/APP_COMMIT/)
+  })
 })

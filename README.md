@@ -104,6 +104,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 | `AI_PER_ADMIN_CALLS_PER_HOUR` | `20` | |
 | `MAX_ROOMS` / `MAX_ROOMS_PER_USER` | `50` / `2` | Abuse limits. Guests' rooms count per IP |
 | `ROOM_CREATION` | `accounts` | Who may create rooms: `accounts` (signed-in users) or `anyone` (guests too; meant for a private network, since anyone who can reach the site could open rooms) |
+| `UPDATE_CHECK_REPO` | `Stevenchi36/Open-Gamenight` | The admin Overview compares the running version with this GitHub repo's `main` and says when there's an update (one call to GitHub's API at most every 6 hours, only while an admin has the page open). A fork sets its own; empty turns it off |
 | `LOG_LEVEL` | `info` | `debug` \| `info` \| `warn` \| `error` \| `silent` (logs go to stderr) |
 
 ## Accounts and admin
@@ -201,7 +202,7 @@ docker compose exec app node apps/server/scripts/create-admin.ts --email you@exa
 - **Data** lives in the `data` volume (`/data/auth.db`, `/data/games.db`); the `*_DB_PATH` lines in `.env` are ignored. Back up with `docker compose exec app node -e "new (require('node:sqlite').DatabaseSync)('/data/games.db').exec(\"VACUUM INTO '/data/games-backup.db'\")"` (same for `auth.db`), then `docker compose cp app:/data/games-backup.db .`.
 - **HTTPS:** the port is published on `127.0.0.1` only. Put a reverse proxy with TLS in front (nginx, Caddy, Traefik, ...) and proxy `/ws` with websocket upgrades. `NODE_ENV=production` makes cookies Secure, so signing in over plain HTTP only works on `localhost`.
 - **Proxy settings:** set `TRUSTED_PROXY_HOPS` to the number of proxies in front of the container: `0` with none, `1` for one reverse proxy, `2` for Cloudflare plus a reverse proxy (with `REAL_IP_HEADER=CF-Connecting-IP`). Too high a number lets clients fake their IP and get around the IP-based limits.
-- **Updates:** `docker compose pull && docker compose up -d`. Like any restart this ends open rooms (players see the restart notice), so update when nobody is playing. Pin a `sha-<commit>` tag in `compose.yaml` to choose when to move.
+- **Updates:** the admin Overview says when a newer version is out. Run `docker compose pull && docker compose up -d`. Like any restart this ends open rooms (players see the restart notice), so update when nobody is playing. Pin a `sha-<commit>` tag in `compose.yaml` to choose when to move.
 - **Build it yourself** from a clone instead of pulling: `docker compose up -d --build`.
 - **MCP:** register the word-library server as `docker compose -f /path/to/compose.yaml exec -T app node apps/mcp/src/server.ts`, so it opens the same `games.db` inside the container.
 - One container only: rooms live in memory, so the app can't be scaled out.
