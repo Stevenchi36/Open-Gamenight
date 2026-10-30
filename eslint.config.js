@@ -5,7 +5,8 @@ import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescri
 import globals from 'globals'
 
 export default defineConfigWithVueTs(
-  { ignores: ['**/dist/**', '**/node_modules/**', 'data/**', 'coverage/**'] },
+  // dist.next/dist.old are deploy.sh's build swap folders and stay on the server between deploys
+  { ignores: ['**/dist/**', '**/dist.next/**', '**/dist.old/**', '**/node_modules/**', 'data/**', 'coverage/**'] },
   js.configs.recommended,
   // correctness rules only; template formatting is left to the author
   pluginVue.configs['flat/essential'],
