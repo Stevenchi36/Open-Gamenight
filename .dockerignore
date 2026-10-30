@@ -1,0 +1,17 @@
+**/node_modules
+**/dist
+**/dist.next
+**/dist.old
+**/.vite
+**/coverage
+**/*.log
+data/
+.env
+.env.*
+!.env.example
+.git/
+.github/
+.idea/
+.claude/
+notes/
+.DS_Store

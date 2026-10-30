@@ -1,0 +1,26 @@
+# Self-hosting with Docker (README § Self-hosting with Docker):
+#   cp .env.example .env    then fill it in
+#   docker compose up -d
+# Updates: docker compose pull && docker compose up -d (restarting ends open rooms).
+services:
+  app:
+    image: ghcr.io/stevenchi36/open-gamenight:latest
+    # To build from this checkout instead: docker compose up -d --build
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # The databases live in the volume, whatever .env says.
+      AUTH_DB_PATH: /data/auth.db
+      GAMES_DB_PATH: /data/games.db
+    ports:
+      # Localhost only: put a reverse proxy with HTTPS in front (production cookies are Secure).
+      - "127.0.0.1:${PORT:-3000}:${PORT:-3000}"
+    volumes:
+      - data:/data
+    init: true
+    # The server takes up to 5 s to tell players it's restarting and close their sockets.
+    stop_grace_period: 15s
+
+volumes:
+  data:

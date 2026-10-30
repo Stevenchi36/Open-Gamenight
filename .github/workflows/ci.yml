@@ -23,3 +23,43 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm --filter @ogn/client build
+
+  # The Docker image (compose.yaml), published only from a green main.
+  image:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    # A newer push cancels an older build, so `latest` can't go backwards.
+    concurrency:
+      group: image
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Lowercases the name (ghcr.io/stevenchi36/open-gamenight) and adds the OCI labels,
+      # including the source label that links the package to this repo.
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

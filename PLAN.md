@@ -407,12 +407,13 @@ The VPS already runs Laravel apps. **Assumed setup, to verify at deploy time:** 
 - Back up `data/*.db` (e.g. `sqlite3 .backup` via cron).
 - Updates: `npm run deploy` (`scripts/deploy.sh`: pull, frozen install, lint/typecheck/tests, build beside the live client and swap it in, restart; see Deployment in `docs/decisions.md`).
 - Deploy when nobody is playing (restarts end rooms; clients get the restart notice).
+- Self-hosters without Node can use the Docker image instead (`compose.yaml`, published to GHCR by CI; README § Self-hosting with Docker).
 
 ## 12. Status
 The original build order (milestones 1-9: repo setup, core, Imposter, server, game runner, word library and MCP, client, integration test, admin) is done; the games since are in section 7. Milestone 10 is partly done: production runs on the VPS and updates through `npm run deploy` (section 11), and the README covers setup, env vars, create-admin, MCP registration and writing a game. Still to write: a step-by-step deploy guide (Supervisor, nginx, Cloudflare, backups).
 
 ## 13. Out of scope for v1
-Multiple imposters, OAuth/social login, email (password reset, invites), persisting rooms across restarts, remote HTTP MCP, Docker image, auto-generated settings forms, browser E2E tests.
+Multiple imposters, OAuth/social login, email (password reset, invites), persisting rooms across restarts, remote HTTP MCP, auto-generated settings forms, browser E2E tests.
 
 ## 14. References
 - Better Auth, Express integration: https://better-auth.com/docs/integrations/express

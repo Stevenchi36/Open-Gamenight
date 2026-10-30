@@ -187,6 +187,25 @@ nginx needs a `location /ws` with websocket upgrade headers and a long read time
 
 Updates: `npm run deploy` on the server (`scripts/deploy.sh`) pulls, installs, runs lint, typecheck and tests, then builds and restarts; a failed check stops it before anything live changes. GitHub Actions runs the same checks on every push and pull request.
 
+### Self-hosting with Docker
+
+No Node or pnpm needed on the host. Every green commit on `main` publishes an image for amd64 and arm64 to `ghcr.io/stevenchi36/open-gamenight` (tags `latest` and `sha-<commit>`).
+
+```bash
+# compose.yaml and .env.example from this repo (or clone it)
+cp .env.example .env               # fill in BETTER_AUTH_SECRET, BETTER_AUTH_URL, ALLOWED_ORIGINS
+docker compose up -d
+docker compose exec app node apps/server/scripts/create-admin.ts --email you@example.com --name "You"
+```
+
+- **Data** lives in the `data` volume (`/data/auth.db`, `/data/games.db`); the `*_DB_PATH` lines in `.env` are ignored. Back up with `docker compose exec app node -e "new (require('node:sqlite').DatabaseSync)('/data/games.db').exec(\"VACUUM INTO '/data/games-backup.db'\")"` (same for `auth.db`), then `docker compose cp app:/data/games-backup.db .`.
+- **HTTPS:** the port is published on `127.0.0.1` only. Put a reverse proxy with TLS in front (nginx, Caddy, Traefik, ...) and proxy `/ws` with websocket upgrades. `NODE_ENV=production` makes cookies Secure, so signing in over plain HTTP only works on `localhost`.
+- **Proxy settings:** set `TRUSTED_PROXY_HOPS` to the number of proxies in front of the container: `0` with none, `1` for one reverse proxy, `2` for Cloudflare plus a reverse proxy (with `REAL_IP_HEADER=CF-Connecting-IP`). Too high a number lets clients fake their IP and get around the IP-based limits.
+- **Updates:** `docker compose pull && docker compose up -d`. Like any restart this ends open rooms (players see the restart notice), so update when nobody is playing. Pin a `sha-<commit>` tag in `compose.yaml` to choose when to move.
+- **Build it yourself** from a clone instead of pulling: `docker compose up -d --build`.
+- **MCP:** register the word-library server as `docker compose -f /path/to/compose.yaml exec -T app node apps/mcp/src/server.ts`, so it opens the same `games.db` inside the container.
+- One container only: rooms live in memory, so the app can't be scaled out.
+
 ## License
 
 Copyright © 2026 Steven Childrey. Licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only).
