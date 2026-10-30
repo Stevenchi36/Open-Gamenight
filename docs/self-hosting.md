@@ -265,9 +265,10 @@ pnpm build
 sudo systemctl restart open-gamenight
 ```
 
-Under Supervisor, `npm run deploy` (`scripts/deploy.sh`) does all of this, and first runs the lint,
-typecheck and tests, stopping before anything live changes if one fails. It restarts the Supervisor
-program `open-gamenight` (`SUPERVISOR_PROGRAM=other npm run deploy` for another name).
+Under Supervisor, `npm run deploy` (`scripts/deploy.sh`) does all of this, building the client
+beside the live one and swapping it in only if the build succeeds. It restarts the Supervisor
+program `open-gamenight` (`SUPERVISOR_PROGRAM=other npm run deploy` for another name). It doesn't
+run lint, typecheck or tests; those run in GitHub Actions, so update once `main`'s CI is green.
 
 Database changes apply by themselves on start. There's no separate migration step.
 
