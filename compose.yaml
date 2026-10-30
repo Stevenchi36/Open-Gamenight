@@ -1,4 +1,4 @@
-# Self-hosting with Docker (README § Self-hosting with Docker):
+# Self-hosting with Docker (docs/self-hosting.md):
 #   cp .env.example .env    then fill it in
 #   docker compose up -d
 # Updates: docker compose pull && docker compose up -d (restarting ends open rooms).

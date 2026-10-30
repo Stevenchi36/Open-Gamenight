@@ -16,6 +16,8 @@ Stack: TypeScript everywhere, Express 5 + `ws`, Vue 3 + Vuetify 4, Better Auth, 
 
 ## Quick start
 
+This sets up a development copy. **To host it for your group, follow [docs/self-hosting.md](docs/self-hosting.md) instead** (Docker or Node, HTTPS, updates, backups).
+
 **Prerequisites:** Node **26** (the built-in `node:sqlite` ships with Node, so dev and prod run the same major version) and pnpm **12.14.0**:
 
 ```bash
@@ -79,6 +81,7 @@ pnpm --filter @ogn/client dev --host     # terminal 2
 | `pnpm build` | Builds the client into `apps/client/dist` (the server has no build step) |
 | `pnpm start` | Runs the server for production; it serves the built client too |
 | `pnpm create-admin` | Creates an account: `--email`, `--name`, `--password` (prompted if omitted), `--role admin\|user` |
+| `pnpm recover-account` | Prints a one-time recovery code for `--email`, redeemed at `/recover` (see [Locked out](docs/self-hosting.md#locked-out)) |
 
 The server runs its TypeScript source directly on Node 26 (native type stripping), so there's nothing to compile for it.
 
@@ -177,40 +180,21 @@ A game is a workspace package under `games/<id>/` that implements the contract i
 
 Within the repo, a game imports only from `@ogn/core/*` and its own folder (npm packages like `zod` or `vue` are fine), so it never depends on server internals.
 
-## Deploying
+## Self-hosting
 
-The target is a single Node process behind nginx (and optionally Cloudflare), kept running by a process manager, with `data/` on persistent disk:
+**[docs/self-hosting.md](docs/self-hosting.md)** covers running your own copy: Docker or Node, filling in `.env`, HTTPS with Caddy or nginx (and Cloudflare), a home network without HTTPS, updating, backups, recovering a locked account, and troubleshooting.
 
-```bash
-pnpm install --frozen-lockfile   # on the server itself
-pnpm build
-pnpm start                       # set NODE_ENV=production and your domain in .env
-```
-
-nginx needs a `location /ws` with websocket upgrade headers and a long read timeout. Back up `data/*.db` with `sqlite3 <db> ".backup <file>"`, which is safe while running. A step-by-step guide (Supervisor, nginx, Cloudflare, backups) is still to be written; the planned setup is in [PLAN.md section 11](PLAN.md#11-deployment-existing-vps). Restarting ends open rooms, and players see a "server is restarting" notice, so deploy when nobody is playing.
-
-Updates: `npm run deploy` on the server (`scripts/deploy.sh`) pulls, installs, runs lint, typecheck and tests, then builds and restarts; a failed check stops it before anything live changes. GitHub Actions runs the same checks on every push and pull request.
-
-### Self-hosting with Docker
-
-No Node or pnpm needed on the host. Every green commit on `main` publishes an image for amd64 and arm64 to `ghcr.io/stevenchi36/open-gamenight` (tags `latest` and `sha-<commit>`).
+The short version, with Docker (images for amd64 and arm64 at `ghcr.io/stevenchi36/open-gamenight`):
 
 ```bash
-# compose.yaml and .env.example from this repo (or clone it)
-cp .env.example .env               # fill in BETTER_AUTH_SECRET, BETTER_AUTH_URL, ALLOWED_ORIGINS
+curl -fsSLO https://raw.githubusercontent.com/Stevenchi36/Open-Gamenight/main/compose.yaml
+curl -fsSL https://raw.githubusercontent.com/Stevenchi36/Open-Gamenight/main/.env.example -o .env
+nano .env                          # BETTER_AUTH_SECRET, BETTER_AUTH_URL, ALLOWED_ORIGINS, proxy hops
 docker compose up -d
 docker compose exec app node apps/server/scripts/create-admin.ts --email you@example.com --name "You"
-# locked out? a one-time code to enter at /recover:
-docker compose exec app node apps/server/scripts/recover-account.ts --email you@example.com
 ```
 
-- **Data** lives in the `data` volume (`/data/auth.db`, `/data/games.db`); the `*_DB_PATH` lines in `.env` are ignored. Back up with `docker compose exec app node -e "new (require('node:sqlite').DatabaseSync)('/data/games.db').exec(\"VACUUM INTO '/data/games-backup.db'\")"` (same for `auth.db`), then `docker compose cp app:/data/games-backup.db .`.
-- **HTTPS:** the port is published on `127.0.0.1` only. Put a reverse proxy with TLS in front (nginx, Caddy, Traefik, ...) and proxy `/ws` with websocket upgrades. `NODE_ENV=production` makes cookies Secure, so signing in over plain HTTP only works on `localhost`.
-- **Proxy settings:** set `TRUSTED_PROXY_HOPS` to the number of proxies in front of the container: `0` with none, `1` for one reverse proxy, `2` for Cloudflare plus a reverse proxy (with `REAL_IP_HEADER=CF-Connecting-IP`). Too high a number lets clients fake their IP and get around the IP-based limits.
-- **Updates:** the admin Overview says when a newer version is out. Run `docker compose pull && docker compose up -d`. Like any restart this ends open rooms (players see the restart notice), so update when nobody is playing. Pin a `sha-<commit>` tag in `compose.yaml` to choose when to move.
-- **Build it yourself** from a clone instead of pulling: `docker compose up -d --build`.
-- **MCP:** register the word-library server as `docker compose -f /path/to/compose.yaml exec -T app node apps/mcp/src/server.ts`, so it opens the same `games.db` inside the container.
-- One container only: rooms live in memory, so the app can't be scaled out.
+Then put HTTPS in front of `127.0.0.1:3000`. Updating is `docker compose pull && docker compose up -d`; the admin Overview says when there's a new version. Restarting ends open rooms, so update when nobody is playing.
 
 ## License
 
