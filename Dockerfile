@@ -18,14 +18,15 @@ RUN pnpm install --frozen-lockfile
 # From the folder, like scripts/deploy.sh.
 RUN cd apps/client && pnpm exec vite build
 
-# Production dependencies only, installed for the target platform.
+# Production dependencies of the server and the MCP server only (the client's, Vuetify and
+# Vite among them, are already in its bundle), installed for the target platform.
 FROM node:${NODE_VERSION}-slim AS deps
 ARG PNPM_VERSION
 ENV CI=true
 RUN npm install -g pnpm@${PNPM_VERSION}
 WORKDIR /app
 COPY . .
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile --prod --filter "@ogn/server..." --filter "@ogn/mcp..."
 
 FROM node:${NODE_VERSION}-slim
 ENV NODE_ENV=production \
