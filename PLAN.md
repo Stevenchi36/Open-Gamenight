@@ -242,6 +242,7 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 - The server migrates `auth.db` itself on boot with `getMigrations(options).runMigrations()` from `better-auth/db/migration` (what `npx auth migrate` runs), before creating the instance. No CLI step.
 - **Mount order matters:** `app.all('/api/auth/*splat', toNodeHandler(auth))` (Express 5 pattern) **before** `express.json()`.
 - **No email in v1.** Forgotten passwords are reset by an admin from `/admin/users` (admin plugin set-password); the login page says "Forgot your password? Ask an admin to reset it."
+- **Own account:** the account menu has Change name (`update-user`) and Change password (`change-password`: current password required, optionally signing out other devices; rate-limited like sign-in).
 
 ### Roles
 | Who | Can do |

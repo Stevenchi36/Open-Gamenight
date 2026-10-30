@@ -72,6 +72,8 @@ function authOptions(config: Config, db: DatabaseSync, options: AuthOptions) {
       max: 100,
       customRules: {
         '/sign-in/email': { window: 60, max: 5 },
+        // It checks the current password, so a stolen session could otherwise guess at it quickly.
+        '/change-password': { window: 60, max: 5 },
       },
     },
     advanced: {

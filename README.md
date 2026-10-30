@@ -111,6 +111,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 
 - Public sign-up is closed. Admins create accounts in **Admin → Users** (temporary password, name, role, ban, reset password). Forgotten passwords are reset there too.
 - Signed-in users change their own name from the account menu (**Change name**); admins can change anyone's in **Admin → Users**. Names are 1-40 characters; a room seat prefills from the first 16.
+- Signed-in users change their own password from the account menu (**Change password**: current password, then the new one twice, optionally signing out their other devices). Admins use the same menu for their own; **Set password** on the Users page is for resetting someone else's.
 - An account is only needed to **create** rooms (unless `ROOM_CREATION=anyone`). Guests join with a code and a name; the host role can pass to a guest (manually, or automatically after the host has been away for about 2 minutes).
 - **Admin → Games** turns games off that your group never plays. They disappear from the Game Library, the start-room form and the lobby's game switcher; rooms already playing one carry on, and its library stays for when you turn it back on.
 - **Admin → Word Imposter** has **Categories** (add, rename, delete empty ones) and the **Word library** (browse, add, edit or move words, delete, and generate-then-review when `ANTHROPIC_API_KEY` is set). Categories running low on unused words are flagged.
