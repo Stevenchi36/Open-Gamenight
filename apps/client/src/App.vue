@@ -22,6 +22,7 @@
             <v-divider />
             <v-list-item prepend-icon="mdi-pencil" title="Change name" @click="renaming = true" />
             <v-list-item prepend-icon="mdi-lock-reset" title="Change password" @click="changingPassword = true" />
+            <v-list-item prepend-icon="mdi-key-variant" title="Passkeys" @click="managingPasskeys = true" />
             <v-list-item prepend-icon="mdi-logout" title="Sign out" @click="signOut" />
           </v-list>
         </v-menu>
@@ -65,6 +66,7 @@
       @save="rename"
     />
     <ChangePasswordDialog v-if="user" v-model:open="changingPassword" />
+    <PasskeysDialog v-if="user" v-model:open="managingPasskeys" />
   </v-app>
 </template>
 
@@ -74,6 +76,7 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AccountNameDialog from './components/AccountNameDialog.vue'
 import ChangePasswordDialog from './components/ChangePasswordDialog.vue'
+import PasskeysDialog from './components/PasskeysDialog.vue'
 import { authClient } from './lib/auth-client.ts'
 import { config } from './lib/config.ts'
 import { focusHeadingOnNavigate, usePageHeading } from './lib/heading.ts'
@@ -110,6 +113,7 @@ function setToasts(next: Toast[]) {
 }
 
 const changingPassword = ref(false)
+const managingPasskeys = ref(false)
 const renaming = ref(false)
 const savingName = ref(false)
 async function rename(name: string) {

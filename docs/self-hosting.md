@@ -47,7 +47,9 @@ ALLOWED_ORIGINS=https://games.example.com
   `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`) and keep it
   private. Changing it later signs everyone out.
 - **`BETTER_AUTH_URL`** is the address people type, exactly as it appears in the browser:
-  `https://`, the host name, and a port only if it isn't the usual one.
+  `https://`, the host name, and a port only if it isn't the usual one. Passkeys belong to its host
+  name, so moving the site to a new domain later means everyone adds their passkeys again (passwords
+  keep working).
 - **`ALLOWED_ORIGINS`** is the same address. Requests and game connections from any other address
   are refused, so if people reach the site by two names (say a domain and a LAN address), list both,
   comma-separated.
@@ -222,6 +224,7 @@ TRUSTED_PROXY_HOPS=0
 With Docker, also change the port line in `compose.yaml` from `"127.0.0.1:${PORT:-3000}:..."` to
 `"${PORT:-3000}:${PORT:-3000}"` so other devices can reach it. Then open `http://192.168.1.20:3000`
 on the phones. Give the server a fixed address in your router so the URL keeps working.
+Passkeys need HTTPS, so on this setup the app offers passwords only.
 
 Don't do this on anything the internet can reach: sign-in sessions would travel unencrypted.
 
@@ -303,7 +306,8 @@ start it again. With Docker, `docker compose cp` them into the stopped container
 
   It prints a code like `ABCD-EFGH-JKMN`. They open **Have a recovery code?** on the sign-in page,
   enter it and choose a new password. A code works once, for 24 hours; making one voids any earlier
-  code and signs the account out everywhere.
+  code, signs the account out everywhere and removes its passkeys (an admin's Set password does
+  the same), in case someone else had added one.
 
 ## Troubleshooting
 
@@ -312,6 +316,8 @@ start it again. With Docker, `docker compose cp` them into the stopped container
 | The app exits at start with `Invalid configuration:` and a list | Those `.env` lines are missing or malformed. `docker compose logs app` or `journalctl -u open-gamenight` shows the list. |
 | Signing in seems to work, but you're still signed out | No HTTPS while `NODE_ENV=production`: the browser drops Secure cookies over plain HTTP (except on `localhost`). Use HTTPS, or see [Home network without HTTPS](#home-network-without-https). |
 | Sign-in fails with "Bad origin", or rooms never get past connecting | The address in the browser bar isn't in `ALLOWED_ORIGINS` exactly (scheme, host and port all count). |
+| No passkey option on the sign-in page or in the account menu | The site isn't on HTTPS (browsers allow passkeys only there and on `localhost`). |
+| Adding or using a passkey fails on one address but works on another | Passkeys belong to `BETTER_AUTH_URL`'s host name; a second name in `ALLOWED_ORIGINS` (a LAN address, say) can't use them. |
 | Rooms connect, then drop after about a minute | The proxy times out idle websockets: `proxy_read_timeout 1h` in nginx. |
 | One player's failed sign-ins lock everyone out, or guests share one room limit | `TRUSTED_PROXY_HOPS` is lower than the number of proxies, so everyone looks like the proxy. |
 | A plain page saying the site is being updated | The web client isn't built (Node install): run `pnpm build`. |

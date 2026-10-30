@@ -3,6 +3,9 @@
  * roles/bans/user management. Accounts are created by admins (or the
  * create-admin script for the first one).
  */
+import { getAuthenticatorName, passkey } from '@better-auth/passkey'
+// Lets tsc name the passkey plugin's WebAuthn types in createAuth's inferred type (TS2883). Types only.
+import type {} from '@simplewebauthn/server'
 import { accountName } from '@ogn/core/protocol'
 import { betterAuth, type BetterAuthOptions } from 'better-auth'
 import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api'
@@ -11,11 +14,13 @@ import { admin } from 'better-auth/plugins'
 import type { DatabaseSync } from 'node:sqlite'
 import type { Config } from './config.ts'
 
-/** Better Auth routes that set user.name, and where the name sits in their body. */
+/** Better Auth routes that set user.name or a passkey's name, and where the name sits in their body. */
 const NAME_FIELDS: Record<string, 'name' | 'data.name'> = {
   '/update-user': 'name',
   '/admin/create-user': 'name',
   '/admin/update-user': 'data.name',
+  '/passkey/verify-registration': 'name',
+  '/passkey/update-passkey': 'name',
 }
 
 /**
@@ -24,6 +29,11 @@ const NAME_FIELDS: Record<string, 'name' | 'data.name'> = {
  * can't be dodged by spoofing X-Forwarded-For.
  */
 export const INTERNAL_IP_HEADER = 'x-ogn-client-ip'
+
+/** Every passkey on an account: when its password is reset by an admin or a recovery code. */
+export async function deletePasskeys(adapter: { deleteMany(data: { model: string; where: { field: string; value: string }[] }): Promise<number> }, userId: string) {
+  await adapter.deleteMany({ model: 'passkey', where: [{ field: 'userId', value: userId }] })
+}
 
 export interface AuthOptions {
   /** Defaults to on. Tests turn it off so repeated sign-ins don't trip it. */
@@ -45,10 +55,21 @@ function authOptions(config: Config, db: DatabaseSync, options: AuthOptions) {
     },
     // Recovery codes are reset-password tokens: stored hashed, so a copy of auth.db can't use one.
     verification: { storeIdentifier: { default: 'plain', overrides: { 'reset-password:': 'hashed' } } },
-    plugins: [admin()],
+    plugins: [
+      admin(),
+      // A passkey belongs to one domain (the public URL's hostname) and only works over HTTPS or on localhost.
+      // Expected origins are the allowed ones, not whatever Origin header a request sends.
+      passkey({
+        rpName: config.APP_NAME,
+        rpID: new URL(config.BETTER_AUTH_URL).hostname,
+        origin: config.ALLOWED_ORIGINS,
+        // Named after where it was saved ("Bitwarden", "Windows Hello") when the authenticator says.
+        registration: { afterVerification: ({ verification }) => ({ name: getAuthenticatorName(verification.registrationInfo?.aaguid) }) },
+      }),
+    ],
     hooks: {
       // Better Auth accepts any string as a name. Every route that sets one goes through the
-      // core rule, trimmed: a user renaming themselves, and an admin creating or editing a user.
+      // core rule, trimmed: a user renaming themselves or a passkey, and an admin creating or editing a user.
       before: createAuthMiddleware(async (ctx) => {
         const field = NAME_FIELDS[ctx.path]
         if (!field) return
@@ -63,10 +84,13 @@ function authOptions(config: Config, db: DatabaseSync, options: AuthOptions) {
       }),
       // The admin plugin's set-user-password keeps existing sessions, and
       // revokeSessionsOnPasswordReset only covers the emailed reset flow. An
-      // admin resetting a compromised account must also sign out whoever has it.
+      // admin resetting a compromised account must also sign out whoever has it,
+      // and remove any passkey they added, which would outlive the new password.
       after: createAuthMiddleware(async (ctx) => {
         if (ctx.path !== '/admin/set-user-password' || isAPIError(ctx.context.returned)) return
-        await ctx.context.internalAdapter.deleteUserSessions(String(ctx.body.userId))
+        const userId = String(ctx.body.userId)
+        await ctx.context.internalAdapter.deleteUserSessions(userId)
+        await deletePasskeys(ctx.context.adapter, userId)
       }),
     },
     rateLimit: {
@@ -80,6 +104,7 @@ function authOptions(config: Config, db: DatabaseSync, options: AuthOptions) {
         '/change-password': { window: 60, max: 5 },
         // Guessing recovery codes.
         '/reset-password': { window: 60, max: 5 },
+        '/passkey/verify-authentication': { window: 60, max: 10 },
       },
     },
     advanced: {

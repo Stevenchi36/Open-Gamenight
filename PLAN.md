@@ -244,6 +244,7 @@ GameView = whatever the game's view(state, viewerId) returns (null in the lobby)
 - **No email in v1.** Forgotten passwords are reset by an admin from `/admin/users` (admin plugin set-password); the login page says "Forgot your password? Ask an admin to reset it."
 - **Recovery codes** for when no admin can help: `pnpm recover-account --email ...` on the server prints a one-time code (24 hours, stored hashed, signs the account out everywhere); the person redeems it at `/recover` for a new password. It's a Better Auth reset-password token, redeemed by Better Auth's `/reset-password`.
 - **Own account:** the account menu has Change name (`update-user`) and Change password (`change-password`: current password required, optionally signing out other devices; rate-limited like sign-in).
+- **Passkeys** alongside passwords (`@better-auth/passkey`): added from the account menu, used from the login page's button or the email field's autofill. Tied to `BETTER_AUTH_URL`'s host name and the `ALLOWED_ORIGINS`; hidden where the browser can't do WebAuthn (plain HTTP). Admin Set password and recovery codes delete them.
 
 ### Roles
 | Who | Can do |

@@ -3,7 +3,7 @@
  *   pnpm recover-account --email you@example.com
  *   docker compose exec app node apps/server/scripts/recover-account.ts --email you@example.com
  * The person enters it at /recover ("Have a recovery code?" on the sign-in page) with a new
- * password. Works once, for 24 hours; making it signs the account out everywhere.
+ * password. Works once, for 24 hours; making it signs the account out everywhere and removes its passkeys.
  * Uses the same config and auth.db as the server, which can keep running.
  */
 import { parseArgs } from 'node:util'
@@ -32,7 +32,7 @@ try {
     const { user, code, expiresAt } = result
     console.log(`Recovery code for ${user.name} (${user.email}):\n`)
     console.log(`    ${code}\n`)
-    console.log(`Works once, until ${expiresAt.toLocaleString()}. Any earlier code is void, and the account is signed out everywhere.`)
+    console.log(`Works once, until ${expiresAt.toLocaleString()}. Any earlier code is void, the account is signed out everywhere, and its passkeys are removed.`)
     console.log(`Enter it at ${config.BETTER_AUTH_URL.replace(/\/$/, '')}/recover ("Have a recovery code?" on the sign-in page) with a new password.`)
     if (user.banned) console.log('\nThis account is banned: the code sets a new password, but signing in stays blocked until an admin unbans it.')
   }

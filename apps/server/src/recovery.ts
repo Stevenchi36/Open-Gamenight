@@ -8,7 +8,7 @@
  * auth.ts stores these tokens hashed and rate-limits /reset-password.
  */
 import { randomInt } from 'node:crypto'
-import type { Auth } from './auth.ts'
+import { deletePasskeys, type Auth } from './auth.ts'
 
 export const RECOVERY_TTL_MS = 24 * 60 * 60_000
 /** No 0/O, 1/I/L or U: read aloud or copied by hand without mix-ups. */
@@ -32,7 +32,7 @@ export type RecoveryResult =
 
 /**
  * Makes a code for the account with this email, replacing any earlier one, and signs the account
- * out everywhere: whoever lost access may not be the only one who had it.
+ * out everywhere and removes its passkeys: whoever lost access may not be the only one who had it.
  */
 export async function createRecoveryCode(auth: Auth, email: string, { ttlMs = RECOVERY_TTL_MS, now = Date.now() } = {}): Promise<RecoveryResult> {
   const ctx = await auth.$context
@@ -49,6 +49,7 @@ export async function createRecoveryCode(auth: Auth, email: string, { ttlMs = RE
   const expiresAt = new Date(now + ttlMs)
   await ctx.internalAdapter.createVerificationValue({ identifier: `reset-password:${code}`, value: user.id, expiresAt })
   await ctx.internalAdapter.deleteUserSessions(user.id)
+  await deletePasskeys(ctx.adapter, user.id)
 
   const banned = !!(user as { banned?: boolean | null }).banned
   return { ok: true, code: formatRecoveryCode(code), expiresAt, user: { id: user.id, email: user.email, name: user.name, banned } }
