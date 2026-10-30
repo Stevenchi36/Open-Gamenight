@@ -26,6 +26,19 @@ export const displayName = z
   .max(NAME_MAX_LENGTH, `Name must be at most ${NAME_MAX_LENGTH} characters`)
   .regex(/^[^\p{Cc}]+$/u, 'Name contains invalid characters')
 
+export const ACCOUNT_NAME_MAX_LENGTH = 40
+
+/**
+ * Account name (Better Auth's user.name): longer than a display name, since it's who someone is
+ * in the admin Users list; a room seat prefills from its first 16 characters.
+ */
+export const accountName = z
+  .string()
+  .trim()
+  .min(1, 'Name is required')
+  .max(ACCOUNT_NAME_MAX_LENGTH, `Name must be at most ${ACCOUNT_NAME_MAX_LENGTH} characters`)
+  .regex(/^[^\p{Cc}]+$/u, 'Name contains invalid characters')
+
 /** Room code: case-insensitive on input, normalized to upper case. */
 export const roomCode = z
   .string()

@@ -9,7 +9,9 @@
     <v-card>
       <v-data-table :headers="headers" :items="users" :loading="loading" item-value="id" density="comfortable">
         <template #[`item.name`]="{ item }">
-          <div class="font-weight-medium">{{ item.name }}</div>
+          <div class="font-weight-medium">
+            {{ item.name }}<span v-if="item.id === me" class="text-body-small text-medium-emphasis font-weight-regular"> (you)</span>
+          </div>
           <div class="text-body-small text-medium-emphasis">{{ item.email }}</div>
         </template>
         <template #[`item.role`]="{ item }">
@@ -18,11 +20,21 @@
         </template>
         <template #[`item.createdAt`]="{ item }">{{ new Date(item.createdAt).toLocaleDateString() }}</template>
         <template #[`item.actions`]="{ item }">
-          <v-menu v-if="item.id !== me">
+          <!-- Your own row: only the name. Changing your own role, ban or account here could lock you out. -->
+          <v-btn
+            v-if="item.id === me"
+            icon="mdi-pencil"
+            variant="text"
+            size="small"
+            :aria-label="`Edit name for ${item.name}`"
+            @click="editing = item"
+          />
+          <v-menu v-else>
             <template #activator="{ props: menu }">
               <v-btn v-bind="menu" icon="mdi-dots-vertical" variant="text" size="small" :aria-label="`Actions for ${item.name}`" />
             </template>
             <v-list density="compact">
+              <v-list-item prepend-icon="mdi-pencil" title="Edit name" @click="editing = item" />
               <v-list-item
                 :prepend-icon="item.role === 'admin' ? 'mdi-account-arrow-down' : 'mdi-shield-crown'"
                 :title="item.role === 'admin' ? 'Make regular user' : 'Make admin'"
@@ -39,7 +51,6 @@
               <v-list-item prepend-icon="mdi-delete" title="Delete" base-color="error" @click="toDelete = item" />
             </v-list>
           </v-menu>
-          <span v-else class="text-body-small text-medium-emphasis">you</span>
         </template>
       </v-data-table>
     </v-card>
@@ -59,6 +70,16 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <AccountNameDialog
+      :open="!!editing"
+      :title="`Edit name for ${editing?.email}`"
+      :current="editing?.name ?? ''"
+      hint="Shown in the admin pages, and prefilled as their name when they join a room."
+      :saving="saving"
+      @update:open="editing = null"
+      @save="rename"
+    />
 
     <v-dialog :model-value="!!passwordFor" max-width="400" @update:model-value="passwordFor = null">
       <v-card :title="`Set password for ${passwordFor?.name}`">
@@ -87,8 +108,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import AccountNameDialog from '../../components/AccountNameDialog.vue'
 import { authClient } from '../../lib/auth-client.ts'
-import { toast } from '../../lib/room.ts'
+import { refreshSession, toast } from '../../lib/room.ts'
 
 interface Row {
   id: string
@@ -136,6 +158,24 @@ function setBanned(row: Row, banned: boolean) {
     () => (banned ? authClient.admin.banUser({ userId: row.id }) : authClient.admin.unbanUser({ userId: row.id })),
     `${row.name} ${banned ? 'banned' : 'unbanned'}`,
   )
+}
+
+const editing = ref<Row | null>(null)
+const saving = ref(false)
+async function rename(name: string) {
+  const row = editing.value!
+  saving.value = true
+  const { error } = await authClient.admin.updateUser({ userId: row.id, data: { name } })
+  saving.value = false
+  if (error) return toast(error.message ?? 'Could not change the name', 'error')
+  editing.value = null
+  toast(`Renamed ${row.name} to ${name}`, 'success')
+  // Your own name: the account menu reads the session, and the socket captured the old name.
+  if (row.id === me.value) {
+    await session.value.refetch()
+    refreshSession()
+  }
+  await load()
 }
 
 const creating = ref(false)

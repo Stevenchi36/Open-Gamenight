@@ -20,6 +20,7 @@
           <v-list density="compact" min-width="200">
             <v-list-item :title="user.name" :subtitle="user.email" />
             <v-divider />
+            <v-list-item prepend-icon="mdi-pencil" title="Change name" @click="renaming = true" />
             <v-list-item prepend-icon="mdi-logout" title="Sign out" @click="signOut" />
           </v-list>
         </v-menu>
@@ -53,18 +54,28 @@
       @update:model-value="setToasts"
     />
     <LiveRegion />
+    <AccountNameDialog
+      v-if="user"
+      v-model:open="renaming"
+      title="Change your name"
+      :current="user.name"
+      hint="Prefilled as your name when you start or join a room."
+      :saving="savingName"
+      @save="rename"
+    />
   </v-app>
 </template>
 
 <script setup lang="ts">
 import { LiveRegion } from '@ogn/core/ui'
-import { computed, defineAsyncComponent, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import AccountNameDialog from './components/AccountNameDialog.vue'
 import { authClient } from './lib/auth-client.ts'
 import { config } from './lib/config.ts'
 import { focusHeadingOnNavigate, usePageHeading } from './lib/heading.ts'
 import { immersive } from './lib/layout.ts'
-import { refreshSession, roomState, toasts, type Toast } from './lib/room.ts'
+import { refreshSession, roomState, toast, toasts, type Toast } from './lib/room.ts'
 import { useThemeToggle } from './lib/theme.ts'
 import { useDocumentTitle } from './lib/title.ts'
 
@@ -93,6 +104,20 @@ watch(
 
 function setToasts(next: Toast[]) {
   toasts.splice(0, toasts.length, ...next)
+}
+
+const renaming = ref(false)
+const savingName = ref(false)
+async function rename(name: string) {
+  savingName.value = true
+  const { error } = await authClient.updateUser({ name })
+  savingName.value = false
+  if (error) return toast(error.message ?? 'Could not change your name', 'error')
+  renaming.value = false
+  toast('Name changed', 'success')
+  await session.value.refetch()
+  // The socket read the old name when it connected; new rooms would still use it.
+  refreshSession()
 }
 
 async function signOut() {

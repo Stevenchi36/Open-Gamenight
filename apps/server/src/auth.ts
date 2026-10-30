@@ -3,12 +3,20 @@
  * roles/bans/user management. Accounts are created by admins (or the
  * create-admin script for the first one).
  */
+import { accountName } from '@ogn/core/protocol'
 import { betterAuth, type BetterAuthOptions } from 'better-auth'
-import { createAuthMiddleware, isAPIError } from 'better-auth/api'
+import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api'
 import { getMigrations } from 'better-auth/db/migration'
 import { admin } from 'better-auth/plugins'
 import type { DatabaseSync } from 'node:sqlite'
 import type { Config } from './config.ts'
+
+/** Better Auth routes that set user.name, and where the name sits in their body. */
+const NAME_FIELDS: Record<string, 'name' | 'data.name'> = {
+  '/update-user': 'name',
+  '/admin/create-user': 'name',
+  '/admin/update-user': 'data.name',
+}
 
 /**
  * The client IP, computed once by our realIp middleware (which overwrites any
@@ -35,6 +43,20 @@ function authOptions(config: Config, db: DatabaseSync, options: AuthOptions) {
     },
     plugins: [admin()],
     hooks: {
+      // Better Auth accepts any string as a name. Every route that sets one goes through the
+      // core rule, trimmed: a user renaming themselves, and an admin creating or editing a user.
+      before: createAuthMiddleware(async (ctx) => {
+        const field = NAME_FIELDS[ctx.path]
+        if (!field) return
+        const body = (ctx.body ?? {}) as Record<string, unknown>
+        const holder = (field === 'data.name' ? body.data : body) as Record<string, unknown> | undefined
+        if (!holder || !('name' in holder)) return
+        const parsed = accountName.safeParse(holder.name)
+        if (!parsed.success) throw new APIError('BAD_REQUEST', { message: parsed.error.issues[0]!.message })
+        const named = { ...holder, name: parsed.data }
+        // Merged into the request context by Better Auth.
+        return { context: { body: field === 'data.name' ? { ...body, data: named } : named } }
+      }),
       // The admin plugin's set-user-password keeps existing sessions, and
       // revokeSessionsOnPasswordReset only covers the emailed reset flow. An
       // admin resetting a compromised account must also sign out whoever has it.
