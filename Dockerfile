@@ -30,7 +30,7 @@ RUN pnpm install --frozen-lockfile --prod --filter "@ogn/server..." --filter "@o
 
 FROM node:${NODE_VERSION}-slim
 # The commit the image is built from (CI passes it): the image has no .git, and the admin
-# Overview's update check needs to know the running version.
+# Overview shows it beside the version from package.json.
 ARG APP_COMMIT=
 ENV APP_COMMIT=${APP_COMMIT} \
     NODE_ENV=production \

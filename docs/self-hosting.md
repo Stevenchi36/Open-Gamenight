@@ -75,8 +75,10 @@ README's [Configuration](../README.md#configuration) table lists every setting.
 
 ## Run with Docker
 
-The image is `ghcr.io/stevenchi36/open-gamenight`, published for every commit on `main` that passes
-the checks.
+The image is `ghcr.io/stevenchi36/open-gamenight`. `latest` is the newest
+[release](https://github.com/Stevenchi36/Open-Gamenight/releases); each release also has its own tag
+(`0.1.0`, and `0.1` for the newest patch of 0.1), and `main` follows every commit on `main` that
+passes the checks.
 
 ```bash
 mkdir open-gamenight && cd open-gamenight
@@ -104,7 +106,7 @@ Good to know:
 - **Changed `.env`?** Run `docker compose up -d`, which recreates the container with the new values.
   `docker compose restart` keeps the old ones.
 - **Building from source** instead of pulling: clone the repo and run `docker compose up -d --build`.
-  A local build doesn't know its version, so the admin update notice is off for it.
+  A local build knows its version but not its commit, so the admin Overview shows only the version.
 - **Your reverse proxy also runs in Docker?** Remove the `ports:` lines from `compose.yaml`, put both
   containers on one Docker network, and point the proxy at `app:3000`.
 
@@ -243,8 +245,9 @@ since anyone who can reach the site could then open rooms.
 
 ## Updating
 
-The admin **Overview** says when there's a newer version, with the command and how many rooms are
-open (updating ends them).
+The admin **Overview** says when there's a newer [release](https://github.com/Stevenchi36/Open-Gamenight/releases),
+with a link to what changed, the command and how many rooms are open (updating ends them). Each
+release's notes (also in `CHANGELOG.md`) list anything a host has to do under **Hosting**.
 
 **Docker:**
 
@@ -252,8 +255,9 @@ open (updating ends them).
 docker compose pull && docker compose up -d
 ```
 
-To stay on a version until you choose to move, replace `latest` in `compose.yaml` with a
-`sha-<commit>` tag from the [package page](https://github.com/Stevenchi36/Open-Gamenight/pkgs/container/open-gamenight).
+To stay on a version until you choose to move, replace `latest` in `compose.yaml` with a release
+tag such as `0.1.0` (or `0.1` to take only that version's fixes). To follow every commit instead of
+releases, use `main`. All tags are on the [package page](https://github.com/Stevenchi36/Open-Gamenight/pkgs/container/open-gamenight).
 
 **Node:**
 
@@ -269,6 +273,9 @@ Under Supervisor, `npm run deploy` (`scripts/deploy.sh`) does all of this, build
 beside the live one and swapping it in only if the build succeeds. It restarts the Supervisor
 program `open-gamenight` (`SUPERVISOR_PROGRAM=other npm run deploy` for another name). It doesn't
 run lint, typecheck or tests; those run in GitHub Actions, so update once `main`'s CI is green.
+
+A Node install follows `main`, which includes every release plus whatever has been merged since.
+The Overview tells you when a release is out; updating then brings you to it or a little past it.
 
 Database changes apply by themselves on start. There's no separate migration step.
 
@@ -323,5 +330,5 @@ start it again. With Docker, `docker compose cp` them into the stopped container
 | One player's failed sign-ins lock everyone out, or guests share one room limit | `TRUSTED_PROXY_HOPS` is lower than the number of proxies, so everyone looks like the proxy. |
 | A plain page saying the site is being updated | The web client isn't built (Node install): run `pnpm build`. |
 | AI features switched on with a key you never set | A comment after an empty value in `.env`, read as the value by Docker Compose. Move it to its own line. |
-| The admin Overview says the repo "isn't public" | The update check can only see public repositories; a fork sets its own `UPDATE_CHECK_REPO`, or leaves it empty to turn the check off. |
-| The admin Overview can't tell which version is running | A locally built Docker image. Pull the published image, or ignore it. |
+| The admin Overview says the repo "has no published releases, or isn't public" | The update check reads the latest GitHub release of a public repository; a fork sets its own `UPDATE_CHECK_REPO` (and publishes releases), or leaves it empty to turn the check off. |
+| The admin Overview can't tell which version is running | The root `package.json` is missing or has been edited. Restore it from the release. |

@@ -47,7 +47,7 @@ const schema = z.object({
   MAX_ROOMS: int(50),
   MAX_ROOMS_PER_USER: int(2),
   ROOM_CREATION: z.enum(['accounts', 'anyone']).default('accounts'),
-  /** GitHub owner/repo whose main branch the admin Overview compares against; empty turns the check off. */
+  /** GitHub owner/repo whose latest release the admin Overview compares against; empty turns the check off. */
   UPDATE_CHECK_REPO: z
     .string()
     .trim()

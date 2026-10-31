@@ -19,9 +19,10 @@
       <v-card-text v-if="!updates">Loading...</v-card-text>
       <v-card-text v-else>
         <div class="text-body-medium mb-2">
-          <template v-if="updates.commit">
-            Running <code>{{ updates.commit.slice(0, 7) }}</code>
-            {{ updates.source === 'image' ? 'from the Docker image' : 'from a git checkout' }}.
+          <template v-if="updates.version">
+            Running version <strong>{{ updates.version }}</strong><template v-if="updates.commit">
+              (<code>{{ updates.commit.slice(0, 7) }}</code>)</template
+            ><template v-if="updates.source"> {{ updates.source === 'image' ? 'from the Docker image' : 'from a git checkout' }}</template>.
           </template>
           <template v-else>This install can't tell which version it's running.</template>
         </div>
@@ -30,30 +31,23 @@
           Update checks are off. Set <code>UPDATE_CHECK_REPO</code> on the server to turn them on.
         </div>
         <div v-else-if="check?.state === 'unknown_version'" class="text-body-medium">
-          It has no <code>APP_COMMIT</code> and no <code>.git</code> folder, so it can't check for updates. Images from
-          ghcr.io carry their version; one built locally with <code>docker compose build</code> doesn't.
+          Its <code>package.json</code> has no version number, so it can't check for updates.
         </div>
         <div v-else-if="check?.state === 'error'" class="text-body-medium">
           Couldn't check for updates: {{ check.message }}.
         </div>
         <template v-else-if="check?.state === 'checked'">
-          <div v-if="check.status === 'current'" class="text-body-medium">Up to date with {{ updates.repo }} ({{ updates.branch }}).</div>
+          <div v-if="check.status === 'current'" class="text-body-medium">Up to date: {{ check.latest }} is the latest release of {{ updates.repo }}.</div>
           <div v-else-if="check.status === 'ahead'" class="text-body-medium">
-            This install has {{ plural(check.localCommits, 'commit') }} that {{ check.localCommits === 1 ? "isn't" : "aren't" }} on
-            {{ updates.repo }} ({{ updates.branch }}), and nothing newer to fetch.
+            This install is newer than {{ updates.repo }}'s latest release ({{ check.latest }}).
           </div>
           <v-alert v-else type="info" variant="tonal" density="comfortable">
             <div class="text-body-medium">
-              A newer version is available: {{ plural(check.newCommits, 'new commit') }} on {{ updates.repo }} ({{ updates.branch }})<template
-                v-if="check.status === 'diverged'"
-              >, and this install has {{ plural(check.localCommits, 'commit') }} of its own</template>.
-              <a :href="check.compareUrl" target="_blank" rel="noopener">See what's changed<v-icon icon="mdi-open-in-new" size="x-small" class="ms-1" /></a>
+              Version {{ check.latest }} is available.
+              <a :href="check.releaseUrl" target="_blank" rel="noopener">See what's changed<v-icon icon="mdi-open-in-new" size="x-small" class="ms-1" /></a>
             </div>
             <div class="text-body-medium mt-2">To update, run this on the server:</div>
             <pre class="update-command text-body-medium mt-1"><code>{{ command }}</code></pre>
-            <div v-if="updates.source === 'image'" class="text-body-small mt-1">
-              A new image is published a few minutes after a commit passes CI.
-            </div>
             <div class="text-body-small mt-2">
               <template v-if="updates.openRooms > 0">
                 {{ updates.openRooms === 1 ? '1 room is' : `${updates.openRooms} rooms are` }} open right now, and updating ends
@@ -115,10 +109,10 @@ type Usage =
 
 /** GET /api/admin/updates (apps/server/src/updates.ts). */
 interface Updates {
+  version: string | null
   commit: string | null
   source: 'image' | 'git' | null
   repo: string | null
-  branch: string
   openRooms: number
   check:
     | { state: 'off' }
@@ -126,10 +120,9 @@ interface Updates {
     | { state: 'error'; message: string; checkedAt: number }
     | {
         state: 'checked'
-        status: 'current' | 'behind' | 'ahead' | 'diverged'
-        newCommits: number
-        localCommits: number
-        compareUrl: string
+        status: 'current' | 'behind' | 'ahead'
+        latest: string
+        releaseUrl: string
         checkedAt: number
       }
 }
@@ -147,7 +140,6 @@ const checkedAt = computed(() => {
   const c = check.value
   return c && 'checkedAt' in c ? new Date(c.checkedAt).toLocaleString() : null
 })
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 async function loadUpdates(refresh = false) {
   checking.value = true

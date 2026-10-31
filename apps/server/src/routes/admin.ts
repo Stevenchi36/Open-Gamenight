@@ -84,7 +84,7 @@ export function createAdminRouter({ config, auth, games, availability, ai, rooms
     res.json({ id: req.params.gameId, enabled: body.data.enabled })
   })
 
-  /** Running version and whether upstream has newer commits; open rooms, since updating ends them. */
+  /** Running version and whether upstream has a newer release; open rooms, since updating ends them. */
   router.get('/updates', async (req, res) => {
     const status = await updates.status({ refresh: req.query.refresh === '1' })
     res.json({ ...status, openRooms: rooms.list().length })

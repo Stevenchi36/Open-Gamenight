@@ -1,16 +1,16 @@
 /**
- * "Is there a newer version?" for the admin Overview. Compares the running commit with the
- * upstream branch through GitHub's public compare API. It only reports: updating stays a
- * host command, because a container able to update itself would need the Docker socket,
- * which is root on the host (docs/decisions.md).
+ * "Is there a newer version?" for the admin Overview. Compares the running version (the root
+ * package.json's) with the upstream repo's latest GitHub release. It only reports: updating
+ * stays a host command, because a container able to update itself would need the Docker
+ * socket, which is root on the host (docs/decisions.md).
  */
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { isAbsolute, join, resolve } from 'node:path'
 import type { Clock } from './clock.ts'
 import type { Config } from './config.ts'
 import type { AppLogger } from './logger.ts'
+import { compareVersions, parseVersion, readAppVersion } from './version.ts'
 
-const BRANCH = 'main'
 const CHECKED_TTL_MS = 6 * 60 * 60_000
 const ERROR_TTL_MS = 30 * 60_000
 /** "Check again" can't run more often than this (GitHub allows 60 unauthenticated calls an hour per IP). */
@@ -21,6 +21,8 @@ const SHA = /^[0-9a-f]{40}$/
 export type VersionSource = 'image' | 'git'
 
 export interface RunningVersion {
+  /** The release version (x.y.z) from the root package.json. */
+  version: string | null
   commit: string | null
   source: VersionSource | null
 }
@@ -31,17 +33,16 @@ export type UpdateCheck =
   | { state: 'error'; message: string; checkedAt: number }
   | {
       state: 'checked'
-      /** behind: newer commits upstream; ahead: only local commits; diverged: both. */
-      status: 'current' | 'behind' | 'ahead' | 'diverged'
-      newCommits: number
-      localCommits: number
-      compareUrl: string
+      /** behind: a newer release exists; ahead: running a version newer than the latest release. */
+      status: 'current' | 'behind' | 'ahead'
+      /** The latest release's version, without the tag's `v`. */
+      latest: string
+      releaseUrl: string
       checkedAt: number
     }
 
 export interface UpdateStatus extends RunningVersion {
   repo: string | null
-  branch: string
   check: UpdateCheck
 }
 
@@ -49,11 +50,12 @@ export interface UpdateChecker {
   status(options?: { refresh?: boolean }): Promise<UpdateStatus>
 }
 
-/** The commit the image was built from, else the checkout's HEAD. */
+/** The release version, plus the commit the image was built from, else the checkout's HEAD. */
 export function runningVersion(config: Pick<Config, 'APP_COMMIT' | 'rootDir'>): RunningVersion {
-  if (config.APP_COMMIT) return { commit: config.APP_COMMIT, source: 'image' }
+  const version = readAppVersion(config.rootDir)
+  if (config.APP_COMMIT) return { version, commit: config.APP_COMMIT, source: 'image' }
   const commit = readGitHead(config.rootDir)
-  return commit ? { commit, source: 'git' } : { commit: null, source: null }
+  return commit ? { version, commit, source: 'git' } : { version, commit: null, source: null }
 }
 
 /** HEAD's commit from the .git files themselves, so the server doesn't need the git binary. */
@@ -92,10 +94,10 @@ export function readGitHead(rootDir: string): string | null {
   }
 }
 
-interface CompareResponse {
-  status: 'identical' | 'ahead' | 'behind' | 'diverged'
-  ahead_by: number
-  behind_by: number
+/** The fields used from GitHub's "latest release" (which skips drafts and pre-releases). */
+interface ReleaseResponse {
+  tag_name: string
+  html_url: string
 }
 
 export function createUpdateChecker({
@@ -115,30 +117,32 @@ export function createUpdateChecker({
   let cached: { check: UpdateCheck; checkedAt: number; expiresAt: number } | null = null
   let pending: Promise<UpdateCheck> | null = null
 
-  async function check(commit: string, repo: string): Promise<Extract<UpdateCheck, { checkedAt: number }>> {
+  async function check(version: string, repo: string): Promise<Extract<UpdateCheck, { checkedAt: number }>> {
     const checkedAt = clock.now()
     try {
-      const res = await fetch(`https://api.github.com/repos/${repo}/compare/${commit}...${BRANCH}`, {
+      const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
         headers: { accept: 'application/vnd.github+json', 'user-agent': 'open-gamenight-update-check' },
         signal: AbortSignal.timeout(10_000),
       })
       if (res.status === 404) {
-        return { state: 'error', checkedAt, message: `${repo} isn't public, or doesn't have this version (a fork or local commits)` }
+        return { state: 'error', checkedAt, message: `${repo} has no published releases, or isn't public` }
       }
       if (res.status === 403 || res.status === 429) {
         return { state: 'error', checkedAt, message: 'GitHub is rate-limiting this server' }
       }
       if (!res.ok) return { state: 'error', checkedAt, message: `GitHub answered ${res.status}` }
-      // base is the running commit and head is the branch, so "ahead_by" counts commits we don't have.
-      const body = (await res.json()) as CompareResponse
-      const newCommits = body.ahead_by
-      const localCommits = body.behind_by
+      const body = (await res.json()) as ReleaseResponse
+      const latest = parseVersion(body.tag_name)
+      const running = parseVersion(version)
+      if (!latest || !running) {
+        return { state: 'error', checkedAt, message: `the latest release's tag (${body.tag_name}) isn't a version number` }
+      }
+      const order = compareVersions(running, latest)
       return {
         state: 'checked',
-        status: newCommits > 0 ? (localCommits > 0 ? 'diverged' : 'behind') : localCommits > 0 ? 'ahead' : 'current',
-        newCommits,
-        localCommits,
-        compareUrl: `https://github.com/${repo}/compare/${commit.slice(0, 12)}...${BRANCH}`,
+        status: order < 0 ? 'behind' : order > 0 ? 'ahead' : 'current',
+        latest: latest.join('.'),
+        releaseUrl: body.html_url,
         checkedAt,
       }
     } catch (error) {
@@ -148,16 +152,16 @@ export function createUpdateChecker({
 
   return {
     async status({ refresh = false } = {}) {
-      const base = { ...version, repo, branch: BRANCH }
+      const base = { ...version, repo }
       if (!repo) return { ...base, check: { state: 'off' } }
-      if (!version.commit) return { ...base, check: { state: 'unknown_version' } }
+      if (!version.version) return { ...base, check: { state: 'unknown_version' } }
 
       const now = clock.now()
       if (cached && now < cached.expiresAt && !(refresh && now - cached.checkedAt >= MIN_RECHECK_MS)) {
         return { ...base, check: cached.check }
       }
       if (!pending) {
-        pending = check(version.commit, repo).then((result) => {
+        pending = check(version.version, repo).then((result) => {
           if (result.state === 'error') logger.warn('update check failed', { repo, message: result.message })
           const { checkedAt } = result
           cached = { check: result, checkedAt, expiresAt: checkedAt + (result.state === 'error' ? ERROR_TTL_MS : CHECKED_TTL_MS) }

@@ -107,7 +107,7 @@ All settings come from `.env` in the repo root (read with Node's built-in loader
 | `AI_PER_ADMIN_CALLS_PER_HOUR` | `20` | |
 | `MAX_ROOMS` / `MAX_ROOMS_PER_USER` | `50` / `2` | Abuse limits. Guests' rooms count per IP |
 | `ROOM_CREATION` | `accounts` | Who may create rooms: `accounts` (signed-in users) or `anyone` (guests too; meant for a private network, since anyone who can reach the site could open rooms) |
-| `UPDATE_CHECK_REPO` | `Stevenchi36/Open-Gamenight` | The admin Overview compares the running version with this GitHub repo's `main` and says when there's an update (one call to GitHub's API at most every 6 hours, only while an admin has the page open). A fork sets its own; empty turns it off |
+| `UPDATE_CHECK_REPO` | `Stevenchi36/Open-Gamenight` | The admin Overview compares the running version with this GitHub repo's latest release and says when there's an update (one call to GitHub's API at most every 6 hours, only while an admin has the page open). A fork sets its own; empty turns it off |
 | `LOG_LEVEL` | `info` | `debug` \| `info` \| `warn` \| `error` \| `silent` (logs go to stderr) |
 
 ## Accounts and admin
