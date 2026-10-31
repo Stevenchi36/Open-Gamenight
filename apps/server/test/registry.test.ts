@@ -48,9 +48,17 @@ describe('game registries', () => {
   })
 })
 
+/** Games with no game winner to celebrate, and why. */
+const NO_WINNER: Record<string, string> = {
+  imposter: 'scores run on round after round; the game never ends with a winner',
+}
+/** Games about a loser, which end with LoseReveal (and WinCelebration only when a round also has a winner). */
+const LOSER_GAMES = ['oldmaid']
+
 // The "every game ships" list in games/CLAUDE.md, checked so a game (or later a community game) can't skip it.
 describe.each(folders)('game %s ships', (folder) => {
   const client = clientGames.find((g) => g.id === folder)
+  const view = (name: string) => readFileSync(join(gamesDir, folder, 'client', name), 'utf8')
 
   it('DESIGN.md with a Watch page section, and RULES.md', () => {
     expect(existsSync(join(gamesDir, folder, 'RULES.md'))).toBe(true)
@@ -65,7 +73,14 @@ describe.each(folders)('game %s ships', (folder) => {
   })
 
   it('screen-reader announcements in its PlayView', () => {
-    expect(readFileSync(join(gamesDir, folder, 'client/PlayView.vue'), 'utf8')).toMatch(/\buseAnnounce\(/)
+    expect(view('PlayView.vue')).toMatch(/\buseAnnounce\(/)
+  })
+
+  it.skipIf(folder in NO_WINNER)('its ending on both the play view and the TV', () => {
+    for (const name of ['PlayView.vue', 'SpectatorView.vue']) {
+      expect(view(name), name).toMatch(/<WinCelebration\b/)
+      if (LOSER_GAMES.includes(folder)) expect(view(name), name).toMatch(/<LoseReveal\b/)
+    }
   })
 
   // Lint blocks other @ogn packages and apps/ or packages/ paths; only resolving finds a
