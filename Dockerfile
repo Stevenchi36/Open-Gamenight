@@ -1,4 +1,7 @@
 # syntax=docker/dockerfile:1
+# check=skip=SecretsUsedInArgOrEnv
+# (The skipped check flags ENV AUTH_DB_PATH by its name; it's a file path, not a secret. Parser
+# directives like these two must come before any other comment.)
 # Production image: the server runs its TypeScript directly, so the only build is the client.
 # The repo layout is kept as is (the server finds its root by pnpm-workspace.yaml and serves
 # apps/client/dist from there).
