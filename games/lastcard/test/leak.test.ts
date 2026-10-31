@@ -71,5 +71,5 @@ describe('last card secret-leak test', () => {
     })
     expect(result.leaks).toEqual([])
     expect(result.phasesSeen).toEqual(['PLAYING', 'RESULTS'])
-  }, 30_000)
+  })
 })

@@ -46,5 +46,5 @@ describe("gone fishin' secret-leak test", () => {
     })
     expect(result.leaks).toEqual([])
     expect(result.phasesSeen).toEqual(['PLAYING', 'RESULTS'])
-  }, 20_000)
+  })
 })

@@ -48,7 +48,7 @@ describe('old maid secret-leak test', () => {
     })
     expect(result.leaks).toEqual([])
     expect(result.phasesSeen).toEqual(['PLAYING', 'RESULTS'])
-  }, 30_000)
+  })
 
   it('covers a leaver mid-round', () => {
     const result = runLeakTest(oldMaid, {

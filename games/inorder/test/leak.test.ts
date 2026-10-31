@@ -48,5 +48,5 @@ describe('in order secret-leak test', () => {
     })
     expect(result.leaks).toEqual([])
     expect(result.phasesSeen).toEqual(['ORDERING', 'RESULTS'])
-  }, 20_000)
+  })
 })
