@@ -31,6 +31,20 @@ export default defineConfigWithVueTs(
     },
   },
   {
+    // The game boundary (root CLAUDE.md): a game reaches the platform only through @ogn/core/*,
+    // which keeps it buildable on its own. Relative paths out of the game's folder are caught by
+    // apps/server/test/registry.test.ts, which can resolve them; the registries import every game by design.
+    files: ['games/*/**/*.{ts,vue}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          { group: ['@ogn/*', '!@ogn/core'], message: 'Games import only @ogn/core/* and their own folder; server services arrive through ServerServices.' },
+          { group: ['**/apps/**', '**/packages/**'], message: 'Games import the core as @ogn/core/*, never by path.' },
+        ],
+      }],
+    },
+  },
+  {
     // stdout is the MCP protocol: never console.log in the MCP process.
     files: ['apps/mcp/**/*.ts', 'games/*/server/**/*.ts'],
     rules: { 'no-console': ['error', { allow: ['error', 'warn'] }] },

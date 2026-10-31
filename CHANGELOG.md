@@ -4,6 +4,11 @@ Each release is tagged `v<version>` and published on GitHub with its section bel
 
 ## [Unreleased]
 
+### Game API
+
+- The game boundary is enforced: lint fails on imports of other `@ogn/*` packages or paths into `apps/`/`packages/`, and a test fails on relative imports that leave the game's folder.
+- A test checks every game ships `DESIGN.md` (with a Watch page section), `RULES.md`, `rules`, `needsAction`, a `SpectatorView` and `useAnnounce` in its `PlayView`, and is registered under its folder name.
+
 ## [0.1.0] - 2026-10-30
 
 The first release.
