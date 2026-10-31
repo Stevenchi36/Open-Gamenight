@@ -88,6 +88,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 26
+          # On by default when package.json names a packageManager, and this job installs no pnpm.
+          package-manager-cache: false
       - run: node apps/server/scripts/release-notes.ts "$GITHUB_REF_NAME" > notes.md
       - run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
         env:
